@@ -1,0 +1,31 @@
+{
+  "name": "dashboard-business",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "bootstrap": "^5.2.1",
+    "bootstrap-vue": "^2.22.0",
+    "core-js": "^3.6.5",
+    "jsona": "^1.10.1",
+    "vue": "^2.7.10",
+    "vue-authenticate": "^1.5.0",
+    "vue-router": "^3.6.5",
+    "vue2-transitions": "^0.3.0",
+    "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.13",
+    "@vue/cli-service": "~4.5.13",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
