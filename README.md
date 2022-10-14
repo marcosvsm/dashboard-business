@@ -9,8 +9,12 @@ npm install vuex@3
 npm install vue-authenticate
 npm i jsona --save
 npm install vue2-transitions    
-
-
+npm install vue-perfect-scrollbar
+npm install vue-i18n@8.25.0
+npm install vue-ripple-directive
+npm install @vueuse/core
+npm install sass
+npm install --save vue-feather-icons
 ## Project setup
 ```
 npm install

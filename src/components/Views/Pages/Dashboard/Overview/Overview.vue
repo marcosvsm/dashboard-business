@@ -1,6 +1,6 @@
 <template>
     <div>
-        teste
+        <b-button v-b-toggle.collapse-1>Teste</b-button>
         <div class="row">
             <div class="col-md-2">
                 <b-card>
