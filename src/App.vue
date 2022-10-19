@@ -5,7 +5,7 @@
     :class="[skinClasses]"
   >
     <component :is="layout">
-      <router-view></router-view>
+      <router-view/>
     </component>
   </div>
 </template>
@@ -65,13 +65,3 @@ export default {
   },
 }
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #161d31;
-  height: 100%;
-}
-</style>

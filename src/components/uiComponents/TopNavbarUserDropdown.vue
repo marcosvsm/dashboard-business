@@ -28,7 +28,7 @@
     </template>
 
     <b-dropdown-item
-      :to="{ name: 'pages-profile'}"
+      :to="{ name: ''}"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -39,7 +39,7 @@
       <span>Profile</span>
     </b-dropdown-item>
     <b-dropdown-item
-      :to="{ name: 'apps-email' }"
+      :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -50,7 +50,7 @@
       <span>Inbox</span>
     </b-dropdown-item>
     <b-dropdown-item
-      :to="{ name: 'apps-todo' }"
+      :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -61,7 +61,7 @@
       <span>Task</span>
     </b-dropdown-item>
     <b-dropdown-item
-      :to="{ name: 'apps-chat' }"
+      :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -75,7 +75,7 @@
     <b-dropdown-divider />
 
     <b-dropdown-item
-      :to="{ name: 'pages-account-setting' }"
+      :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -86,7 +86,7 @@
       <span>Settings</span>
     </b-dropdown-item>
     <b-dropdown-item
-      :to="{ name: 'pages-pricing' }"
+      :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -97,7 +97,7 @@
       <span>Pricing</span>
     </b-dropdown-item>
     <b-dropdown-item
-      :to="{ name: 'pages-faq' }"
+      :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon

@@ -1,7 +1,7 @@
 <template>
   <layout-vertical :nav-menu-items="navMenuItems">
 
-    <router-view />
+    <router-view/>
 
   </layout-vertical>
 </template>
@@ -23,6 +23,7 @@ export default {
         },
         {
           title: 'Dashboard',
+          route: 'dashboard-overview',
           icon: 'HomeIcon',
         },
         {
@@ -38,6 +39,9 @@ export default {
             },
             {
               title: 'Add',
+              route: {
+                name: 'invoice-add'
+              },
             },
           ],
         },
@@ -46,3 +50,7 @@ export default {
   },
 }
 </script>
+<style lang="scss">
+@import '~@/scss/vue/libs/vue-flatpicker.scss';
+
+</style>

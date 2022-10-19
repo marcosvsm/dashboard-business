@@ -9,6 +9,9 @@ import Register from '../components/views/pages/Register.vue'
 //Dashboard
 import Overview from '../components/views/pages/dashboard/overview/Overview.vue'
 
+//Invoice
+import InvoiceAdd from '../components/views/pages/invoice/InvoiceAdd.vue'
+import InvoiceFree from '../components/views/pages/invoice/InvoiceAdd.vue'
 
 let loginPage = {
     path: '/login',
@@ -29,29 +32,37 @@ let registerPage = {
       middleware: guest }
 }
 
+let invoicePage = {
+  path: '/invoice/add',
+  name: 'invoice-add',
+  component: InvoiceAdd,
+}
+
+let invoiceFreePage = {
+  path: '/invoice/free',
+  name: 'invoice-free',
+  component: InvoiceFree,
+  meta: {
+    layout: 'full',
+  }
+}
+
 const routes = [
     {
-        path: '/',
-        redirect: '/dashboard',
+      path: '/',
+      redirect: 'dashboard/overview',
     },
     loginPage,
     registerPage,
+    invoicePage,
+    invoiceFreePage,
     {
-        path: '/dashboard',
-        redirect: '/dashboard/overview',
-        meta: { 
-          layout: 'vertical',  
-          middleware: guest },
-        children: [
-            {
-              path: 'overview',
-              name: 'Overview',
-              component: Overview,
-              meta: {
-                layout: 'vertical', 
-                middleware: guest}
-            }
-        ]
+      path: '/dashboard/overview',
+      name: 'dashboard-overview',
+      component: Overview,
+      meta: {
+        middleware: guest
+      }
     }
 ];
 

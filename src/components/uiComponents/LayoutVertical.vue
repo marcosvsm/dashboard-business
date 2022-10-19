@@ -146,26 +146,6 @@ export default {
   }
 }
 </script>
-<style>
-.sidenav-overlay{
-  position: fixed;
-  top: 0;
-  height: 120vh;
-  z-index: 997;
-  display: block;
-  visibility: hidden;
-  opacity: 0;
-  -webkit-transition: all .5s ease;
-  transition: all .5s ease;
-}
-#body-row {
-    margin-left:0;
-    margin-right:0;
-}
-.show{
-  opacity: 1;
-  visibility: visible;
-  -webkit-transition: all .5s ease;
-  transition: all .5s ease;
-}
+<style lang="scss">
+@import "~@/scss/base/themes/bordered-layout.scss";
 </style>

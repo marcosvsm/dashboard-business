@@ -16,6 +16,8 @@
       "action": "Action"
     }
   },
+  "Dashboard": "Dashboard",
+  "Company": "Company",
   "UI Elements": "UI Elements",
   "Forms & Tables": "Forms & Tables",
   "Pages": "Pages",
