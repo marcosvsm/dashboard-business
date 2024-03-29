@@ -9,18 +9,9 @@
         <div class="logo-wrapper">
           <!-- <logo /> -->
           <h3 class="text-primary invoice-logo">
-            Vuexy
+            {{invoiceData.company.name}}
           </h3>
         </div>
-        <b-card-text class="mb-25">
-          Office 149, 450 South Brand Brooklyn
-        </b-card-text>
-        <b-card-text class="mb-25">
-          San Diego County, CA 91905, USA
-        </b-card-text>
-        <b-card-text class="mb-0">
-          +1 (123) 456 7891, +44 (876) 543 2198
-        </b-card-text>
       </div>
 
     <!-- Header: Right Content -->
@@ -35,8 +26,8 @@
             </b-input-group-prepend>
             <b-form-input
             id="invoice-data-id"
-            v-model="invoiceData.id"
-            disabled
+            v-model="invoiceData.number"
+            required
             />
           </b-input-group>
         </div>
@@ -45,8 +36,9 @@
             Date:
           </span>
           <flat-pickr
-            v-model="invoiceData.issuedDate"
+            v-model="invoiceData.date"
             class="form-control invoice-edit-input"
+            required
           />
         </div>
         <div class="d-flex align-items-center">
@@ -56,6 +48,7 @@
           <flat-pickr
             v-model="invoiceData.dueDate"
             class="form-control invoice-edit-input"
+            required
           />
         </div>
       </div>

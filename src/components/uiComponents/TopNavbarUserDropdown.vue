@@ -7,20 +7,19 @@
     <template #button-content>
       <div class="d-sm-flex d-none user-nav">
         <p class="user-name font-weight-bolder mb-0">
-          {{ userData.fullName || userData.username }}
+          {{ user.name || user.name }}
         </p>
-        <span class="user-status">{{ userData.role }}</span>
+        <span class="user-status"></span>
       </div>
       <b-avatar
         size="40"
-        :src="userData.avatar"
         variant="light-primary"
         badge
         class="badge-minimal"
         badge-variant="success"
       >
         <base-feather-icon
-          v-if="!userData.fullName"
+          v-if="!user.name"
           icon="UserIcon"
           size="22"
         />
@@ -132,30 +131,25 @@ export default {
   },
   data() {
     return {
-      userData: {
-        fullName: 'Marcos',
-        username: 'Prata',
-        role: 'user',
-        avatar: '',
-      },
+      user: null,
       //avatarText,
     }
   },
+  created(){
+    this.getMe();
+  },
   methods: {
+    async getMe(){
+      await this.$store.dispatch("profile/me")
+      this.user = await this.$store.getters["profile/me"]
+    },
     logout() {
+      this.$store.dispatch("logout");
       // Remove userData from localStorage
       // ? You just removed token from localStorage. If you like, you can also make API call to backend to blacklist used token
     //  localStorage.removeItem(useJwt.jwtConfig.storageTokenKeyName)
     //  localStorage.removeItem(useJwt.jwtConfig.storageRefreshTokenKeyName)
 
-      // Remove userData from localStorage
-      localStorage.removeItem('userData')
-
-      // Reset ability
-      //this.$ability.update(initialAbility)
-
-      // Redirect to login page
-      this.$router.push({ name: 'auth-login' })
     },
   },
 }

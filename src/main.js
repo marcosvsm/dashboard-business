@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 //import VueRouter from 'vue-router'
+import VueNotify from 'vue-notifyjs'
 
 //router setup
 import router from './router/index'
@@ -11,16 +12,13 @@ import i18n from '@/libs/i18n'
 //bootstrap import
 import {BootstrapVue, IconsPlugin} from 'bootstrap-vue'
 
-// Import Bootstrap and BootstrapVue CSS files (order is important)
-//import 'bootstrap/dist/css/bootstrap.css'
-//import 'bootstrap-vue/dist/bootstrap-vue.css'
-
 // library imports 
 import store from "./store";
+import './registerServiceWorker'
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
-
+Vue.use(VueNotify);
 //plugin setup
 //Vue.use(VueRouter);
 

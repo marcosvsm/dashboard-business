@@ -15,19 +15,27 @@
                                 <span><b-icon-envelope></b-icon-envelope></span>
                             </b-input-group-prepend>
                                 <b-input type="email" v-model="email" placeholder="Email"></b-input>
+                                <validation-error :errors="apiValidationErrors.email" />
                         </b-input-group>
                         <b-input-group class="mt-1">
                             <b-input-group-prepend is-text>
                                 <span><b-icon-lock></b-icon-lock></span>
                             </b-input-group-prepend>
                                 <b-form-input type="password" v-model="password" placeholder="Password"></b-form-input>
+                                <validation-error :errors="apiValidationErrors.password" />
                         </b-input-group>
                         <div class="d-flex" style="justify-content: space-between!important;">
                             <span></span>
                             <a href=""><small>Forgot Password?</small></a>
                         </div>
                         <div class="text-center mt-3">
-                            <button class="btn btn-sm btn-primary">Sign in</button>
+                            <b-button 
+                              variant="primary" 
+                              size="sm"
+                              type="submit"
+                            >
+                              Sign in
+                            </b-button>
                         </div>
                         <p class="card-text text-center mt-2"><span>New on our platform? </span><a href="/register" class="" target="_self"><span> Create an account</span></a></p>
                     </b-form-group>
@@ -38,43 +46,48 @@
 </div>
 </template>
 <script>
+import formMixin from "@/mixins/form-mixin"
+import ValidationError from "@/components/uiComponents/ValidationError"
 
 export default {
-   
-    data(){
-        return {
-            email: '',
-            password : ''
+  mixins: [formMixin],
+  components:{
+      ValidationError,
+  },
+  data(){
+    return {
+      email: '',
+      password : ''
+    }
+  },
+  methods:{
+    async login(){
+      const user = {
+        data: {
+          type: "token",
+          attributes: {
+            email: this.email,
+            password: this.password
+          }
         }
-    },
-    methods:{
-        async login(){
-            const user = {
-                data: {
-                    type: "token",
-                    attributes: {
-                        email: this.email,
-                        password: this.password
-                    }
-                }
-            }
-            const requestOptions = {
-                headers: {
-                    'Accept': 'application/vnd.api+json',
-                    'Content-Type': 'application/vnd.api+json',
-                }
-            }
-            try{
-                await this.$store.dispatch("login", {user, requestOptions})
-            } catch (e){
-                this.$notify({
-                    message:'Invalid credentials!',
-                    type: 'danger',
-                });
-                this.setApiValidation(e.response.data.errors)
-            }
+      }
+      const requestOptions = {
+        headers: {
+          'Accept': 'application/vnd.api+json',
+          'Content-Type': 'application/vnd.api+json',
         }
-    } 
+      }
+      try{
+        await this.$store.dispatch("login", {user, requestOptions})
+      } catch (e){
+          this.$notify({
+            message:'Invalid credentials!',
+            type: 'danger',
+          });
+          this.setApiValidation(e.response.data.errors)
+        }
+    }
+  }, 
 }
 </script>
 <style scoped>

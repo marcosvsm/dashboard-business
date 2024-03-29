@@ -15,6 +15,9 @@ npm install vue-ripple-directive
 npm install @vueuse/core
 npm install sass
 npm install --save vue-feather-icons
+npm install qs
+npm install vue-notifyjs
+npm install register-service-worker
 ## Project setup
 ```
 npm install

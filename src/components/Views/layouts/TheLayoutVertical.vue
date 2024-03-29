@@ -29,6 +29,20 @@ export default {
         {
           title: 'Company',
           icon: 'BriefcaseIcon',
+          children: [
+            {
+            title: 'List',
+            route: {
+              name: 'companies'
+            }
+            },
+            {
+            title: 'Add',
+            route: {
+              name: 'company'
+            }
+            },
+          ],
         },
         {
           title: 'Invoice',

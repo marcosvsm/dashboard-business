@@ -19,7 +19,7 @@
             <!-- Spacer -->
             <hr class="invoice-spacing">
 
-            <invoice-body :invoiceData="invoiceData" :itemsOptions="itemsOptions"/>
+            <invoice-body :invoiceData="invoiceData" :itemsOptions="itemsOptions" :companies="companies"/>
 
             <!-- Spacer -->
             <hr class="invoice-spacing">
@@ -27,7 +27,12 @@
             <!-- Note -->
             <b-card-body class="invoice-padding pt-0">
               <span class="font-weight-bold">Note: </span>
-              <b-form-textarea v-model="invoiceData.note" />
+              <b-form-textarea v-model="invoiceData.note" placeholder="Account Details:
+
+Bank Name
+BSB: 000-000
+Account: 0000 0000
+Account name"/>
             </b-card-body>
           </b-card>
         </b-form>
@@ -44,18 +49,9 @@
         <!-- Action Buttons -->
         <b-card>
 
-          <!-- Button: Send Invoice -->
-          <b-button
-            v-ripple.400="'rgba(255, 255, 255, 0.15)'"
-            variant="primary"
-            class="mb-75"
-            block
-            disabled
-          >
-            Send Invoice
-          </b-button>
-
           <!-- Button: DOwnload -->
+          <pdf :invoiceData="invoiceData" />
+          
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
             variant="outline-primary"
@@ -75,34 +71,7 @@
           </b-button>
         </b-card>
 
-        <!-- Payment Method -->
         <div class="mt-2">
-          <b-form-group
-            label="Accept Payment Via"
-            label-for="payment-method"
-          >
-            <v-select
-              v-model="invoiceData.paymentMethod"
-              :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-              :options="paymentMethods"
-              input-id="payment-method"
-              class="payment-selector"
-              :clearable="false"
-            />
-          </b-form-group>
-
-          <!-- ? Below values are not adding invoiceData to keep invoiceData more generic and less confusing  -->
-
-          <!-- Payment Terms -->
-          <div class="d-flex justify-content-between align-items-center">
-            <label for="patymentTerms">Payment Terms</label>
-            <b-form-checkbox
-              id="patymentTerms"
-              :checked="true"
-              switch
-            />
-          </div>
-
           <!-- Client Notes -->
           <div class="d-flex justify-content-between align-items-center my-1">
             <label for="clientNotes">Client Notes</label>
@@ -112,19 +81,9 @@
               switch
             />
           </div>
-
-          <!-- Payment Stub -->
-          <div class="d-flex justify-content-between align-items-center">
-            <label for="paymentStub">Payment Stub</label>
-            <b-form-checkbox
-              id="paymentStub"
-              switch
-            />
-          </div>
         </div>
       </b-col>
     </b-row>
-   <!-- <invoice-sidebar-add-new-customer /> -->
   </section>
 </template>
 
@@ -138,7 +97,8 @@ import Ripple from 'vue-ripple-directive'
 import invoiceStoreModule from './invoiceStoreModule'
 import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
-//import InvoiceSidebarAddNewCustomer from '../InvoiceSidebarAddNewCustomer.vue'
+import Pdf from '@/components/uiComponents/Pdf.vue'
+
 
 export default {
   components: {
@@ -146,8 +106,9 @@ export default {
     vSelect,
     InvoiceHeader,
     InvoiceBody,
+    Pdf,
    // Logo,
- //   InvoiceSidebarAddNewCustomer,
+  //  InvoiceSidebarAddNewCustomer,
   },
   directives: {
     Ripple,
@@ -164,65 +125,87 @@ export default {
       if (store.hasModule(INVOICE_APP_STORE_MODULE_NAME)) store.unregisterModule(INVOICE_APP_STORE_MODULE_NAME)
     })
 
-    const clients = ref([])
-    store.dispatch('app-invoice/fetchClients').then(response => {
-      clients.value = response.data
-    })
+    const customers = {
+    
+    }
+    //store.dispatch('app-invoice/fetchClients').then(response => {
+      //customers.value = response.data
+    //})
+
+    const companies = ref([]); // Use ref to store the list of companies
+
+    // Async function to fetch companies
+    const getCompanies = async () => {
+      try {
+        await store.dispatch('companies/list');
+        companies.value = store.getters["companies/list"] 
+        console.log('Companies data:', companies.value);// Assuming 'list' contains the list of companies
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
+
+    // Call the function to fetch companies
+    getCompanies();
 
     const itemFormBlankItem = {
-      item: null,
-      cost: 0,
-      qty: 0,
+      itemName: '',
+      price: 0,
+      quantity: 0,
       description: '',
     }
 
     const invoiceData = ref({
-      id: 5037,
-      client: null,
-
+      number: "",
+      customer: {},
+      company: {"name": null},
+      date: null,
+      dueDate: null,
+      abn: null,
       // ? Set single Item in form for adding data
       items: [JSON.parse(JSON.stringify(itemFormBlankItem))],
 
-      salesPerson: '',
-      note: 'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!',
+      note: '',
       paymentMethod: null,
+      amount:0,
     })
 
     const itemsOptions = [
       {
-        itemTitle: 'App Design',
-        cost: 24,
-        qty: 1,
-        description: 'Designed UI kit & app pages.',
+        itemName: '',
+        cost: 0,
+        qty: 0,
+        description: '',
       },
       {
-        itemTitle: 'App Customization',
+        itemName: 'App Customization',
         cost: 26,
         qty: 1,
         description: 'Customization & Bug Fixes.',
       },
       {
-        itemTitle: 'ABC Template',
+        itemName: 'ABC Template',
         cost: 28,
         qty: 1,
         description: 'Bootstrap 4 admin template.',
       },
       {
-        itemTitle: 'App Development',
+        itemName: 'App Development',
         cost: 32,
         qty: 1,
         description: 'Native App Development.',
       },
     ]
-
+     
 
     const paymentMethods = ['Bank Account', 'PayPal', 'UPI Transfer']
 
     return {
       invoiceData,
-      clients,
+      customers,
       itemsOptions,
       paymentMethods,
+      companies,
     }
   },
 }

@@ -7,6 +7,8 @@ import users from "./modules/users-module"
 import appConfig from './modules/appConfig'
 import verticalMenu from './modules/verticalMenu'
 import app from './modules/app'
+import profile from './modules/profile-module'
+import companies from "./modules/companies-module"
 
 Vue.use(Vuex);
 
@@ -17,5 +19,7 @@ export default new Vuex.Store({
         app,
         appConfig,
         verticalMenu,
+        profile,
+        companies,
     }
 });
