@@ -15,8 +15,8 @@
 //import $themeConfig  from '@/themeConfig'
 import { watch } from 'vue'
 import useAppConfig from '@/appConfig/useAppConfig' 
-import LayoutVertical from './components/views/layouts/TheLayoutVertical.vue'
-import LayoutFull from './components/views/layouts/TheLayoutFull.vue'
+import LayoutVertical from './src/components/views/layouts/TheLayoutVertical.vue'
+import LayoutFull from './src/components/views/layouts/TheLayoutFull.vue'
 
 import { useWindowSize } from '@vueuse/core'
 
