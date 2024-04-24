@@ -17,8 +17,4 @@
 export default {
     
 }
-<<<<<<< HEAD
 </script>
-=======
-</script>
->>>>>>> dev
