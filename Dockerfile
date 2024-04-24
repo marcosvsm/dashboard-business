@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json (if available)
 COPY package*.json ./
+COPY package-lock.json ./
 
 # Install dependencies
 RUN npm install
@@ -23,6 +24,6 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 80 to allow external access
-EXPOSE 80
+EXPOSE 8080
 
 # The Nginx container will start serving the static files automatically
