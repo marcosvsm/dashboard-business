@@ -1,26 +1,43 @@
 {
   "name": "dashboard-business",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "dev": "npm run serve"
   },
   "dependencies": {
+    "@vueuse/core": "^9.3.0",
     "axios": "^0.27.2",
-    "bootstrap": "^5.2.1",
+    "bootstrap": "^4.6.0",
     "bootstrap-vue": "^2.22.0",
     "core-js": "^3.6.5",
     "jsona": "^1.10.1",
+    "jspdf": "^2.4.0",
+    "qs": "^6.11.0",
+    "register-service-worker": "^1.7.2",
     "vue": "^2.7.10",
-    "vue-authenticate": "^1.5.0",
+    "vue-authenticate": "^1.4.1",
+    "vue-feather-icons": "^5.1.0",
+    "vue-flatpickr-component": "^8.1.6",
+    "vue-i18n": "^8.25.0",
+    "vue-notifyjs": "^0.4.3",
+    "vue-perfect-scrollbar": "^0.2.1",
+    "vue-ripple-directive": "^2.0.1",
     "vue-router": "^3.6.5",
+    "vue-select": "^3.20.0",
     "vue2-transitions": "^0.3.0",
-    "vuex": "^3.6.2"
+    "vuex": "^3.6.2",
+    "@vue/cli-service": "~4.5.13",
+    "@vue/cli-plugin-babel": "~4.5.13",
+    "vue-template-compiler": "^2.6.11"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.13",
     "@vue/cli-service": "~4.5.13",
+    "sass": "1.32",
+    "sass-loader": "^10.1.0",
     "vue-template-compiler": "^2.6.11"
   },
   "browserslist": [

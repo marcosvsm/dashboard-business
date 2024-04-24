@@ -1,6 +1,10 @@
 <template>
     <div>
+<<<<<<< HEAD
         teste
+=======
+        <b-button v-b-toggle.collapse-1>Teste</b-button>
+>>>>>>> dev
         <div class="row">
             <div class="col-md-2">
                 <b-card>
@@ -17,4 +21,8 @@
 export default {
     
 }
+<<<<<<< HEAD
 </script>
+=======
+</script>
+>>>>>>> dev
