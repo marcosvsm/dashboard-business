@@ -134,7 +134,9 @@ export default {
 .right-bg{
     background-color: #fff;
 }
+
 .brand-logo img{
   width:100px;
 }
 </style>
+
