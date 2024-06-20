@@ -12,9 +12,9 @@
                   alt="logo"
                 />
                 </span>
-                <form @submit.prevent="login">
-                    <h3>Welcome to Simplify Business!</h3>
-                    <p>Please sign-in to your account.</p>
+                <form @submit.prevent="resetPassword">
+                    <h3>Reset Password</h3>
+                    <p>Enter your email address and we'll send you a link to reset your password.</p>
                     <b-form-group label-align-sm="center">
                         <b-input-group class="mt-1">
                             <b-input-group-prepend is-text>
@@ -23,16 +23,9 @@
                                 <b-input type="email" v-model="email" placeholder="Email" required></b-input>
                         </b-input-group>
                         <validation-error :errors="apiValidationErrors.email" />
-                        <b-input-group class="mt-1">
-                            <b-input-group-prepend is-text>
-                                <span><b-icon-lock></b-icon-lock></span>
-                            </b-input-group-prepend>
-                                <b-form-input type="password" v-model="password" placeholder="Password" required></b-form-input>
-                        </b-input-group>
-                        <validation-error :errors="apiValidationErrors.password" />
                         <div class="d-flex" style="justify-content: space-between!important;">
                             <span></span>
-                            <a href="/forgot-password"><small>Forgot Password?</small></a>
+                            <a href="/login"><small>Sign in</small></a>
                         </div>
                         <div v-if="genericError" class="text-danger text-center mt-2">
                             {{ genericError }}
@@ -43,10 +36,9 @@
                               size="sm"
                               type="submit"
                             >
-                              Sign in
+                              Reset Password
                             </b-button>
                         </div>
-                        <p class="card-text text-center mt-2"><span>New on our platform? </span><a href="/register" class="" target="_self"><span> Create an account</span></a></p>
                     </b-form-group>
                 </form>
             </div>
@@ -68,39 +60,24 @@ export default {
     const { appLogoImage } = $themeConfig.app
     return {
       email: '',
-      password : '',
       appLogoImage,
       genericError: '',
     }
   },
   methods:{
-    async login(){
-      const user = {
-        data: {
-          type: "token",
-          attributes: {
-            email: this.email,
-            password: this.password
-          }
-        }
-      }
-      const requestOptions = {
-        headers: {
-          'Accept': 'application/vnd.api+json',
-          'Content-Type': 'application/vnd.api+json',
-        }
-      }
+    async resetPassword(){
       try{
-        await this.$store.dispatch("login", {user, requestOptions})
+        await this.$store.dispatch("forgotPassword", this.email)
+        alert('Password reset link has been sent to your email.');
       } catch (e){
           this.clearError()
           if (e.response.status === 422) {
             this.setApiValidation(e.response.data.errors);
-          } else if (e.response.status === 400 && e.response.data.errors[0].detail === 'The user credentials were incorrect.'){
-            this.genericError = "The password that you've entered is incorrect."
+          } else  if (e.response && e.response.status === 422) {
+          this.genericError = e.response.data.errors[0].detail;
           } else {
             this.$notify({
-              message:'Invalid credentials!',
+              message:'Something went wrong!',
               type: 'danger',
             });
           }

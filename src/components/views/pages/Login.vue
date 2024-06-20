@@ -6,27 +6,36 @@
         </div>
         <div class="d-flex align-items-center auth-bg px-2 p-lg-5 col-lg-4 right-bg">
             <div class="px-xl-5 mx-auto col-sm-8 col-md-6 col-lg-12">
+              <span class="brand-logo">
+                <b-img
+                  :src="appLogoImage"
+                  alt="logo"
+                />
+                </span>
                 <form @submit.prevent="login">
-                    <h3>Welcome to Simplify Invoice!</h3>
+                    <h3>Welcome to Simplify Business!</h3>
                     <p>Please sign-in to your account.</p>
                     <b-form-group label-align-sm="center">
                         <b-input-group class="mt-1">
                             <b-input-group-prepend is-text>
                                 <span><b-icon-envelope></b-icon-envelope></span>
                             </b-input-group-prepend>
-                                <b-input type="email" v-model="email" placeholder="Email"></b-input>
-                                <validation-error :errors="apiValidationErrors.email" />
+                                <b-input type="email" v-model="email" placeholder="Email" required></b-input>
                         </b-input-group>
+                        <validation-error :errors="apiValidationErrors.email" />
                         <b-input-group class="mt-1">
                             <b-input-group-prepend is-text>
                                 <span><b-icon-lock></b-icon-lock></span>
                             </b-input-group-prepend>
-                                <b-form-input type="password" v-model="password" placeholder="Password"></b-form-input>
-                                <validation-error :errors="apiValidationErrors.password" />
+                                <b-form-input type="password" v-model="password" placeholder="Password" required></b-form-input>
                         </b-input-group>
+                        <validation-error :errors="apiValidationErrors.password" />
                         <div class="d-flex" style="justify-content: space-between!important;">
                             <span></span>
-                            <a href=""><small>Forgot Password?</small></a>
+                            <a href="/forgot-password"><small>Forgot Password?</small></a>
+                        </div>
+                        <div v-if="genericError" class="text-danger text-center mt-2">
+                            {{ genericError }}
                         </div>
                         <div class="text-center mt-3">
                             <b-button 
@@ -47,7 +56,8 @@
 </template>
 <script>
 import formMixin from "@/mixins/form-mixin"
-import ValidationError from "@/components/uiComponents/ValidationError"
+import ValidationError from "@/components/uiComponents/ValidationError.vue"
+import { $themeConfig } from '@/themeConfig'
 
 export default {
   mixins: [formMixin],
@@ -55,9 +65,12 @@ export default {
       ValidationError,
   },
   data(){
+    const { appLogoImage } = $themeConfig.app
     return {
       email: '',
-      password : ''
+      password : '',
+      appLogoImage,
+      genericError: '',
     }
   },
   methods:{
@@ -80,12 +93,22 @@ export default {
       try{
         await this.$store.dispatch("login", {user, requestOptions})
       } catch (e){
-          this.$notify({
-            message:'Invalid credentials!',
-            type: 'danger',
-          });
-          this.setApiValidation(e.response.data.errors)
+          this.clearError()
+          if (e.response.status === 422) {
+            this.setApiValidation(e.response.data.errors);
+          } else if (e.response.status === 400 && e.response.data.errors[0].detail === 'The user credentials were incorrect.'){
+            this.genericError = "The password that you've entered is incorrect."
+          } else {
+            this.$notify({
+              message:'Invalid credentials!',
+              type: 'danger',
+            });
+          }
         }
+    },
+    clearError(){
+       this.resetApiValidation()
+       this.genericError = ''
     }
   }, 
 }
@@ -110,5 +133,8 @@ export default {
 }
 .right-bg{
     background-color: #fff;
+}
+.brand-logo img{
+  width:100px;
 }
 </style>

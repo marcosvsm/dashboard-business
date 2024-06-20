@@ -41,7 +41,7 @@ export default {
     },
 
     register(context, payload){
-      return vueAuth.register(payload.user, payload,requestOptions).then(response => {
+      return vueAuth.register(payload.user, payload.requestOptions).then(response => {
         context.commit("isAuthenticated", {
           isAuthenticated: vueAuth.isAuthenticated()
         });
@@ -56,6 +56,26 @@ export default {
         });
         router.push({name: "Login"});
       });
-    }
+    },
+
+    forgotPassword(context, payload){
+      return Vue.prototype.$http.post(`${process.env.VUE_APP_API_BASE_URL}/password-forgot`, { data: {attributes: {email: payload, redirect_url: process.env.VUE_APP_BASE_URL+'/password-reset' }}})
+        .then(response => {
+          return response.data;
+        })
+        .catch(error => {
+          throw error;
+        });
+    },
+
+    resetPassword(context,payload){
+      return Vue.prototype.$http.post(`${process.env.VUE_APP_API_BASE_URL}/password-reset`, payload.user )
+        .then(response => {
+          return response.data;
+        })
+        .catch(error => {
+          throw error;
+        });
+    },
   }
 }

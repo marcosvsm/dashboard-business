@@ -48,14 +48,9 @@ export default {
         name: 'English',
       },
       {
-        locale: 'fr',
-        img: require('@/assets/img/flags/fr.png'),
-        name: 'French',
-      },
-      {
-        locale: 'de',
+        locale: 'es',
         img: require('@/assets/img/flags/de.png'),
-        name: 'German',
+        name: 'Spanish',
       },
       {
         locale: 'pt-br',

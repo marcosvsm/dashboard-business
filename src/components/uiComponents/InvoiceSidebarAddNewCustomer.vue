@@ -12,7 +12,7 @@
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
         <h5 class="mb-0">
-          Add Customer
+          Add Client
         </h5>
 
         <base-feather-icon
@@ -32,7 +32,7 @@
 
         <!-- Customer Name -->
         <b-form-group
-          label="Customer Name"
+          label="Client Name"
           label-for="customer-name"
         >
           <b-form-input

@@ -9,7 +9,7 @@ export const $themeBreakpoints = {}
 // APP CONFIG
 export const $themeConfig = {
   app: {
-    appName: 'Invoice', // Will update name in navigation menu (Branding)
+    appName: 'Business', // Will update name in navigation menu (Branding)
     // eslint-disable-next-line global-require
     appLogoImage: require('@/assets/logo.png'), // Will update logo in navigation menu (Branding)
   },

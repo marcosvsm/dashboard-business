@@ -13,7 +13,7 @@
             class="mb-lg-1"
         >
             <h6 class="mb-2">
-            Invoice To:
+           {{t("Bill To")}} 
             </h6>
 
             <!-- Select customer -->
@@ -34,7 +34,7 @@
                     icon="PlusIcon"
                     size="16"
                 />
-                <span class="align-middle ml-25">Add New Customer</span>
+                <span class="align-middle ml-25">{{t("Add New Client")}}</span>
                 </li>
             </template>
             </v-select>
@@ -60,17 +60,17 @@
         </b-col>
 
         <!-- Col: Payment Details -->
-        
+       
         <b-col
             xl="6"
             cols="12"
-            class="mt-xl-0 mt-2 justify-content-end d-xl-flex d-block"
+            class="mt-xl-0 mt-2"
         >
             <div><!-- Select customer -->
              <!-- Select customer -->
 
             <h6 class="mb-2">
-                Company
+               {{t("Pay To")}} 
             </h6>
             <v-select
             v-model="invoiceData.company"
@@ -79,7 +79,6 @@
             label="name"
             input-id="companies-id"
             :clearable="false"
-            size="20"
             >
             
             </v-select>
@@ -91,19 +90,19 @@
                   <tbody>
                   <tr>
                       <td class="pr-1">
-                      Name:
+                      {{t("Name")}}
                       </td>
                       <td><span class="font-weight-bold">{{invoiceData.company.name}}</span></td>
                   </tr>
                   <tr>
                       <td class="pr-1">
-                      Phone:
+                      {{t("Phone")}}
                       </td>
                       <td>{{invoiceData.company.phone}}</td>
                   </tr>
                   <tr>
                       <td class="pr-1">
-                      ABN:
+                      ABN
                       </td>
                       <td>{{invoiceData.company.abn}}</td>
                   </tr>
@@ -141,25 +140,25 @@
                     cols="12"
                     lg="5"
                 >
-                    Item
+                    #{{index+1}} Item
                 </b-col>
                 <b-col
                     cols="12"
                     lg="2"
                 >
-                    Qty
+                    {{t("Quantity")}}
                 </b-col>
                 <b-col
                     cols="12"
                     lg="3"
                 >
-                    Price
+                    {{t("Price")}}
                 </b-col>
                 <b-col
                     cols="12"
                     lg="2"
                 >
-                    Amount
+                    {{t("Amount")}}
                 </b-col>
                 </b-row>
                 <div class="form-item-action-col" />
@@ -174,7 +173,7 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">Item</label>
+                    <label class="d-inline d-lg-none">1#Item</label>
                     <b-form-input
                     v-model="item.itemName"
                     :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
@@ -183,17 +182,19 @@
                     :clearable="false"
                     class="mb-2 item-selector-title"
                     placeholder="Select Item"
+                    maxlength="50"
                     />
                 </b-col>
                 <b-col
                     cols="12"
                     lg="2"
                 >
-                    <label class="d-inline d-lg-none">Qty</label>
+                    <label class="d-inline d-lg-none">{{t("Qty")}}</label>
                     <b-form-input
                     v-model="item.quantity"
                     type="number"
                     class="mb-2"
+                    placeholder="0"
                     @keyup="setAmount"
                     />
                 </b-col>
@@ -201,11 +202,12 @@
                     cols="12"
                     lg="3"
                 >
-                    <label class="d-inline d-lg-none">Price</label>
+                    <label class="d-inline d-lg-none">{{t("Price")}}</label>
                     <b-form-input
                     v-model="item.price"
                     type="number"
                     class="mb-2"
+                    placeholder="0.00"
                     @keyup="setAmount"
                     />
                 </b-col>
@@ -213,19 +215,21 @@
                     cols="12"
                     lg="2"
                 >
-                    <label class="d-inline d-lg-none">Amount</label>
+                    <label class="d-inline d-lg-none">{{t("Amount")}}</label>
                     <p class="mb-1">
-                    ${{ item.price * item.quantity }}
+                    ${{ item.amount }}
                     </p>
                 </b-col>
                 <b-col
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">Description</label>
+                    <label class="d-inline d-lg-none">{{t("Description")}}</label>
                     <b-form-textarea
                     v-model="item.description"
                     class="mb-2 mb-lg-0"
+                    maxlength="90"
+                    maxrows='3'
                     />
                 </b-col>
                 </b-row>
@@ -287,6 +291,7 @@ import { heightTransition } from '@/mixins/ui/transition'
 import { toRefs } from 'vue'
 import { ref, onUnmounted } from 'vue'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
   components:{
@@ -346,34 +351,47 @@ export default {
       })
     },
     setAmount(){
-        var amount = 0
-        this.invoiceData.items.forEach(item => {
-            amount += item.quantity * item.price
-            this.invoiceData.amount = amount
+        var amount = 0.00
+        var amountCal = 0
+        this.invoiceData.items.forEach((item, index) => {
+          amountCal = item.quantity * item.price
+          this.invoiceData.items[index].amount = this.formatPrice(amountCal)
+          amount += parseFloat(this.invoiceData.items[index].amount)
         });
+        this.invoiceData.amount = this.formatPrice(amount)
+    },
+    formatPrice(value) {
+      // Ensure the value is a number and format it to two decimal places
+      return Number(value).toFixed(2);
     },
   },
+  
   setup(props){
     const itemFormBlankItem = {
       itemName: '',
-      price: 0,
-      quantity: 0,
+      price: '',
+      quantity: '',
       description: '',
+      amount: '0.00'
     }
     const {invoiceData} = toRefs(props)
     const updateItemForm = (index, val) => {
       const { itemName, price, quantity, description } = val
       invoiceData.value.items[index].itemName = itemName
-      invoiceData.value.items[index].price = price
+      invoiceData.value.items[index].price = this.formatPrice(price)
       invoiceData.value.items[index].quantity = 5
       invoiceData.value.items[index].description = description
     }
     const selectedCompany = ref([])
+    const { t } = useI18nUtils()
+
+
     return {
         itemFormBlankItem,
         updateItemForm,
         invoiceData,
         selectedCompany,
+        t,
     }
   },
 }

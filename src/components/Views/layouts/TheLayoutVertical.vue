@@ -27,17 +27,17 @@ export default {
           icon: 'HomeIcon',
         },
         {
-          title: 'Company',
+          title: 'My Business',
           icon: 'BriefcaseIcon',
           children: [
             {
-            title: 'List',
+            title: 'Overview',
             route: {
               name: 'companies'
             }
             },
             {
-            title: 'Add',
+            title: 'Create Business',
             route: {
               name: 'company'
             }
@@ -49,10 +49,13 @@ export default {
           icon: 'FileTextIcon',
           children: [
             {
-              title: 'List',
+              title: 'Overview',
+              route: {
+                name: 'invoices'
+              }
             },
             {
-              title: 'Add',
+              title: 'Create Invoice',
               route: {
                 name: 'invoice-add'
               },

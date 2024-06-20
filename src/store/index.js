@@ -9,6 +9,8 @@ import verticalMenu from './modules/verticalMenu'
 import app from './modules/app'
 import profile from './modules/profile-module'
 import companies from "./modules/companies-module"
+import invoices from "./modules/invoices-module"
+import alerts from "./modules/alerts-module";
 
 Vue.use(Vuex);
 
@@ -21,5 +23,7 @@ export default new Vuex.Store({
         verticalMenu,
         profile,
         companies,
+        invoices,
+        alerts,
     }
 });

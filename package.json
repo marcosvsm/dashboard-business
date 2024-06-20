@@ -8,15 +8,19 @@
     "dev": "npm run serve"
   },
   "dependencies": {
+    "@vue/cli-plugin-babel": "~4.5.13",
+    "@vue/cli-service": "~4.5.13",
     "@vueuse/core": "^9.3.0",
     "axios": "^0.27.2",
     "bootstrap": "^4.6.0",
     "bootstrap-vue": "^2.22.0",
     "core-js": "^3.6.5",
+    "dayjs": "^1.11.11",
     "jsona": "^1.10.1",
     "jspdf": "^2.4.0",
     "qs": "^6.11.0",
     "register-service-worker": "^1.7.2",
+    "sweetalert2": "^11.11.0",
     "vue": "^2.7.10",
     "vue-authenticate": "^1.4.1",
     "vue-feather-icons": "^5.1.0",
@@ -27,11 +31,9 @@
     "vue-ripple-directive": "^2.0.1",
     "vue-router": "^3.6.5",
     "vue-select": "^3.20.0",
+    "vue-template-compiler": "^2.6.11",
     "vue2-transitions": "^0.3.0",
-    "vuex": "^3.6.2",
-    "@vue/cli-service": "~4.5.13",
-    "@vue/cli-plugin-babel": "~4.5.13",
-    "vue-template-compiler": "^2.6.11"
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.13",

@@ -1,6 +1,6 @@
 <template>
   <b-sidebar
-    id="sidebar-company-edit"
+    id="sidebar-invoice-edit"
     sidebar-class="sidebar-lg"
     bg-variant="white"
     shadow
@@ -12,7 +12,7 @@
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
         <h5 class="mb-0">
-          Edit Business
+          Edit Invoice
         </h5>
 
         <base-feather-icon
@@ -27,44 +27,30 @@
       <!-- Body -->
       <b-form
         class="p-2"
-        @submit.prevent="updateCompany"
+        @submit.prevent="updateInvoice"
       >
 
-        <!-- Company Name -->
+        <!-- Invoice Name -->
         <b-form-group
-          label="Business Name"
-          label-for="company-name"
+          label="Invoice"
+          label-for="invoice-name"
         >
           <b-form-input
-            id="company-name"
-            v-model="company.name"
+            id="invoice-name"
+            v-model="invoice.name"
             trim
             required
           />
         </b-form-group>
 
-        <!-- Email -->
         <b-form-group
-          label="Email"
-          label-for="email"
+          label="Status"
+          label-for="status"
         >
-          <b-form-input
-            id="email"
-            v-model="company.email"
-            trim
-            type="email"
-            required
-          />
-        </b-form-group>
-
-        <!-- ABN -->
-        <b-form-group
-          label="Abn"
-          label-for="abn"
-        >
-          <b-form-input
-            id="abn"
-            v-model="company.abn"
+          <b-form-select
+            id="status"
+            v-model="invoice.status"
+            :options="statusOptions"
             placeholder=""
             trim
             maxlength="11"
@@ -73,13 +59,13 @@
 
         <!-- Contact -->
         <b-form-group
-          label="Phone Number"
-          label-for="contact"
+          label="Date Due"
+          label-for="dateDue"
         >
           <b-form-input
-            id="contact"
-            v-model="company.phone"
-            type="number"
+            id="dateDue"
+            v-model="invoice.due_date"
+            type="date"
             trim
           />
         </b-form-group>
@@ -124,16 +110,16 @@ export default {
     Ripple,
   },
   props:{
-    company:{
+    invoice:{
       type: Object,
     }
   },
   methods:{
-    async updateCompany(){
+    async updateInvoice(){
       try{
-        await this.$store.dispatch('companies/update', this.company);
+        await this.$store.dispatch('invoices/update', this.invoice);
         await this.$store.dispatch('alerts/showNotification', {
-                  message: 'Business updated successfully.',
+                  message: 'Invoice updated successfully.',
                   type: 'success'
           });
       } catch (e){
@@ -152,10 +138,14 @@ export default {
       abn: '',
       phone: '',
     })
-
+    const statusOptions = ref([
+            {value: '0', text: 'Pending'},
+            {value: '1', text: 'Paid'},
+    ]);
 
     return {
       customer,
+      statusOptions,
     }
   },
 }

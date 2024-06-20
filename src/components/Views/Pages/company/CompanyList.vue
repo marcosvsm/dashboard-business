@@ -13,6 +13,7 @@
                 v-for="(company, index) in companies" 
                 :key="index"
                 class="mb-2 mr-2 col-lg-3"
+                :busy="isBusy"
                 >
                 <b-card>
                   <template #header>
@@ -70,6 +71,10 @@
           </b-row>
     </b-form>
       </b-row>
+    </div>
+    <div v-if="loading" class="text-center text-danger my-2">
+      <b-spinner class="align-middle"></b-spinner>
+      <strong>Loading...</strong>
     </div>    
     <b-modal ref="modal" id="modal-footer-sm">
       <template #modal-footer="{ok, cancel}">
@@ -100,18 +105,19 @@ export default {
   },
   data(){
       return {
-          companies: [],
-          company:[],
+          companies: {},
+          company: {},
+          loading: false,
       }
   },
   created(){
-
+    this.loading = true;
     // Async function to fetch companies
     const getCompanies = async () => {
       try {
         await this.$store.dispatch('companies/list');
         this.companies = this.$store.getters["companies/list"] 
-        console.log('Companies data:', this.companies);// Assuming 'list' contains the list of companies
+        this.loading = false
       } catch (error) {
         console.error('Error fetching companies:', error);
       }
@@ -122,9 +128,19 @@ export default {
   },
   methods:{
     async handleCompanyDelete(CompanyId){
-      await this.$store.dispatch('companies/destroy',CompanyId);
-      window.location.reload();
-      
+      try{
+        await this.$store.dispatch('companies/destroy',CompanyId);
+        await this.$store.dispatch('alerts/showNotification', {
+                  message: 'Business deleted successfully.',
+                  type: 'success'
+          });
+        this.$router.go(0);
+      }catch (e){
+         await this.$store.dispatch('alerts/showNotification', {
+                message: 'Oops, something went wrong!',
+                type: 'error'
+        }); // Log the response data for debugging
+      }   
     },
      showMsgBoxTwo(id) {
         this.boxTwo = ''
@@ -151,7 +167,6 @@ export default {
       },
       editCompany(company){
         this.company = company;
-        console.log(this.company)
       },
   },
   

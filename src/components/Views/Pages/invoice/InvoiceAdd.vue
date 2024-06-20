@@ -8,7 +8,7 @@
         xl="9"
         md="8"
       >
-        <b-form @submit.prevent>
+        <b-form @submit.prevent="saveInvoice">
           <b-card
             no-body
             class="invoice-preview-card"
@@ -29,10 +29,10 @@
               <span class="font-weight-bold">Note: </span>
               <b-form-textarea v-model="invoiceData.note" placeholder="Account Details:
 
-Bank Name
-BSB: 000-000
-Account: 0000 0000
-Account name"/>
+              Bank Name
+              BSB: 000-000
+              Account: 0000 0000
+              Account name"/>
             </b-card-body>
           </b-card>
         </b-form>
@@ -51,7 +51,8 @@ Account name"/>
 
           <!-- Button: DOwnload -->
           <pdf :invoiceData="invoiceData" />
-          
+
+        <!--  
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
             variant="outline-primary"
@@ -60,12 +61,14 @@ Account name"/>
           >
             Preview
           </b-button>
+          -->
 
           <!-- Button: Print -->
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
             variant="outline-primary"
             block
+            @click="saveInvoice()"
           >
             Save
           </b-button>
@@ -74,14 +77,43 @@ Account name"/>
         <div class="mt-2">
           <!-- Client Notes -->
           <div class="d-flex justify-content-between align-items-center my-1">
-            <label for="clientNotes">Client Notes</label>
+            <label for="paymentDetails">Payment details</label>
             <b-form-checkbox
-              id="clientNotes"
-              :checked="true"
+              id="paymentDetails"
+              v-model="paymentDetails"
               switch
             />
           </div>
+          <div v-if="paymentDetails" class="mb-2">
+            <label for="bankName">Bank Name</label>
+            <b-input 
+              id="bankName" 
+              v-model="bankName" 
+              type="text" 
+            />
+            <label for="bsb">BSB</label>
+            <b-input
+              id="bsb" 
+              type="text" 
+              placeholder="000-000"
+              v-model="bsb" 
+            />
+            <label for="account">Account</label>
+            <b-input
+              id="account" 
+              type="text" 
+              placeholder="0000 0000"
+              v-model="account"
+            />
+            <label for="accountName">Account Name</label>
+            <b-input
+              id="accountName" 
+              type="text"
+              v-model="accountName"
+            />
+          </div>
         </div>
+
       </b-col>
     </b-row>
   </section>
@@ -89,7 +121,7 @@ Account name"/>
 
 <script>
 //import Logo from '@core/layouts/components/Logo.vue'
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, watch } from 'vue'
 import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import vSelect from 'vue-select'
@@ -98,6 +130,7 @@ import invoiceStoreModule from './invoiceStoreModule'
 import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
+import { formatDateForStorage } from '@/libs/dateUtils.js'
 
 
 export default {
@@ -112,6 +145,59 @@ export default {
   },
   directives: {
     Ripple,
+  },
+  methods:{
+    async saveInvoice(){
+       const preprocessedInvoiceDate = this.preprocessDate(this.invoiceData.date);
+      const preprocessedDueDate = this.preprocessDate(this.invoiceData.dueDate);
+      const invoiceDate = formatDateForStorage(preprocessedInvoiceDate);
+      const invoiceDue = formatDateForStorage(preprocessedDueDate);
+         console.log('Formatted Invoice Date:', preprocessedInvoiceDate);
+      console.log('Formatted Due Date:', preprocessedDueDate);
+      const data = { 
+        data: {
+          type: "invoices",
+          attributes: {
+            name: this.invoiceData.number,
+            invoice_date: invoiceDate,
+            due_date: invoiceDue,
+            amount: this.invoiceData.amount,
+            ref: this.invoiceData.number,
+            company_id : this.invoiceData.company.id,
+          },
+            relationships:{
+              company: {
+                data: {
+                  type: "companies",
+                  id: this.invoiceData.company.id,
+                }
+              }
+            },
+        }
+      }
+      try{
+        await this.$store.dispatch('invoices/add',data);
+        await this.$store.dispatch('alerts/showNotification', {
+          message:"Invoice saved successfully",
+          type:"success"
+        })
+      } catch(e){
+        console.log('Response data:', e.response.data);
+        await this.$store.dispatch('alerts/showNotification', {
+          message: "Something went wrong! Try again later or contact the support.",
+          type: "error"
+        })
+      }
+    },
+    formatDateForStorage,
+     preprocessDate(date) {
+    // Preprocess date string to replace '/' with '-' for compatibility with dayjs
+    return date.replace(/\//g, '-');
+    },
+    formatPrice(value) {
+      // Ensure the value is a number and format it to two decimal places
+      return Number(value).toFixed(2);
+    },
   },
   setup() {
     const INVOICE_APP_STORE_MODULE_NAME = 'app-invoice'
@@ -150,9 +236,10 @@ export default {
 
     const itemFormBlankItem = {
       itemName: '',
-      price: 0,
-      quantity: 0,
+      price: '',
+      quantity: '',
       description: '',
+      amount: '0.00'
     }
 
     const invoiceData = ref({
@@ -164,10 +251,9 @@ export default {
       abn: null,
       // ? Set single Item in form for adding data
       items: [JSON.parse(JSON.stringify(itemFormBlankItem))],
-
       note: '',
       paymentMethod: null,
-      amount:0,
+      amount:'0.00',
     })
 
     const itemsOptions = [
@@ -199,6 +285,15 @@ export default {
      
 
     const paymentMethods = ['Bank Account', 'PayPal', 'UPI Transfer']
+    const paymentDetails = ref(true);
+    const bankName = ref('');
+    const bsb = ref('');
+    const account = ref('');
+    const accountName = ref('');
+
+    watch([bankName, bsb, account, accountName], ([newBankName, newBsb, newAccount, newAccountName]) => {
+      invoiceData.value.note = `Account Details:\n\n${newBankName}\nBSB: ${newBsb}\nAccount: ${newAccount}\n${newAccountName}`;
+    });
 
     return {
       invoiceData,
@@ -206,6 +301,11 @@ export default {
       itemsOptions,
       paymentMethods,
       companies,
+      paymentDetails,
+      bankName,
+      bsb,
+      account,
+      accountName
     }
   },
 }
@@ -260,6 +360,12 @@ export default {
     .row .border {
       background-color: $theme-dark-card-bg;
     }
+  }
+}
+
+.invoice-add{ 
+  textarea{
+    min-height: 200px;
   }
 }
 </style>

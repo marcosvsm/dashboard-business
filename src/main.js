@@ -19,6 +19,7 @@ import './registerServiceWorker'
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 Vue.use(VueNotify);
+
 //plugin setup
 //Vue.use(VueRouter);
 

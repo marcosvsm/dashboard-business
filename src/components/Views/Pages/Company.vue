@@ -7,7 +7,7 @@
           <b-card>
             <b-card-body>
               <b-card-title>
-                Company
+                Business
               </b-card-title>
               <b-row>
                 <b-col cols="12"> 
@@ -21,6 +21,7 @@
                       id="h-name"
                       placeholder="Name"
                       v-model="name"
+                      required
                     />
                   </b-form-group>
                 </b-col>  
@@ -47,6 +48,7 @@
                       id="h-abn"
                       placeholder="ABN"
                       v-model="abn"
+                      required
                     />
                   </b-form-group>
                 </b-col>
@@ -73,7 +75,7 @@
                     variant="primary"
                     class="mr-1 mt-5"
                   >
-                    Save
+                    Create
                   </b-button>
                 </b-col>
                 </b-col>
@@ -98,7 +100,8 @@ export default {
      name:'',
      abn:'',
      phone:'',
-     email:''
+     email:'',
+     message: '',
     }
   },
   methods: {
@@ -124,11 +127,21 @@ export default {
             },
          }
         };
-        console.log(data)
          const createdCompany = await this.$store.dispatch('companies/add', data);
-         console.log('New company created:', createdCompany);
+         await this.$store.dispatch('alerts/showNotification', {
+                message: 'Company created successfully.',
+                type: 'success'
+        });
       } catch (e){
-  console.log('Response data:', e.response.data); // Log the response data for debugging
+        console.log('Response data:', e.response.data);
+        if(e.response.data.errors[0].detail === 'Your email address is not verified.')
+          this.message = "Your email address is not verified. Please verify your email."
+        else
+          this.message = "Something went wrong! Try again later or contact the support."
+         await this.$store.dispatch('alerts/showNotification', {
+                message: this.message,
+                type: 'error'
+        }); // Log the response data for debugging
       }
     /* await axios
       .post('http://localhost:80/api/v1/company',data, {

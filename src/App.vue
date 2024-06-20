@@ -13,6 +13,9 @@
 <script>
 // This will be populated in `beforeCreate` hook
 //import $themeConfig  from '@/themeConfig'
+// Loading some plugin css asynchronously
+import 'sweetalert2/dist/sweetalert2.css'
+import 'vue-notifyjs/themes/default.css'
 import { watch } from 'vue'
 import useAppConfig from '@/appConfig/useAppConfig' 
 import LayoutVertical from '@/components/views/layouts/TheLayoutVertical.vue'
@@ -46,7 +49,6 @@ export default {
   setup() {
     const { skin, skinClasses } = useAppConfig()
     const { enableScrollToTop } = false
-
     // If skin is dark when initialized => Add class to body
     if (skin.value === 'dark') document.body.classList.add('dark-layout')
 
