@@ -27,7 +27,7 @@
     </template>
 
     <b-dropdown-item
-      :to="{ name: ''}"
+      :to="{ name: 'profile'}"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -37,7 +37,7 @@
       />
       <span>Profile</span>
     </b-dropdown-item>
-    <b-dropdown-item
+<!--    <b-dropdown-item
       :to="{ name: '' }"
       link-class="d-flex align-items-center"
     >
@@ -48,31 +48,9 @@
       />
       <span>Inbox</span>
     </b-dropdown-item>
-    <b-dropdown-item
-      :to="{ name: '' }"
-      link-class="d-flex align-items-center"
-    >
-      <base-feather-icon
-        size="16"
-        icon="CheckSquareIcon"
-        class="mr-50"
-      />
-      <span>Task</span>
-    </b-dropdown-item>
-    <b-dropdown-item
-      :to="{ name: '' }"
-      link-class="d-flex align-items-center"
-    >
-      <base-feather-icon
-        size="16"
-        icon="MessageSquareIcon"
-        class="mr-50"
-      />
-      <span>Chat</span>
-    </b-dropdown-item>
-
+-->
     <b-dropdown-divider />
-
+<!--
     <b-dropdown-item
       :to="{ name: '' }"
       link-class="d-flex align-items-center"
@@ -94,9 +72,9 @@
         class="mr-50"
       />
       <span>Pricing</span>
-    </b-dropdown-item>
+    </b-dropdown-item> 
     <b-dropdown-item
-      :to="{ name: '' }"
+      :to="{ name: 'faq' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
@@ -105,7 +83,7 @@
         class="mr-50"
       />
       <span>FAQ</span>
-    </b-dropdown-item>
+    </b-dropdown-item>-->
     <b-dropdown-item
       link-class="d-flex align-items-center"
       @click="logout"
