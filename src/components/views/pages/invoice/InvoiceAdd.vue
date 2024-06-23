@@ -126,7 +126,6 @@ import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import vSelect from 'vue-select'
 import Ripple from 'vue-ripple-directive'
-import invoiceStoreModule from './invoiceStoreModule'
 import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
@@ -199,18 +198,7 @@ export default {
       return Number(value).toFixed(2);
     },
   },
-  setup() {
-    const INVOICE_APP_STORE_MODULE_NAME = 'app-invoice'
-
-    // Register module
-    if (!store.hasModule(INVOICE_APP_STORE_MODULE_NAME))
-      store.registerModule(INVOICE_APP_STORE_MODULE_NAME, invoiceStoreModule)
-
-    // UnRegister on leave
-    onUnmounted(() => {
-      if (store.hasModule(INVOICE_APP_STORE_MODULE_NAME)) store.unregisterModule(INVOICE_APP_STORE_MODULE_NAME)
-    })
-
+  setup() { 
     const customers = {
     
     }
