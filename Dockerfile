@@ -24,6 +24,7 @@ FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 80 to allow external access
-EXPOSE 8080
+EXPOSE 80
 
-# The Nginx container will start serving the static files automatically
+# Command to run Nginx
+CMD ["nginx", "-g", "daemon off;"]
