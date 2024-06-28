@@ -14,7 +14,7 @@ import {BootstrapVue, IconsPlugin} from 'bootstrap-vue'
 
 // library imports 
 import store from "./store";
-import './registerServiceWorker'
+//import './registerServiceWorker'
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
