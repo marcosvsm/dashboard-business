@@ -23,7 +23,7 @@ export default {
       
     const expires = this.$route.query.expires;
     const signature = this.$route.query.signature;
-    await axios.get(`http://localhost:80/api/v1/email/verify/${userId}/${hash}`, {
+    await axios.get(`${process.env.VUE_APP_API_BASE_URL}/email/verify/${userId}/${hash}`, {
       params: {
         expires,
         signature
