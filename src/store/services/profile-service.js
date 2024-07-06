@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '../axios';
 import Jsona from 'jsona';
 
 const url = process.env.VUE_APP_API_BASE_URL;
