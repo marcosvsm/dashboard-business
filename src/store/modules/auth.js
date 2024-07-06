@@ -2,7 +2,7 @@ import Vue from "vue";
 import router from "@/router/index";
 import { VueAuthenticate } from "vue-authenticate";
 
-import axios from "../axios";
+import axios from "@/axios";
 import VueAxios from "vue-axios";
 Vue.use(VueAxios, axios);
 
