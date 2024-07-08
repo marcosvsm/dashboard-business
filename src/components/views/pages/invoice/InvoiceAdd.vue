@@ -1,5 +1,8 @@
 <template>
   <section class="invoice-add-wrapper">
+    <div class="mb-1">
+    <sub-menu v-bind="subMenu"></sub-menu>
+    </div>
     <b-row class="invoice-add">
 
       <!-- Col: Left (Invoice Container) -->
@@ -130,6 +133,7 @@ import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
 import { formatDateForStorage } from '@/libs/dateUtils.js'
+import SubMenu from '@/components/uiComponents/SubMenu.vue'
 
 
 export default {
@@ -139,6 +143,7 @@ export default {
     InvoiceHeader,
     InvoiceBody,
     Pdf,
+    SubMenu,
    // Logo,
   //  InvoiceSidebarAddNewCustomer,
   },
@@ -283,6 +288,11 @@ export default {
       invoiceData.value.note = `Account Details:\n\n${newBankName}\nBSB: ${newBsb}\nAccount: ${newAccount}\n${newAccountName}`;
     });
 
+    const subMenu = [{
+            name: 'My Invoices',
+            route: 'invoices',
+          }]
+
     return {
       invoiceData,
       customers,
@@ -293,7 +303,8 @@ export default {
       bankName,
       bsb,
       account,
-      accountName
+      accountName,
+      subMenu
     }
   },
 }

@@ -1,6 +1,7 @@
 <template>
   <section>
-    <div>
+    <sub-menu v-bind="subMenu"></sub-menu>
+    <div class="mt-1">
       <b-row>
         <b-form class="mb-lg-2 col-xl-8 col-12"
                 @submit.prevent="saveCompanyData" >
@@ -90,18 +91,23 @@
 
 <script>
 import ValidationError from "@/components/uiComponents/ValidationError"
-
+import SubMenu from '@/components/uiComponents/SubMenu.vue'
 export default {
   components:{
       ValidationError,
+      SubMenu
   },
   data(){
     return {
-     name:'',
-     abn:'',
-     phone:'',
-     email:'',
-     message: '',
+    name:'',
+    abn:'',
+    phone:'',
+    email:'',
+    message: '',
+    subMenu: [{
+        name: 'Business',
+        route: 'companies',
+    }],
     }
   },
   methods: {

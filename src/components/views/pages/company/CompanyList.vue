@@ -1,6 +1,7 @@
 <template>
   <section>
-    <div>
+    <sub-menu v-bind="subMenu"></sub-menu>
+    <div class="mt-1">
         <h4>Companies > List</h4>
     </div>
     <div>
@@ -97,17 +98,23 @@
 import ValidationError from "@/components/uiComponents/ValidationError"
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
 import CompanyEditSidebar from '@/components/uiComponents/CompanyEditSidebar.vue'
+import SubMenu from '@/components/uiComponents/SubMenu.vue'
 export default {
     components:{
         ValidationError,
         BaseFeatherIcon,
         CompanyEditSidebar,
+        SubMenu,
   },
   data(){
       return {
           companies: {},
           company: {},
           loading: false,
+          subMenu: [{
+            name: 'Create Business',
+            route: 'addCompany',
+          }],
       }
   },
   created(){

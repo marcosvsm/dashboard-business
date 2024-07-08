@@ -44,12 +44,12 @@ export default {
     const locales = [
       {
         locale: 'en',
-        img: require('@/assets/img/flags/en.png'),
+        img: require('@/assets/img/flags/aus.png'),
         name: 'English',
       },
       {
         locale: 'es',
-        img: require('@/assets/img/flags/de.png'),
+        img: require('@/assets/img/flags/es.png'),
         name: 'Spanish',
       },
       {

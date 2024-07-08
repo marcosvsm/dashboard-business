@@ -103,7 +103,7 @@ let invoiceFreePage = {
 
 let companyPage = {
   path: '/company/add',
-  name: 'company',
+  name: 'addCompany',
   component: Company,
   meta: {
     middleware: auth,
