@@ -122,16 +122,6 @@ export default {
       footerTypeClass,
     } = useVerticalLayout(navbarType, footerType)
 
-      // Utility function to check if the device is mobile
-    const isMobile = () => window.innerWidth <= 768
-
-    // Close the menu when the route changes, only on mobile devices
-    watch(route, () => {
-      if (isMobile()) {
-        isVerticalMenuActive.value = false
-      }
-    })
-
     // Resize handler
     resizeHandler()
     window.addEventListener('resize', resizeHandler)
