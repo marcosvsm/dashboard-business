@@ -1,6 +1,7 @@
 <template>
   <section>
-    <div>
+    <sub-menu v-bind="subMenu"></sub-menu>
+    <div class="mt-1">
         <h4>Invoice > List</h4>
     </div>
     <div>
@@ -118,11 +119,13 @@
 import ValidationError from "@/components/uiComponents/ValidationError"
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
 import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
+import SubMenu from '@/components/uiComponents/SubMenu.vue'
 
 export default {
     components:{
         ValidationError,
         BaseFeatherIcon,
+        SubMenu,
   },
   data(){
       return {
@@ -130,6 +133,10 @@ export default {
           invoice:{},
           expandedCard: null,
           loading: false,
+          subMenu: [{
+            name: 'Create Invoice',
+            route: 'invoice-add',
+          }],
       }
   },
   created(){

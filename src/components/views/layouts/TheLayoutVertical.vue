@@ -31,35 +31,24 @@ export default {
           icon: 'BriefcaseIcon',
           children: [
             {
-            title: 'Overview',
+            title: 'Business',
             route: {
               name: 'companies'
-            }
-            },
-            {
-            title: 'Create Business',
-            route: {
-              name: 'company'
             }
             },
           ],
         },
         {
-          title: 'Invoice',
+          title: 'Finance',
           icon: 'FileTextIcon',
           children: [
             {
-              title: 'Overview',
-              route: {
-                name: 'invoices'
-              }
-            },
-            {
-              title: 'Create Invoice',
+              title: 'Invoice',
               route: {
                 name: 'invoice-add'
-              },
+              }
             },
+            
           ],
         },
       ],
