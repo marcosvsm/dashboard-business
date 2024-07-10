@@ -29,7 +29,7 @@
 
             <!-- Note -->
             <b-card-body class="invoice-padding pt-0">
-              <span class="font-weight-bold">Note: </span>
+              <span class="font-weight-bold">{{ t('Note') }}: </span>
               <b-form-textarea v-model="invoiceData.note" placeholder="Account Details:
 
               Bank Name
@@ -73,14 +73,14 @@
             block
             @click="saveInvoice()"
           >
-            Save
+            {{ t('Save') }}
           </b-button>
         </b-card>
 
         <div class="mt-2">
           <!-- Client Notes -->
           <div class="d-flex justify-content-between align-items-center my-1">
-            <label for="paymentDetails">Payment details</label>
+            <label for="paymentDetails">{{ t('Payment details') }}</label>
             <b-form-checkbox
               id="paymentDetails"
               v-model="paymentDetails"
@@ -88,7 +88,7 @@
             />
           </div>
           <div v-if="paymentDetails" class="mb-2">
-            <label for="bankName">Bank Name</label>
+            <label for="bankName">{{ t('Bank Name') }}</label>
             <b-input 
               id="bankName" 
               v-model="bankName" 
@@ -101,14 +101,14 @@
               placeholder="000-000"
               v-model="bsb" 
             />
-            <label for="account">Account</label>
+            <label for="account">{{ t('Account') }}</label>
             <b-input
               id="account" 
               type="text" 
               placeholder="0000 0000"
               v-model="account"
             />
-            <label for="accountName">Account Name</label>
+            <label for="accountName">{{ t('Account Name') }}</label>
             <b-input
               id="accountName" 
               type="text"
@@ -134,6 +134,7 @@ import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
 import { formatDateForStorage } from '@/libs/dateUtils.js'
 import SubMenu from '@/components/uiComponents/SubMenu.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 
 export default {
@@ -292,6 +293,7 @@ export default {
             name: 'My Invoices',
             route: 'invoices',
           }]
+    const { t } = useI18nUtils()
 
     return {
       invoiceData,
@@ -304,7 +306,8 @@ export default {
       bsb,
       account,
       accountName,
-      subMenu
+      subMenu,
+      t
     }
   },
 }

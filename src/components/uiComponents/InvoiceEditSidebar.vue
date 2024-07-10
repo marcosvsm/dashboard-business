@@ -12,7 +12,7 @@
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
         <h5 class="mb-0">
-          Edit Invoice
+          {{ t('Edit Invoice') }}
         </h5>
 
         <base-feather-icon
@@ -32,7 +32,7 @@
 
         <!-- Invoice Name -->
         <b-form-group
-          label="Invoice"
+          :label="t('Invoice')"
           label-for="invoice-name"
         >
           <b-form-input
@@ -59,7 +59,7 @@
 
         <!-- Contact -->
         <b-form-group
-          label="Date Due"
+          :label="t('Date Due')"
           label-for="dateDue"
         >
           <b-form-input
@@ -79,14 +79,14 @@
             type="submit"
             @click="hide"
           >
-            Save
+            {{t('Save')}}
           </b-button>
           <b-button
             v-ripple.400="'rgba(186, 191, 199, 0.15)'"
             variant="outline-secondary"
             @click="hide"
           >
-            Cancel
+            {{t('Cancel')}}
           </b-button>
         </div>
       </b-form>
@@ -97,9 +97,9 @@
 <script>
 import { ref } from 'vue'
 import Ripple from 'vue-ripple-directive'
-//import countries from '@/@fake-db/data/other/countries'
 import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
   components: {
@@ -142,10 +142,12 @@ export default {
             {value: '0', text: 'Pending'},
             {value: '1', text: 'Paid'},
     ]);
+    const {t} = useI18nUtils()
 
     return {
       customer,
       statusOptions,
+      t,
     }
   },
 }

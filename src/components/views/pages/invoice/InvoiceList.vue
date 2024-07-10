@@ -17,15 +17,15 @@
                   <div class="d-flex justify-content-between align-items-center invoice-header">
             <div class="d-flex flex-column">
               <b-card-title class="mb-0">{{ invoice.name }}</b-card-title>
-              <small>Invoice</small>
+              <small>{{ t('Invoice') }}</small>
             </div>
             <div class="d-flex flex-column  text-center">
               <b-card-title class="mb-0">${{ invoice.amount }}</b-card-title>
-              <small>Amount</small>
+              <small>{{ t('Amount') }}</small>
             </div>
             <div class="d-flex flex-column">
               {{ formatDateForDisplay(invoice.invoice_date) }}
-              <small>Invoice Date</small>
+              <small>{{ t('Invoice Date') }}</small>
             </div>
             <span class="btn btn-sm" @click="toggleCard(index)">
               <base-feather-icon :icon="expandedCard === index ? 'ChevronUpIcon' : 'ChevronDownIcon'" size="20" />
@@ -36,23 +36,23 @@
                 <b-row no-gutters>
                 <b-col cols="12" class="invoice-info">    
                   <b-card-text>
-                      Amount  ${{ invoice.amount }}
+                      {{ t('Amount') }}  ${{ invoice.amount }}
                   </b-card-text>
                 </b-col>  
                 <b-col cols="12">    
                   <b-card-text class="invoice-info">
-                      Invoice Due  {{ formatDateForDisplay(invoice.due_date) }}
+                      {{ t('Invoice Due') }}  {{ formatDateForDisplay(invoice.due_date) }}
                   </b-card-text>
                 </b-col>  
                 <b-col cols="12" class="invoice-info">    
                   <b-card-text>
-                      Status <span :class="statusClass(invoice.status)">{{invoiceStatusText(invoice)}}</span>
+                      {{ t('Status') }} <span :class="statusClass(invoice.status)">{{t(invoiceStatusText(invoice))}}</span>
                   </b-card-text>
                 </b-col>  
                 </b-row>
                   <b-card-footer>
                       <small class="d-flex justify-content-end">
-                        <span class="mr-1">Actions</span>
+                        <span class="mr-1">{{t('Actions')}}</span>
                         <span
                           v-if="invoice.status == 0"
                           class="btn btn-sm mr-1 text-primary"
@@ -61,7 +61,7 @@
                                     icon="DollarSignIcon"
                                     size="20"
                                     
-                            />Paid
+                            />{{t('Paid')}}
                         </span>
                         <span
                           v-if="invoice.status == 1"
@@ -71,7 +71,7 @@
                                     icon="DollarSignIcon"
                                     size="20"
                                     
-                            />Unpaid
+                            />{{t('Unpaid')}}
                         </span>  |
                         <span
                           name="delete"
@@ -103,11 +103,11 @@
       <template #modal-footer="{ok, cancel}">
         <b-button size='sm' variant="success" @click="handleInvoiceDelete(invoice.id,true)">OK</b-button>
         <b-button size="sm" variant="danger" @click="cancel()">
-        Cancel
+        {{ t('Cancel') }}
       </b-button>
       </template> 
       <div>
-        <h3>If you delete the invoice you will lose all data</h3>
+        <h3>{{ t('If you delete the invoice you will lose all data') }}</h3>
         
       </div>
     </b-modal>
@@ -120,6 +120,7 @@ import ValidationError from "@/components/uiComponents/ValidationError"
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
 import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
 import SubMenu from '@/components/uiComponents/SubMenu.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
     components:{
@@ -137,6 +138,7 @@ export default {
             name: 'Create Invoice',
             route: 'invoice-add',
           }],
+          t: null
       }
   },
   created(){
@@ -152,7 +154,8 @@ export default {
         console.error('Error fetching invoices:', error);
       }
     };
-
+    const { t } = useI18nUtils()
+    this.t = t;
     // Call the function to fetch invoices
     getinvoices();
   },

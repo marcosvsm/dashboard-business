@@ -12,7 +12,7 @@
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
         <h5 class="mb-0">
-          Add Client
+          {{ t('Add Client') }}
         </h5>
 
         <base-feather-icon
@@ -32,7 +32,7 @@
 
         <!-- Customer Name -->
         <b-form-group
-          label="Client Name"
+          :label="t('Client Name')"
           label-for="customer-name"
         >
           <b-form-input
@@ -72,7 +72,7 @@
 
         <!-- Contact -->
         <b-form-group
-          label="Phone Number"
+          :label="t('Phone Number')"
           label-for="contact"
         >
           <b-form-input
@@ -92,14 +92,14 @@
             type="submit"
             @click="hide"
           >
-            Add
+          {{ t('Add') }}
           </b-button>
           <b-button
             v-ripple.400="'rgba(186, 191, 199, 0.15)'"
             variant="outline-secondary"
             @click="hide"
           >
-            Cancel
+          {{ t('Cancel') }}
           </b-button>
         </div>
       </b-form>
@@ -113,6 +113,7 @@ import Ripple from 'vue-ripple-directive'
 //import countries from '@/@fake-db/data/other/countries'
 import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
   components: {
@@ -140,9 +141,11 @@ export default {
       phone: '',
     })
 
+    const {t} = useI18nUtils()
 
     return {
       customer,
+      t
      // countries,
     }
   },

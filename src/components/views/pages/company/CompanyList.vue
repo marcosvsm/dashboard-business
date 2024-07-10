@@ -22,7 +22,7 @@
                   <b-card-title>
                       {{company.name}}
                   </b-card-title>
-                  <small>Business name</small></b-card>
+                  <small>{{ t('Business name') }}</small></b-card>
                   </template>
               
                 <b-col cols="12"> 
@@ -33,7 +33,7 @@
                 </b-col>  
                 <b-col cols="12">    
                   <b-card-text>
-                      Phone  {{company.phone}}
+                      {{ t('Phone') }}  {{company.phone}}
                   </b-card-text>
                 </b-col>  
                 <b-col cols="12">    
@@ -44,7 +44,7 @@
                
                 </b-col>
                   <template #footer>
-                      <small>Actions 
+                      <small>{{ t('Actions') }} 
                         <span
                           class="btn btn-sm"
                           @click="editCompany(company)"
@@ -81,11 +81,11 @@
       <template #modal-footer="{ok, cancel}">
         <b-button size='sm' variant="success" @click="handleCompanyDelete(company.id,true)">OK</b-button>
         <b-button size="sm" variant="danger" @click="cancel()">
-        Cancel
+        {{ t('Cancel') }}
       </b-button>
       </template> 
       <div>
-        <h3>If you delete the company you will lose all data</h3>
+        <h3>{{ t('If you delete the company you will lose all data') }}</h3>
         
       </div>
 
@@ -99,6 +99,7 @@ import ValidationError from "@/components/uiComponents/ValidationError"
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
 import CompanyEditSidebar from '@/components/uiComponents/CompanyEditSidebar.vue'
 import SubMenu from '@/components/uiComponents/SubMenu.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 export default {
     components:{
         ValidationError,
@@ -115,6 +116,7 @@ export default {
             name: 'Create Business',
             route: 'addCompany',
           }],
+          t: null
       }
   },
   created(){
@@ -130,6 +132,8 @@ export default {
       }
     };
 
+    const {t} = useI18nUtils()
+    this.t = t
     // Call the function to fetch companies
     getCompanies();
   },

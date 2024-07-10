@@ -8,13 +8,13 @@
           <b-card>
             <b-card-body>
               <b-card-title>
-                Business
+                {{t('Business')}}
               </b-card-title>
               <b-row>
                 <b-col cols="12"> 
                 <b-col cols="12">    
                   <b-form-group
-                    label="Name"
+                    :label="t('Name')"
                     label-for="h-name"
                     label-cols-md="1"
                   >
@@ -28,7 +28,7 @@
                 </b-col>  
                 <b-col cols="12">
                   <b-form-group
-                    label="Phone"
+                    :label="t('Phone')"
                     label-for="h-phone"
                     label-cols-md="1"
                   >
@@ -76,7 +76,7 @@
                     variant="primary"
                     class="mr-1 mt-5"
                   >
-                    Create
+                    {{t('Create')}}
                   </b-button>
                 </b-col>
                 </b-col>
@@ -92,6 +92,7 @@
 <script>
 import ValidationError from "@/components/uiComponents/ValidationError"
 import SubMenu from '@/components/uiComponents/SubMenu.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 export default {
   components:{
       ValidationError,
@@ -108,7 +109,12 @@ export default {
         name: 'Business',
         route: 'companies',
     }],
+    t: null
     }
+  },
+  created(){
+    const {t} = useI18nUtils()
+    this.t = t
   },
   methods: {
     async saveCompanyData(){

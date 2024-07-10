@@ -6,7 +6,7 @@
             <b-card-body>
                 <b-row>
                 <b-col>
-                    <h5 class="card-title text-uppercase text-muted mb-0">Invoices</h5>
+                    <h5 class="card-title text-uppercase text-muted mb-0">{{ t('Invoices') }}</h5>
                     <span class="h2 font-weight-bold mb-0">{{getNumberInvoices()}}</span>
                 </b-col>
                 <b-col cols="auto">
@@ -21,7 +21,7 @@
                 </b-row>
                 <p class="mt-3 mb-0 text-sm">
                 <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
-                <span class="text-nowrap">Since last month</span>
+                <span class="text-nowrap">{{ t ('Since last month') }}</span>
                 </p>
             </b-card-body>
             </b-card>
@@ -31,7 +31,7 @@
             <b-card-body>
                 <b-row>
                 <b-col>
-                    <h5 class="card-title text-uppercase text-muted mb-0">Profit</h5>
+                    <h5 class="card-title text-uppercase text-muted mb-0">{{ t('Profit') }}</h5>
                     <span class="h2 font-weight-bold mb-0">${{getTotalAmount()}}</span>
                 </b-col>
                 <b-col cols="auto">
@@ -46,7 +46,7 @@
                 </b-row>
                 <p class="mt-3 mb-0 text-sm">
                 <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 4.1%</span>
-                <span class="text-nowrap">Since last month</span>
+                <span class="text-nowrap">{{ t('Since last month') }}</span>
                 </p>
             </b-card-body>
             </b-card>
@@ -57,7 +57,7 @@
             <b-card-body>
                 <b-row>
                 <b-col>
-                    <h5 class="card-title text-uppercase text-muted mb-0">Pending</h5>
+                    <h5 class="card-title text-uppercase text-muted mb-0">{{ t('Pending') }}</h5>
                     <span class="h2 font-weight-bold mb-0">${{this.getPendingTotalAmount.toFixed(2)}}</span>
                 </b-col>
                 <b-col cols="auto">
@@ -72,7 +72,7 @@
                 </b-row>
                 <p class="mt-3 mb-0 text-sm">
                 <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 4.1%</span>
-                <span class="text-nowrap">Since last month</span>
+                <span class="text-nowrap">{{ t('Since last month') }}</span>
                 </p>
             </b-card-body>
             </b-card>
@@ -82,6 +82,7 @@
 </template>
 <script>
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 export default {
     components:{
         BaseFeatherIcon,
@@ -89,7 +90,8 @@ export default {
     data(){
         return {
             invoices: {},
-            getPendingTotalAmount: parseFloat(0)
+            getPendingTotalAmount: parseFloat(0),
+            t: null
         }
     },
     created(){
@@ -104,6 +106,8 @@ export default {
         console.error('Error fetching invoices:', error);
       }
     };
+    const {t} = useI18nUtils()
+    this.t = t
 
     // Call the function to fetch invoices
     getinvoices();
