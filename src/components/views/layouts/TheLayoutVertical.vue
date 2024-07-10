@@ -19,9 +19,6 @@ export default {
     return {
       navMenuItems: [
         {
-          header: 'Apps & Pages',
-        },
-        {
           title: 'Dashboard',
           route: 'dashboard-overview',
           icon: 'HomeIcon',

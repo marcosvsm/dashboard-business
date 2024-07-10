@@ -8,6 +8,8 @@ import Register from '@/components/views/pages/Register.vue'
 import EmailVerification from '@/components/views/pages/EmailVerification.vue'
 import ForgotPassword from '@/components/views/pages/ForgotPassword.vue'
 import PasswordReset from '@/components/views/pages/PasswordReset.vue'
+import ConfirmRegister from '@/components/views/pages/ConfirmRegister.vue'
+import NotFound from '@/components/views/pages/NotFound.vue'
 
 //Dashboard
 import Overview from '@/components/views/pages/dashboard/overview/Overview.vue'
@@ -37,7 +39,7 @@ let loginPage = {
 
 let registerPage = {
     path: '/register',
-    name: 'Register',
+    name: 'register',
     component: Register,
     meta: { 
       layout: 'full',
@@ -137,12 +139,42 @@ let faqPage = {
   },
 }
 
+let confirmRegisterPage = {
+  path: '/confirm-registration',
+  name: 'confirmRegister',
+  component: ConfirmRegister,
+  meta: {
+    layout: 'full',
+    middleware: guest,
+  },
+}
+
+let dashboardPage = {
+    path: '/dashboard/overview',
+    name: 'dashboard-overview',
+    component: Overview,
+    meta: {
+      middleware: auth
+    }
+}
+
+let notFoundPage = {
+  // Add a catch-all route for 404 Not Found
+    path: '/:catchAll(.*)',
+    name: 'NotFound',
+    component: NotFound,
+    meta: {
+      layout: 'full',
+    },
+}
+
 
 const routes = [
-    {
-      path: '/',
-      redirect: 'dashboard/overview',
-    },
+  {
+    path: '/',
+    redirect: '/dashboard/overview',
+  },
+    dashboardPage,
     loginPage,
     registerPage,
     invoicePage,
@@ -155,14 +187,8 @@ const routes = [
     forgotPasswordPage,
     passwordResetPage,
     faqPage,
-    {
-      path: '/dashboard/overview',
-      name: 'dashboard-overview',
-      component: Overview,
-      meta: {
-        middleware: auth
-      }
-    },
+    confirmRegisterPage,
+    notFoundPage,
 ];
 
 export default routes

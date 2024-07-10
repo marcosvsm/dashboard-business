@@ -13,9 +13,9 @@
                 />
                 </span>
                 <div class="confirm-register">
-                    <h1>{{ message }}</h1>
+                    <h1>Registration Successful!</h1>
                     <p>
-                    The verification link is invalid or something went wrong. Please try again in a few minutes if persists, contact the support.
+                    A confirmation email has been sent to your email address. Please check your inbox and click on the confirmation link to complete your registration.
                     </p>
                 </div>       
             </div>
@@ -23,44 +23,17 @@
    </div>
 </div>
 </template>
-
 <script>
-import axios from 'axios';
 import { $themeConfig } from '@/themeConfig'
 
 export default {
-  data() {
-    const { appLogoImage } = $themeConfig.app
-    return {
-      message: '',
-      appLogoImage
-    };
-  },
-   async created() {
-     
-     const randomKey = Object.keys(this.$route.query).find(key => key.match(/^\d+p\d+\..+/));
-      
-        const parts = randomKey.split('p001.');
-        const userId = parts[0];
-        const hash = parts[1];
-      
-    const expires = this.$route.query.expires;
-    const signature = this.$route.query.signature;
-    await axios.get(`${process.env.VUE_APP_API_BASE_URL}/email/verify/${userId}/${hash}`, {
-      params: {
-        expires,
-        signature
-      }
-    })
-      .then(response => {
-        this.$router.push({ name: 'Login'});
-      })
-      .catch(error => {
-        console.error(error);
-        this.message = 'Email verification failed.';
-      });
-  }
-};
+    data(){
+        const { appLogoImage } = $themeConfig.app
+        return {
+            appLogoImage,
+        }
+    },
+}
 </script>
 <style scoped>
 .auth-wrapper{
@@ -92,4 +65,3 @@ export default {
   color: green;
 }
 </style>
-

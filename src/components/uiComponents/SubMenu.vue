@@ -6,7 +6,7 @@
         class="flex-shrink-0"
       >
         <router-link :to="item.route" class="nav-link-button">
-            {{ item.name }}
+            {{ t(item.name) }}
         </router-link>
       </b-col>
     </b-row>
@@ -15,6 +15,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import router from '@/router'
+import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
   props:{
@@ -31,8 +32,11 @@ export default {
             route: resolvedRoute.href,
         });
     });
+    const {t} = useI18nUtils()
+
     return {
-        navMenuItems
+        navMenuItems,
+        t
     }
   },
 };
