@@ -96,13 +96,10 @@ export default {
           this.clearError()
           if (e.response.status === 422) {
             this.setApiValidation(e.response.data.errors);
-          } else if (e.response.status === 400 && e.response.data.errors[0].detail === 'The user credentials were incorrect.'){
-            this.genericError = "The password that you've entered is incorrect."
-          } else {
-            this.$notify({
-              message:'Invalid credentials!',
-              type: 'danger',
-            });
+          } else if (e.response.status === 400 || e.response.status === 500){
+            this.genericError = "The user credentials were incorrect."
+          } else if (e.response.status === 401 && e.response.data.errors[0].detail === 'You need to verify your email address before logging in.'){
+            this.genericError = "You need to verify your email address before logging in."
           }
         }
     },
