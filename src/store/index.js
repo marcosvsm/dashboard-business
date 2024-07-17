@@ -10,6 +10,7 @@ import app from './modules/app'
 import profile from './modules/profile-module'
 import companies from "./modules/companies-module"
 import invoices from "./modules/invoices-module"
+import customers from "./modules/customers-module"
 import alerts from "./modules/alerts-module";
 
 Vue.use(Vuex);
@@ -24,6 +25,8 @@ export default new Vuex.Store({
         profile,
         companies,
         invoices,
+        customers,
         alerts,
+        
     }
 });

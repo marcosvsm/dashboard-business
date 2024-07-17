@@ -50,27 +50,23 @@ export default {
         doc.text("INVOICE", 200, 20, headerRight);
         doc.setFontSize(10);
         doc.text(data.company.name, 200, 30, headerRight);
-        if (data.company.abn == null)
-          data.company.abn = "";
-        else
+        if (data.company.abn)
           doc.text("ABN: " + data.company.abn, 200, 35, headerRight);
-        if (data.company.phone == null)
-          data.company.phone = "";
-        else
+        if (data.company.phone)
           doc.text("Phone: " + data.company.phone, 200, 40, headerRight);
-        
+        if (data.company.email)
         doc.text(data.company.email, 200, 45, headerRight);
         doc.line(0, 60, 220, 60);
 
         // HEADER CUSTOMER DATA LEFT
         doc.text("BILL TO", 15, 70, customerLeft);
         doc.text(data.customer.name, 15, 75, customerLeft);
-        if (data.customer.abn != '')
+        if (data.customer.abn)
           doc.text("ABN: " + data.customer.abn, 15, 80, customerLeft);
-        if (data.customer.phone != '')  
+        if (data.customer.phone)  
           doc.text("Phone: " + data.customer.phone, 15, 85, customerLeft);
-        if (data.customer.email != '')
-          doc.text("Email: " + data.customer.email, 15, 90, customerLeft);
+        if (data.customer.email)
+          doc.text(data.customer.email, 15, 90, customerLeft);
 
         // HEADER INVOICE RIGHT
         doc.text("Invoice Number: ", 170, 70, headerRight);
@@ -83,7 +79,7 @@ export default {
         doc.text("$" + data.amount, 190, 85, headerRight);
 
         // HEADER TABLE
-        doc.text("ITEMS/DESCRIPTION", 15, 100);
+        doc.text("DESCRIPTION", 15, 100);
         doc.text("QTY", 120, 100, headerTable);
         doc.text("PRICE", 150, 100, headerTable);
         doc.text("AMOUNT", 180, 100, headerTable);
@@ -159,6 +155,7 @@ export default {
       doc.text("GST:", 150, rowGst, headerTable);
       doc.text("Total:", 150, rowTotal, headerTable);
       doc.text("$" + data.amount, 180, rowSubtotal, headerTable);
+      doc.text("$0.00", 180, rowGst, headerTable);
       doc.text("$" + data.amount, 180, rowTotal, headerTable);
 
       addFooter();

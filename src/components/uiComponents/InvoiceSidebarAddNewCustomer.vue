@@ -110,10 +110,10 @@
 <script>
 import { ref } from 'vue'
 import Ripple from 'vue-ripple-directive'
-//import countries from '@/@fake-db/data/other/countries'
 import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
+import store from '@/store'
 
 export default {
   components: {
@@ -124,16 +124,12 @@ export default {
     Ripple,
   },
   props:{
-    invoiceData:{
-      type: Object,
+    addCustomerToInvoice: {
+      type: Function,
+      required: true
     }
   },
-  methods:{
-    addCustomer(){
-      this.invoiceData.customer = this.customer
-    }
-  },
-  setup() {
+  setup(props, { emit }) {
     const customer = ref({
       name: '',
       email: '',
@@ -141,11 +137,53 @@ export default {
       phone: '',
     })
 
+     // Async function to fetch invoices
+    const addCustomer = async () => {
+      try {
+        const user = store.getters["profile/me"];
+        const data = {
+         data:{
+            type: "customers",
+            attributes:{
+              name: customer.value.name,
+              phone: customer.value.phone,
+              abn: customer.value.abn,
+              email: customer.value.email,
+            },
+            relationships:{
+              user: {
+                data: {
+                  type: "users",
+                  id: user.id,
+                }
+              }
+            },
+         }
+        };
+        await store.dispatch('customers/add', data)
+        props.addCustomerToInvoice(customer.value)
+        emit('close-dropdown')
+        resetCustomer()
+      } catch (error) {
+        console.error('Error create client:', error);
+      }
+    }
+
+    const resetCustomer = () => {
+      customer.value = {
+        name: '',
+        email: '',
+        abn: '',
+        phone: '',
+      }
+    }
+
     const {t} = useI18nUtils()
 
     return {
       customer,
-      t
+      t,
+      addCustomer,
      // countries,
     }
   },

@@ -19,11 +19,12 @@
             <!-- Select customer -->
             <v-select
             v-model="invoiceData.customer"
-            :options="customers"
+            :options="Object.values(customers)"
             :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
             label="name"
             input-id="invoice-data-client"
             :clearable="false"
+            ref="customerSelect"
             >
             <template #list-header>
                 <li
@@ -36,6 +37,12 @@
                 />
                 <span class="align-middle ml-25">{{t("Add New Client")}}</span>
                 </li>
+            </template>
+            <template #no-options>
+              <li class="no-options-message d-flex align-items-center my-50">
+                <base-feather-icon icon="AlertCircleIcon" size="16" />
+                <span class="align-center ml-25">{{ t("No clients available.") }}</span>
+              </li>
             </template>
             </v-select>
 
@@ -80,6 +87,14 @@
             input-id="companies-id"
             :clearable="false"
             >
+            <template #no-options>
+              <li class="no-options-message d-flex align-items-center my-50">
+                <base-feather-icon icon="AlertCircleIcon" size="16" />
+                <span class="align-center ml-25">{{ t("No Business available. ") }}
+                  <router-link :to="{ name: 'addCompany'}">{{ t("Add My Business") }}</router-link>
+                </span>
+              </li>
+            </template>
             
             </v-select>
             <div
@@ -89,21 +104,12 @@
               <table>
                   <tbody>
                   <tr>
-                      <td class="pr-1">
-                      {{t("Name")}}
-                      </td>
                       <td><span class="font-weight-bold">{{invoiceData.company.name}}</span></td>
                   </tr>
                   <tr>
-                      <td class="pr-1">
-                      {{t("Phone")}}
-                      </td>
                       <td>{{invoiceData.company.phone}}</td>
                   </tr>
                   <tr>
-                      <td class="pr-1">
-                      ABN
-                      </td>
                       <td>{{invoiceData.company.abn}}</td>
                   </tr>
                   </tbody>
@@ -181,7 +187,6 @@
                     label="itemName"
                     :clearable="false"
                     class="mb-2 item-selector-title"
-                    placeholder="Select Item"
                     maxlength="50"
                     />
                 </b-col>
@@ -279,7 +284,11 @@
         </b-col>
         </b-row>
     </b-card-body>
-    <invoice-sidebar-add-new-customer :invoiceData="invoiceData" />
+    <invoice-sidebar-add-new-customer 
+        :invoiceData="invoiceData" 
+        :addCustomerToInvoice="addCustomerToInvoice" 
+        @close-dropdown="closeSelectDropdown"
+    />
 </div>
 </template>
 <script>
@@ -307,10 +316,14 @@ export default {
       type: Array,
     },
     customers:{
-      type: Object,  
+      type: Array,  
     },
     companies:{
       type: Array,
+    },
+    addCustomerToInvoice: {
+      type: Function,
+      required: true,
     },
   },
   directives: {
@@ -367,6 +380,7 @@ export default {
   },
   
   setup(props){
+    const customerSelect = ref(null)
     const itemFormBlankItem = {
       itemName: '',
       price: '',
@@ -385,13 +399,19 @@ export default {
     const selectedCompany = ref([])
     const { t } = useI18nUtils()
 
-
+    const closeSelectDropdown = () => {
+      // Optionally handle closing logic here if needed
+      customerSelect.value.$refs.search.blur()
+    }
+  
     return {
         itemFormBlankItem,
         updateItemForm,
         invoiceData,
         selectedCompany,
         t,
+        closeSelectDropdown,
+        customerSelect,
     }
   },
 }
@@ -400,4 +420,9 @@ export default {
 @import '~@/scss/base/pages/app-invoice.scss';
 @import '~@/scss/base/components/variables-dark';
 @import '~@/scss/vue/libs/vue-select.scss';
+.no-options-message {
+  font-weight: bold;
+  padding: 10px;
+  text-align: center;
+}
 </style>
