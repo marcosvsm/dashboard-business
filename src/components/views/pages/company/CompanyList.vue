@@ -5,11 +5,12 @@
         <h4>Companies > List</h4>
     </div>
     <div>
-      <b-row>
-        <b-form class="mb-lg-2 col-xl-12 col-12">
-          <b-row
-            class="p-1"
-          >
+      <template  v-if="companies && companies.length">
+        <b-row>
+          <b-form class="mb-lg-2 col-xl-12 col-12">
+            <b-row
+              class="p-1"
+            >
               <b-card-group
                 v-for="(company, index) in companies" 
                 :key="index"
@@ -41,7 +42,7 @@
                       Email  {{company.email}}
                   </b-card-text>
                 </b-col>  
-               
+                
                 </b-col>
                   <template #footer>
                       <small>{{ t('Actions') }} 
@@ -68,15 +69,25 @@
                       
                   </template>
                 </b-card>
-                  </b-card-group>
-          </b-row>
-    </b-form>
-      </b-row>
+              </b-card-group>
+            </b-row>
+          </b-form>
+        </b-row>
+      </template>
+      <template v-else-if="loading">
+        <div v-if="loading" class="text-center text-danger my-2">
+          <b-spinner class="align-middle"></b-spinner>
+          <strong>Loading...</strong>
+        </div>
+      </template>
+      <template v-else>
+        <div class="text-center my-2 no-options-message">
+          <base-feather-icon icon="AlertCircleIcon" size="16" />
+          <p>{{ t('No businesses could be found') }}</p>
+          <router-link :to="{ name: 'addCompany'}">{{ t("Add My Business") }}</router-link>
+        </div>
+      </template>
     </div>
-    <div v-if="loading" class="text-center text-danger my-2">
-      <b-spinner class="align-middle"></b-spinner>
-      <strong>Loading...</strong>
-    </div>    
     <b-modal ref="modal" id="modal-footer-sm">
       <template #modal-footer="{ok, cancel}">
         <b-button size='sm' variant="success" @click="handleCompanyDelete(company.id,true)">OK</b-button>
@@ -113,7 +124,7 @@ export default {
           company: {},
           loading: false,
           subMenu: [{
-            name: 'Create Business',
+            name: 'Add My Business',
             route: 'addCompany',
           }],
           t: null
@@ -183,3 +194,10 @@ export default {
   
 }
 </script>
+<style lang="scss" scoped>
+.no-options-message {
+  font-weight: bold;
+  padding: 10px;
+  text-align: center;
+}
+</style>

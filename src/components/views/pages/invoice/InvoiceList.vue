@@ -5,6 +5,7 @@
         <h4>Invoice > List</h4>
     </div>
     <div>
+      <template v-if="invoices && invoices.length">
       <b-row>
         <b-form class="mb-lg-2 col-xl-12 col-12">
           <b-row>
@@ -92,13 +93,23 @@
                 </b-card>
                   </b-card-group>
           </b-row>
-    </b-form>
+        </b-form>
       </b-row>
+      </template>
+      <template v-else-if="loading">
+        <div v-if="loading" class="text-center text-danger my-2">
+          <b-spinner class="align-middle"></b-spinner>
+          <strong>Loading...</strong>
+        </div>
+      </template>
+      <template v-else>
+        <div class="text-center my-2 no-options-message">
+          <base-feather-icon icon="AlertCircleIcon" size="16" />
+          <p>{{ t('No Invoices could be found') }}</p>
+          <router-link :to="{ name: 'invoice-add'}">{{ t("Create Invoice") }}</router-link>
+        </div>
+      </template>
     </div>    
-    <div v-if="loading" class="text-center text-danger my-2">
-      <b-spinner class="align-middle"></b-spinner>
-      <strong>Loading...</strong>
-    </div>
     <b-modal ref="modal" id="modal-footer-sm">
       <template #modal-footer="{ok, cancel}">
         <b-button size='sm' variant="success" @click="handleInvoiceDelete(invoice.id,true)">OK</b-button>

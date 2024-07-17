@@ -139,11 +139,9 @@ export default {
             },
          }
         };
-         const createdCompany = await this.$store.dispatch('companies/add', data);
-         await this.$store.dispatch('alerts/showNotification', {
-                message: 'Company created successfully.',
-                type: 'success'
-        });
+         await this.$store.dispatch('companies/add', data);
+        // Redirect to company list page after successful creation
+        this.$router.push({ name: 'companies' });
       } catch (e){
         console.log('Response data:', e.response.data);
         if(e.response.data.errors[0].detail === 'Your email address is not verified.')
@@ -170,7 +168,6 @@ export default {
 
     },
   async getId(){
-      await this.$store.dispatch("profile/me")
       const user = await this.$store.getters["profile/me"]
       return user.id;
   },

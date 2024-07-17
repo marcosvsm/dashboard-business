@@ -20,7 +20,7 @@
                 </b-col>
                 </b-row>
                 <p class="mt-3 mb-0 text-sm">
-                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 3.48%</span>
+                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 0.00%</span>
                 <span class="text-nowrap">{{ t ('Since last month') }}</span>
                 </p>
             </b-card-body>
@@ -45,7 +45,7 @@
                 </b-col>
                 </b-row>
                 <p class="mt-3 mb-0 text-sm">
-                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 4.1%</span>
+                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 0.00%</span>
                 <span class="text-nowrap">{{ t('Since last month') }}</span>
                 </p>
             </b-card-body>
@@ -71,7 +71,7 @@
                 </b-col>
                 </b-row>
                 <p class="mt-3 mb-0 text-sm">
-                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 4.1%</span>
+                <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 0.00%</span>
                 <span class="text-nowrap">{{ t('Since last month') }}</span>
                 </p>
             </b-card-body>

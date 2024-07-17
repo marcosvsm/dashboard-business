@@ -22,7 +22,7 @@
             <!-- Spacer -->
             <hr class="invoice-spacing">
 
-            <invoice-body :invoiceData="invoiceData" :itemsOptions="itemsOptions" :companies="companies"/>
+            <invoice-body :invoiceData="invoiceData" :itemsOptions="itemsOptions" :companies="companies" :customers="customers" :addCustomerToInvoice="addCustomerToInvoice"/>
 
             <!-- Spacer -->
             <hr class="invoice-spacing">
@@ -169,6 +169,7 @@ export default {
             amount: this.invoiceData.amount,
             ref: this.invoiceData.number,
             company_id : this.invoiceData.company.id,
+            customer_id: this.invoiceData.customer.id
           },
             relationships:{
               company: {
@@ -205,12 +206,18 @@ export default {
     },
   },
   setup() { 
-    const customers = {
-    
-    }
+    const customers = ref([]);
     //store.dispatch('app-invoice/fetchClients').then(response => {
       //customers.value = response.data
     //})
+    const getCustomers = async () => {
+      try{
+        await store.dispatch('customers/list');
+        customers.value = store.getters["customers/list"]
+      } catch (error){
+        console.error('Error fetching clients:', error);
+      }
+    }
 
     const companies = ref([]); // Use ref to store the list of companies
 
@@ -225,8 +232,15 @@ export default {
       }
     };
 
-    // Call the function to fetch companies
-    getCompanies();
+     const addCustomerToInvoice = (newCustomer) => {
+      customers.value.push(newCustomer)
+      invoiceData.value.customer = newCustomer
+    }
+
+    
+    getCustomers()
+    getCompanies()
+    
 
     const itemFormBlankItem = {
       itemName: '',
@@ -307,7 +321,8 @@ export default {
       account,
       accountName,
       subMenu,
-      t
+      t,
+      addCustomerToInvoice
     }
   },
 }
@@ -323,6 +338,12 @@ export default {
     &:hover {
       background-color: rgba($success, 0.12);
     }
+  }
+}
+@media (max-width: 767.98px) {
+  .invoice-actions {
+    display: flex;
+    flex-direction: column-reverse;
   }
 }
 </style>
