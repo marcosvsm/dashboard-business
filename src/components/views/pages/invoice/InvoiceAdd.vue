@@ -132,7 +132,6 @@ import Ripple from 'vue-ripple-directive'
 import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
-import { formatDateForStorage } from '@/libs/dateUtils.js'
 import SubMenu from '@/components/uiComponents/SubMenu.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
@@ -153,23 +152,17 @@ export default {
   },
   methods:{
     async saveInvoice(){
-       const preprocessedInvoiceDate = this.preprocessDate(this.invoiceData.date);
-      const preprocessedDueDate = this.preprocessDate(this.invoiceData.dueDate);
-      const invoiceDate = formatDateForStorage(preprocessedInvoiceDate);
-      const invoiceDue = formatDateForStorage(preprocessedDueDate);
-         console.log('Formatted Invoice Date:', preprocessedInvoiceDate);
-      console.log('Formatted Due Date:', preprocessedDueDate);
       const data = { 
         data: {
           type: "invoices",
           attributes: {
             name: this.invoiceData.number,
-            invoice_date: invoiceDate,
-            due_date: invoiceDue,
+            invoice_date: this.invoiceData.date,
+            due_date: this.invoiceData.dueDate,
             amount: this.invoiceData.amount,
             ref: this.invoiceData.number,
             company_id : this.invoiceData.company.id,
-            customer_id: this.invoiceData.customer.id
+            customer_id: this.invoiceData.customer.id,
           },
             relationships:{
               company: {
@@ -177,7 +170,7 @@ export default {
                   type: "companies",
                   id: this.invoiceData.company.id,
                 }
-              }
+              },
             },
         }
       }
@@ -195,11 +188,6 @@ export default {
         })
       }
     },
-    formatDateForStorage,
-     preprocessDate(date) {
-    // Preprocess date string to replace '/' with '-' for compatibility with dayjs
-    return date.replace(/\//g, '-');
-    },
     formatPrice(value) {
       // Ensure the value is a number and format it to two decimal places
       return Number(value).toFixed(2);
@@ -207,9 +195,6 @@ export default {
   },
   setup() { 
     const customers = ref([]);
-    //store.dispatch('app-invoice/fetchClients').then(response => {
-      //customers.value = response.data
-    //})
     const getCustomers = async () => {
       try{
         await store.dispatch('customers/list');

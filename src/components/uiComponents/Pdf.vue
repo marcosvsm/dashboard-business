@@ -11,6 +11,7 @@
 
 <script>
 import jspdf from 'jspdf'
+import { formatDateForDisplay } from '@/libs/dateUtils.js'
 
 export default {
   props: {
@@ -72,9 +73,9 @@ export default {
         doc.text("Invoice Number: ", 170, 70, headerRight);
         doc.text(data.number, 190, 70, headerRight);
         doc.text("Invoice Date: ", 170, 75, headerRight);
-        doc.text(data.date, 190, 75, headerRight);
+        doc.text(formatDateForDisplay(data.date), 190, 75, headerRight);
         doc.text("Payment Due: ", 170, 80, headerRight);
-        doc.text(data.dueDate, 190, 80, headerRight);
+        doc.text(formatDateForDisplay(data.dueDate), 190, 80, headerRight);
         doc.text("Amount Due: ", 170, 85, headerRight);
         doc.text("$" + data.amount, 190, 85, headerRight);
 
@@ -160,7 +161,7 @@ export default {
 
       addFooter();
 
-      doc.save("invoice-" + data.date + ".pdf");
+      doc.save("Invoice#" + data.number + ".pdf");
     }
   }
 }
