@@ -36,9 +36,9 @@
             {{t("Date")}}
           </span>
           <flat-pickr
-            v-model="invoiceData.date"
+            v-model="displayDate"
             class="form-control invoice-edit-input"
-            
+            :config="datePickerConfig"
             required
           />
         </div>
@@ -47,7 +47,7 @@
             {{t("Due Date")}}
           </span>
           <flat-pickr
-            v-model="invoiceData.dueDate"
+            v-model="displayDueDate"
             class="form-control invoice-edit-input"
             :config="datePickerConfig"
           />
@@ -59,8 +59,9 @@
 <script>
 import flatPickr from 'vue-flatpickr-component'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon'
-import { formatDateForDisplay } from '@/libs/dateUtils.js'
+import { formatDateForDisplay, formatDateForStorage } from '@/libs/dateUtils.js'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
+import {watch, ref} from 'vue'
 
 export default {
     components:{
@@ -72,9 +73,27 @@ export default {
           type: Object,
         }
     },
-    setup(){
+    setup(props){
       const { t } = useI18nUtils()
-      return {t} 
+      const datePickerConfig = {
+        dateFormat: 'd/m/Y',
+      };
+      const displayDate = ref(formatDateForDisplay(props.invoiceData.date))
+      const displayDueDate = ref(formatDateForDisplay(props.invoiceData.dueDate))
+
+      watch(displayDate, (newVal) => {
+        props.invoiceData.date = formatDateForStorage(newVal);
+      });
+
+      watch(displayDueDate, (newVal) => {
+        props.invoiceData.dueDate = formatDateForStorage(newVal);
+      });
+      return {
+        t,
+        displayDate,
+        displayDueDate,
+        datePickerConfig,
+      } 
     }
 }
 </script>
