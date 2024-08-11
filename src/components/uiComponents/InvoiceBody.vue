@@ -181,10 +181,9 @@
                 >
                     <label class="d-inline d-lg-none">1#Item</label>
                     <b-form-input
-                    v-model="item.itemName"
+                    v-model="item.name"
                     :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-                    :options="itemsOptions"
-                    label="itemName"
+                    label="name"
                     :clearable="false"
                     class="mb-2 item-selector-title"
                     maxlength="50"
@@ -312,9 +311,6 @@ export default {
     invoiceData:{
       type: Object,
     },
-    itemsOptions:{
-      type: Array,
-    },
     customers:{
       type: Array,  
     },
@@ -378,11 +374,22 @@ export default {
       return Number(value).toFixed(2);
     },
   },
-  
+   watch: {
+    companies: {
+      handler(newCompanies) {
+        const companyArray = Object.values(newCompanies);
+        if (companyArray.length === 1) {
+          this.invoiceData.company = companyArray[0];
+        }
+      },
+      immediate: true, // This will run the watcher when the component is mounted
+      deep: true // In case you want to watch for nested changes in companies
+    }
+  },
   setup(props){
     const customerSelect = ref(null)
     const itemFormBlankItem = {
-      itemName: '',
+      name: '',
       price: '',
       quantity: '',
       description: '',
@@ -390,8 +397,8 @@ export default {
     }
     const {invoiceData} = toRefs(props)
     const updateItemForm = (index, val) => {
-      const { itemName, price, quantity, description } = val
-      invoiceData.value.items[index].itemName = itemName
+      const { name, price, quantity, description } = val
+      invoiceData.value.items[index].name = name
       invoiceData.value.items[index].price = this.formatPrice(price)
       invoiceData.value.items[index].quantity = 5
       invoiceData.value.items[index].description = description

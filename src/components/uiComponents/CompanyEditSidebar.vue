@@ -11,9 +11,9 @@
     <template #default="{ hide }">
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
-        <h5 class="mb-0">
+        <h4 class="mb-0">
           {{ t('Edit Business') }}
-        </h5>
+        </h4>
 
         <base-feather-icon
           class="ml-1 cursor-pointer"
@@ -109,7 +109,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Ripple from 'vue-ripple-directive'
 import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
@@ -126,6 +126,12 @@ export default {
   props:{
     company:{
       type: Object,
+       default: () => ({
+        name: '',
+        email: '',
+        abn: '',
+        phone: '',
+      }),
     }
   },
   methods:{
@@ -145,7 +151,7 @@ export default {
       }   
     },
   },
-  setup() {
+  setup(props) {
     const customer = ref({
       name: '',
       email: '',

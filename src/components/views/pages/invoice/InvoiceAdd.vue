@@ -1,9 +1,10 @@
 <template>
-  <section class="invoice-add-wrapper">
-    <div class="mb-1">
-    <sub-menu v-bind="subMenu"></sub-menu>
-    </div>
-    <b-row class="invoice-add">
+  <section 
+    class="invoice-add-wrapper"
+  >
+    <b-row 
+      class="invoice-add"
+    >
 
       <!-- Col: Left (Invoice Container) -->
       <b-col
@@ -11,31 +12,37 @@
         xl="9"
         md="8"
       >
-        <b-form @submit.prevent="saveInvoice">
+        <b-form 
+          @submit.prevent="saveInvoice"
+        >
           <b-card
             no-body
             class="invoice-preview-card"
           >
-          
             <invoice-header :invoiceData="invoiceData"/>
-
             <!-- Spacer -->
-            <hr class="invoice-spacing">
-
-            <invoice-body :invoiceData="invoiceData" :itemsOptions="itemsOptions" :companies="companies" :customers="customers" :addCustomerToInvoice="addCustomerToInvoice"/>
-
+            <hr 
+              class="invoice-spacing"
+            >
+            <invoice-body :invoiceData="invoiceData" :companies="companies" :customers="customers" :addCustomerToInvoice="addCustomerToInvoice"/>
             <!-- Spacer -->
-            <hr class="invoice-spacing">
-
+            <hr 
+              class="invoice-spacing"
+            >
             <!-- Note -->
-            <b-card-body class="invoice-padding pt-0">
-              <span class="font-weight-bold">{{ t('Note') }}: </span>
-              <b-form-textarea v-model="invoiceData.note" placeholder="Account Details:
-
-              Bank Name
-              BSB: 000-000
-              Account: 0000 0000
-              Account name"/>
+            <b-card-body 
+              v-if="noteSwitch" 
+              class="invoice-padding pt-0"
+            >
+              <span 
+                class="font-weight-bold"
+              >
+                {{ t('Note') }}   
+              </span>
+              <b-form-textarea 
+                v-model="invoiceData.note" 
+                placeholder="Additional Details:"
+              />
             </b-card-body>
           </b-card>
         </b-form>
@@ -51,10 +58,8 @@
 
         <!-- Action Buttons -->
         <b-card>
-
           <!-- Button: DOwnload -->
-          <pdf :invoiceData="invoiceData" />
-
+          <pdf :invoiceData="invoiceData" :paymentDetails="paymentDetails" :selectedPaymentMethod="selectedPaymentMethod" />
         <!--  
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
@@ -77,17 +82,82 @@
           </b-button>
         </b-card>
 
-        <div class="mt-2">
+        <div 
+          class="mt-2"
+        >
+          <div 
+            class="d-flex justify-content-between align-items-center my-1"
+          >
+            <label 
+              for="noteDetails"
+            >
+              {{ t('Note') }}   
+            </label>
+            <b-form-checkbox
+              id="noteDetails"
+              v-model="noteSwitch"
+              switch
+            />
+          </div>
           <!-- Client Notes -->
-          <div class="d-flex justify-content-between align-items-center my-1">
-            <label for="paymentDetails">{{ t('Payment details') }}</label>
+          <div 
+            class="d-flex justify-content-between align-items-center my-1"
+          >
+            <label 
+              for="paymentDetails"
+            >
+              {{ t('Payment details') }}
+            </label>
             <b-form-checkbox
               id="paymentDetails"
               v-model="paymentDetails"
               switch
             />
           </div>
-          <div v-if="paymentDetails" class="mb-2">
+           <div 
+              class="mb-1"
+              v-if="paymentDetails"
+            >
+              <v-select 
+                v-model="selectedPaymentMethod" 
+                id="payment-method"
+                :options="Object.values(paymentMethods)"
+                label="name"
+                input-id="payment-id"
+                :clearable="false"
+              >
+              </v-select>
+            </div>
+          <div 
+            v-if="invoiceData.company && paymentDetails && selectedPaymentMethod === 'PAYID'" 
+            class="mb-2"
+          >
+            <b-input 
+              v-if="invoiceData.company.paymentDetail"
+              id="payID" 
+              v-model="invoiceData.company.paymentDetail.payid" 
+              type="text" 
+              v-b-tooltip.hover :title="t('To update your PAYID, please visit My Business > Business page')"
+              readonly
+            />
+            <!-- PayID Input Section -->
+            <div 
+              v-if="!invoiceData.company.paymentDetail && paymentDetails && invoiceData.company.id" 
+              class="payid-setup-section"
+            >
+              <span
+                class="btn btn-sm"
+                v-b-toggle.sidebar-payment-method>
+                <base-feather-icon
+                  icon="PlusCircleIcon"
+                  size="22"
+                  color="#4caf50"
+                />
+                {{ t('ADD new PayID') }}
+              </span>
+            </div>
+          </div>
+          <div v-if="selectedPaymentMethod === 'Bank Account'" class="mb-2">
             <label for="bankName">{{ t('Bank Name') }}</label>
             <b-input 
               id="bankName" 
@@ -119,12 +189,12 @@
 
       </b-col>
     </b-row>
+    <payment-method-sidebar :company="invoiceData.company" @payment-added="handlePaymentAdded" />
   </section>
 </template>
 
 <script>
-//import Logo from '@core/layouts/components/Logo.vue'
-import { ref, onUnmounted, watch } from 'vue'
+import { ref, computed, getCurrentInstance, watch } from 'vue'
 import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import vSelect from 'vue-select'
@@ -132,9 +202,9 @@ import Ripple from 'vue-ripple-directive'
 import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
-import SubMenu from '@/components/uiComponents/SubMenu.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
-
+import axios from '@/axios';
+import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
 
 export default {
   components: {
@@ -143,9 +213,7 @@ export default {
     InvoiceHeader,
     InvoiceBody,
     Pdf,
-    SubMenu,
-   // Logo,
-  //  InvoiceSidebarAddNewCustomer,
+    PaymentMethodSidebar,
   },
   directives: {
     Ripple,
@@ -163,6 +231,7 @@ export default {
             ref: this.invoiceData.number,
             company_id : this.invoiceData.company.id,
             customer_id: this.invoiceData.customer.id,
+            items: this.invoiceData.items
           },
             relationships:{
               company: {
@@ -194,6 +263,7 @@ export default {
     },
   },
   setup() { 
+    const { proxy } = getCurrentInstance()
     const customers = ref([]);
     const getCustomers = async () => {
       try{
@@ -228,7 +298,7 @@ export default {
     
 
     const itemFormBlankItem = {
-      itemName: '',
+      name: '',
       price: '',
       quantity: '',
       description: '',
@@ -238,7 +308,7 @@ export default {
     const invoiceData = ref({
       number: "",
       customer: {},
-      company: {"name": null},
+      company: {},
       date: null,
       dueDate: null,
       abn: null,
@@ -247,57 +317,31 @@ export default {
       note: '',
       paymentMethod: null,
       amount:'0.00',
-    })
+    })     
 
-    const itemsOptions = [
-      {
-        itemName: '',
-        cost: 0,
-        qty: 0,
-        description: '',
-      },
-      {
-        itemName: 'App Customization',
-        cost: 26,
-        qty: 1,
-        description: 'Customization & Bug Fixes.',
-      },
-      {
-        itemName: 'ABC Template',
-        cost: 28,
-        qty: 1,
-        description: 'Bootstrap 4 admin template.',
-      },
-      {
-        itemName: 'App Development',
-        cost: 32,
-        qty: 1,
-        description: 'Native App Development.',
-      },
-    ]
-     
-
-    const paymentMethods = ['Bank Account', 'PayPal', 'UPI Transfer']
+    const paymentMethods = ['PAYID','Bank Account']
     const paymentDetails = ref(true);
+    const noteSwitch = ref(false);
+    const { t } = useI18nUtils()
     const bankName = ref('');
     const bsb = ref('');
     const account = ref('');
     const accountName = ref('');
-
+    const selectedPaymentMethod = ref('PAYID')
     watch([bankName, bsb, account, accountName], ([newBankName, newBsb, newAccount, newAccountName]) => {
-      invoiceData.value.note = `Account Details:\n\n${newBankName}\nBSB: ${newBsb}\nAccount: ${newAccount}\n${newAccountName}`;
+        invoiceData.value.note = `Account Details:\n\n${newBankName}\nBSB: ${newBsb}\nAccount: ${newAccount}\n${newAccountName}`;
+        if(!newBankName && !newBsb && !newAccount && !newAccountName)
+          invoiceData.value.note = ''
     });
+    const newPayID = ref('');
 
-    const subMenu = [{
-            name: 'My Invoices',
-            route: 'invoices',
-          }]
-    const { t } = useI18nUtils()
-
+    const handlePaymentAdded = (payment) =>{
+        proxy.$set(invoiceData.value.company, 'paymentDetail', payment);
+    }
+    
     return {
       invoiceData,
       customers,
-      itemsOptions,
       paymentMethods,
       companies,
       paymentDetails,
@@ -305,9 +349,12 @@ export default {
       bsb,
       account,
       accountName,
-      subMenu,
       t,
-      addCustomerToInvoice
+      addCustomerToInvoice,
+      noteSwitch,
+      newPayID,
+      handlePaymentAdded,
+      selectedPaymentMethod,
     }
   },
 }
@@ -330,6 +377,10 @@ export default {
     display: flex;
     flex-direction: column-reverse;
   }
+}
+.tooltip-inner {
+  background-color: #007bff !important;
+  color: white !important;
 }
 </style>
 

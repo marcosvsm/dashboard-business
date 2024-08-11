@@ -1,78 +1,155 @@
 <template>
   <section>
-    <sub-menu v-bind="subMenu"></sub-menu>
     <div class="mt-1">
-        <h4>Companies > List</h4>
+      <h4>{{ t('Business') +' > '+ t('List') }}</h4>
     </div>
     <div>
-      <template  v-if="companies && companies.length">
+      <template v-if="companies && companies.length">
         <b-row>
           <b-form class="mb-lg-2 col-xl-12 col-12">
-            <b-row
-              class="p-1"
-            >
-              <b-card-group
-                v-for="(company, index) in companies" 
-                :key="index"
-                class="mb-2 mr-2 col-lg-3"
-                :busy="isBusy"
+            <b-row class="p-1">
+              <b-col cols="12" lg="6">
+                <b-card-group
+                  v-for="(company, index) in paginatedCompanies"
+                  :key="company.id"
+                  class="mb-2"
+                  :busy="isBusy"
                 >
-                <b-card>
-                  <template #header>
-                    <b-card>
-                  <b-card-title>
-                      {{company.name}}
-                  </b-card-title>
-                  <small>{{ t('Business name') }}</small></b-card>
-                  </template>
-              
-                <b-col cols="12"> 
-                <b-col cols="12">    
-                  <b-card-text>
-                      ABN  {{company.abn}}
-                  </b-card-text>
-                </b-col>  
-                <b-col cols="12">    
-                  <b-card-text>
-                      {{ t('Phone') }}  {{company.phone}}
-                  </b-card-text>
-                </b-col>  
-                <b-col cols="12">    
-                  <b-card-text>
-                      Email  {{company.email}}
-                  </b-card-text>
-                </b-col>  
-                
-                </b-col>
-                  <template #footer>
-                      <small>{{ t('Actions') }} 
+                  <b-card>
+                    <template #header>
+                      <b-card>
+                        <b-card-title>
+                          {{company.name}}
+                        </b-card-title>
+                        <small>{{ t('Business name') }}</small>
+                      </b-card>
+                    </template>
+                    <b-col cols="12">
+                      <b-card-text>
+                        ABN  {{company.abn}}
+                      </b-card-text>
+                    </b-col>
+                    <b-col cols="12">
+                      <b-card-text>
+                        {{ t('Phone') }}  {{company.phone}}
+                      </b-card-text>
+                    </b-col>
+                    <b-col cols="12">
+                      <b-card-text>
+                        Email  {{company.email}}
+                      </b-card-text>
+                    </b-col>
+                    <template #footer>
+                      <small>{{ t('Actions') }}
                         <span
                           class="btn btn-sm"
                           @click="editCompany(company)"
                           v-b-toggle.sidebar-company-edit>
-                            <base-feather-icon
-                                    icon="EditIcon"
-                                    size="20"
-                                    
-                            />
+                          <base-feather-icon
+                            icon="EditIcon"
+                            size="20"
+                          />
                         </span> |
                         <span
-                          name="delete"
+                          name="deleteCompany"
                           class="btn btn-sm"
-                          @click="showMsgBoxTwo(company.id)">
+                          @click="showMsgBoxTwo('deleteCompany',company.id)">
                           <base-feather-icon
                             icon="Trash2Icon"
                             size="20"
                           />
                         </span>
                       </small>
-                      
-                  </template>
-                </b-card>
-              </b-card-group>
+                    </template>
+                  </b-card>
+                </b-card-group>
+              </b-col>
+              <b-col cols="12" lg="3">
+                <b-card-group
+                  class="mb-2"
+                   v-for="(company, index) in paginatedCompanies"
+                  :key="company.id"
+                >
+                  <b-card v-if="company.paymentDetail">
+                    <template #header>
+                      <b-card>
+                        <b-card-title>
+                          {{ t('Payment Method - PAYID') }}
+                        </b-card-title>
+                        <small>{{ t('Details for payments') }}</small>
+                      </b-card>
+                    </template>
+                    <b-col cols="12">
+                      <b-card-text>
+                        {{ t('PayID') }}: {{ company.paymentDetail.payid }}
+                      </b-card-text>
+                    </b-col>
+                    <b-col cols="12">
+                      <b-card-text>
+                        {{ t('PayID name') }}: {{ company.paymentDetail.name }}
+                      </b-card-text>
+                    </b-col>
+                    <template #footer>
+                      <small>{{ t('Actions') }}
+                        <span
+                          class="btn btn-sm"
+                          @click="editPayment(company)"
+                          v-b-toggle.sidebar-payment-method
+                          >
+                          <base-feather-icon
+                            icon="EditIcon"
+                            size="20"
+                          />
+                        </span> |
+                        <span
+                          name="deletePaymentDetail"
+                          class="btn btn-sm"
+                          @click="showMsgBoxTwo('deletePaymentDetail',company.paymentDetail.id)">
+                          <base-feather-icon
+                            icon="Trash2Icon"
+                            size="20"
+                          />
+                        </span>
+                      </small>
+                    </template>
+                  </b-card>
+                  <b-card v-if="!company.paymentDetail">
+                    <template #header>
+                      <b-card>
+                        <b-card-title>
+                          {{ t('Payment Method - PAYID') }}
+                        </b-card-title>
+                        <small>{{ t('Details for payments') }}</small>
+                      </b-card>
+                    </template>
+                    <b-col cols="12">
+                      <b-card-text>
+                        <span
+                          class="btn btn-sm"
+                          @click="addPayment(company)"
+                          v-b-toggle.sidebar-payment-method>
+                          <base-feather-icon
+                            icon="PlusCircleIcon"
+                            size="22"
+                            color="#4caf50"
+                          />
+                          {{ t('ADD new PayID') }}
+                        </span>
+                      </b-card-text>
+                    </b-col>
+                  </b-card>
+                </b-card-group>
+              </b-col>
             </b-row>
           </b-form>
         </b-row>
+        <b-pagination
+          v-if="totalCompanies > 1"
+          v-model="currentPage"
+          :total-rows="totalCompanies"
+          :per-page="perPage"
+          aria-controls="my-table"
+        />
       </template>
       <template v-else-if="loading">
         <div v-if="loading" class="text-center text-danger my-2">
@@ -88,116 +165,151 @@
         </div>
       </template>
     </div>
-    <b-modal ref="modal" id="modal-footer-sm">
-      <template #modal-footer="{ok, cancel}">
-        <b-button size='sm' variant="success" @click="handleCompanyDelete(company.id,true)">OK</b-button>
-        <b-button size="sm" variant="danger" @click="cancel()">
-        {{ t('Cancel') }}
-      </b-button>
-      </template> 
-      <div>
-        <h3>{{ t('If you delete the company you will lose all data') }}</h3>
-        
-      </div>
-
-    </b-modal>
-     <company-edit-sidebar :company="company"/>
+    <company-edit-sidebar :company="company"/>
+    <payment-method-sidebar :company="company" :mode="mode" @payment-added="handlePaymentAdded" @payment-updated="handlePaymentUpdated"/>
   </section>
 </template>
+
+
 
 <script>
 import ValidationError from "@/components/uiComponents/ValidationError"
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
 import CompanyEditSidebar from '@/components/uiComponents/CompanyEditSidebar.vue'
-import SubMenu from '@/components/uiComponents/SubMenu.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
+import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
+
 export default {
-    components:{
-        ValidationError,
-        BaseFeatherIcon,
-        CompanyEditSidebar,
-        SubMenu,
+  components: {
+    ValidationError,
+    BaseFeatherIcon,
+    CompanyEditSidebar,
+    PaymentMethodSidebar,
   },
-  data(){
-      return {
-          companies: {},
-          company: {},
-          loading: false,
-          subMenu: [{
-            name: 'Add My Business',
-            route: 'addCompany',
-          }],
-          t: null
-      }
+  data() {
+    return {
+      companies: [],
+      company: {
+        name: '',
+        email: '',
+        abn: '',
+        phone: '',
+        paymentDetail: {
+          payid: '',
+          name: ''
+        },
+      },
+      loading: false,
+      t: null,
+      currentPage: 1,
+      perPage: 1, // Set the number of companies per page to 1
+      mode: '',
+    }
   },
-  created(){
+  computed: {
+    totalCompanies() {
+      return this.companies.length;
+    },
+    paginatedCompanies() {
+      const start = (this.currentPage - 1) * this.perPage;
+      const end = start + this.perPage;
+      return this.companies.slice(start, end);
+    }
+  },
+  created() {
     this.loading = true;
     // Async function to fetch companies
     const getCompanies = async () => {
       try {
         await this.$store.dispatch('companies/list');
-        this.companies = this.$store.getters["companies/list"] 
-        this.loading = false
+        this.companies = this.$store.getters["companies/list"];
+        this.loading = false;
+        console.log(this.companies)
       } catch (error) {
         console.error('Error fetching companies:', error);
       }
     };
 
-    const {t} = useI18nUtils()
+    const { t } = useI18nUtils()
     this.t = t
     // Call the function to fetch companies
     getCompanies();
   },
-  methods:{
-    async handleCompanyDelete(CompanyId){
-      try{
-        await this.$store.dispatch('companies/destroy',CompanyId);
+  methods: {
+    async handleCompanyDelete(companyId) {
+      try {
+        await this.$store.dispatch('companies/destroy', companyId);
+        this.companies = this.companies.filter(company => company.id !== companyId);
+      } catch (e) {
         await this.$store.dispatch('alerts/showNotification', {
-                  message: 'Business deleted successfully.',
-                  type: 'success'
-          });
-        this.$router.go(0);
-      }catch (e){
-         await this.$store.dispatch('alerts/showNotification', {
-                message: 'Oops, something went wrong!',
-                type: 'error'
+          message: 'Oops, something went wrong!',
+          type: 'error'
         }); // Log the response data for debugging
-      }   
+      }
     },
-     showMsgBoxTwo(id) {
-        this.boxTwo = ''
-        this.$bvModal.msgBoxConfirm('Please confirm that you want to delete everything.', {
-          title: 'Please Confirm',
-          size: 'sm',
-          buttonSize: 'sm',
-          okVariant: 'danger',
-          okTitle: 'YES',
-          cancelTitle: 'NO',
-          footerClass: 'p-2',
-          hideHeaderClose: false,
-          centered: true
-        })
-          .then(value => {
-            this.boxTwo = value
+    async handlePaymentDelete(paymentId) {
+      try {
+        await this.$store.dispatch('paymentMethods/destroy', paymentId);
+        // Update local state
+        const companyIndex = this.companies.findIndex(company => company.paymentDetail && company.paymentDetail.id === paymentId);
+        if (companyIndex > -1) {
+          this.companies[companyIndex].paymentDetail = null;
+        }
+      } catch (e) {
+        await this.$store.dispatch('alerts/showNotification', {
+          message: 'Oops, something went wrong!',
+          type: 'error'
+        }); // Log the response data for debugging
+      }
+    },
+    showMsgBoxTwo(action,id) {
+      this.boxTwo = ''
+      this.$bvModal.msgBoxConfirm('Please confirm that you want to delete everything.', {
+        title: 'Please Confirm',
+        size: 'sm',
+        buttonSize: 'sm',
+        okVariant: 'danger',
+        okTitle: 'YES',
+        cancelTitle: 'NO',
+        footerClass: 'p-2',
+        hideHeaderClose: false,
+        centered: true
+      })
+        .then(value => {
+          this.boxTwo = value
 
-            if(this.boxTwo)
-              this.handleCompanyDelete(id)
-          })
-          .catch(err => {
-            // An error occurred
-          })
-      },
-      editCompany(company){
-        this.company = company;
-      },
+          if (this.boxTwo && action === 'deleteCompany')
+            this.handleCompanyDelete(id)
+          else if(this.boxTwo && action === 'deletePaymentDetail')
+            this.handlePaymentDelete(id)
+        })
+        .catch(err => {
+          // An error occurred
+        })
+    },
+    editCompany(company) {
+      this.company = company;
+    },
+    editPayment(company){
+      this.company = { ...company };
+      this.mode = 'update'
+    },
+    addPayment(company){
+      this.company = { ...company };
+      this.mode = 'create'
+    },
+    handlePaymentAdded(payment){
+      const index = this.companies.findIndex(c => c.id === this.company.id);
+      if (index > -1) {
+        this.$set(this.companies[index], 'paymentDetail', payment);
+      }
+    },
+    handlePaymentUpdated(payment){
+      const index = this.companies.findIndex(c => c.id === this.company.id);
+      if (index > -1) {
+        this.$set(this.companies[index], 'paymentDetail', payment);
+      }
+    }
   },
-  
 }
 </script>
-<style lang="scss" scoped>
-.no-options-message {
-  font-weight: bold;
-  padding: 10px;
-  text-align: center;
-}
-</style>

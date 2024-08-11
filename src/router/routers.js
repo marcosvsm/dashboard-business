@@ -10,6 +10,8 @@ import ForgotPassword from '@/components/views/pages/ForgotPassword.vue'
 import PasswordReset from '@/components/views/pages/PasswordReset.vue'
 import ConfirmRegister from '@/components/views/pages/ConfirmRegister.vue'
 import NotFound from '@/components/views/pages/NotFound.vue'
+import CompanyPage from '@/components/views/pages/CompanyPage.vue'
+import InvoicePage from '@/components/views/pages/InvoicePage.vue'
 
 //Dashboard
 import Overview from '@/components/views/pages/dashboard/overview/Overview.vue'
@@ -76,23 +78,6 @@ let emailPage = {
   }
 }
 
-let invoicePage = {
-  path: '/invoice/add',
-  name: 'invoice-add',
-  component: InvoiceAdd,
-  meta: {
-    middleware: auth,
-  }
-}
-
-let invoiceListPage = {
-  path: '/invoice/list',
-  name: 'invoices',
-  component: InvoiceList,
-  meta: {
-    middleware: auth,
-  }
-}
 
 let invoiceFreePage = {
   path: '/invoice/free',
@@ -103,22 +88,56 @@ let invoiceFreePage = {
   }
 }
 
-let companyPage = {
-  path: '/company/add',
-  name: 'addCompany',
-  component: Company,
+let invoicePage = {
+  path: '/invoice',
+  component: InvoicePage,
   meta: {
     middleware: auth,
   },
+  children: [
+    {
+      path: 'create',
+      name: 'add-invoice',
+      component: InvoiceAdd,
+      meta: {
+        middleware: auth,
+      },
+    },
+    {
+      path: 'list',
+      name: 'invoices',
+      component: InvoiceList,
+      meta:{
+        middleware: auth,
+      },
+    }
+  ]
 }
 
-let companyListPage = {
-  path: '/company/list',
-  name: 'companies',
-  component: CompanyList,
+let companyPage = {
+  path: '/company',
+  component: CompanyPage,
   meta: {
     middleware: auth,
   },
+  children: [
+    {
+      path: 'add',
+      name: 'addCompany',
+      component: Company,
+      meta: {
+        middleware: auth,
+      },
+    },
+    {
+      path: 'list',
+      name: 'companies',
+      component: CompanyList,
+      meta: {
+        middleware: auth,
+      },
+    }
+  ]
 }
 
 let profilePage = {
@@ -178,10 +197,8 @@ const routes = [
     loginPage,
     registerPage,
     invoicePage,
-    invoiceListPage,
     invoiceFreePage,
     companyPage,
-    companyListPage,
     profilePage,
     emailPage,
     forgotPasswordPage,
