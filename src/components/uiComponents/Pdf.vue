@@ -15,7 +15,11 @@ import { formatDateForDisplay } from '@/libs/dateUtils.js'
 
 export default {
   props: {
-    invoiceData: Object
+    invoiceData: Object,
+    paymentDetails: {
+      type: Boolean,
+    },
+    selectedPaymentMethod: String
   },
   methods: {
     generatePDF() {
@@ -58,7 +62,7 @@ export default {
         if (data.company.email)
         doc.text(data.company.email, 200, 45, headerRight);
         doc.line(0, 60, 220, 60);
-
+        
         // HEADER CUSTOMER DATA LEFT
         doc.text("BILL TO", 15, 70, customerLeft);
         doc.text(data.customer.name, 15, 75, customerLeft);
@@ -111,7 +115,7 @@ export default {
         if (data.items[i].description == null)
           data.items[i].description = "";
         // TABLE ROW
-        doc.text(data.items[i].itemName, 15, row);
+        doc.text(data.items[i].name, 15, row);
         if (data.items[i].description.length > 45) {
           let x = 45;
           let j = 0;
@@ -151,7 +155,16 @@ export default {
       }
 
       doc.line(0, row + 10, 220, row + 10);
-      doc.text(data.note, 15, rowSubtotal, customerLeft);
+      if(data.company.paymentDetail && this.paymentDetails && this.selectedPaymentMethod === 'PAYID'){
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text("Payment Details", 15, rowSubtotal, customerLeft);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text("PayID: "+data.company.paymentDetail.payid, 15, rowGst, customerLeft);
+         doc.text("PayID Name: "+data.company.paymentDetail.name, 15, rowTotal, customerLeft);
+      }
+      doc.text(data.note, 15, rowTotal+20, customerLeft);
       doc.text("Subtotal:", 150, rowSubtotal, headerTable);
       doc.text("GST:", 150, rowGst, headerTable);
       doc.text("Total:", 150, rowTotal, headerTable);

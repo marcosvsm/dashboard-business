@@ -42,7 +42,7 @@ export default {
             {
               title: 'Invoice',
               route: {
-                name: 'invoice-add'
+                name: 'add-invoice'
               }
             },
             

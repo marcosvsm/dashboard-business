@@ -196,5 +196,14 @@
     "My Invoices": "Mis Facturas",
     "Client Name": "Nombre del Cliente",
     "Add Client": "Agregar Cliente",
-    "Business Name": "Nombre de la Empresa"
+    "Business Name": "Nombre de la Empresa",
+    "To update your PAYID, please visit My Business > Business page": "Para actualizar tu PAYID, visita la página Mi Negocio > Empresa",
+    "Set as Default": "Definir PAYID",
+    "Create an Invoice": "Crear Factura",
+    "View My Invoices": "Ver Mis Facturas",
+    "View Invoices": "Ver Facturas",
+    "Pending Invoices": "Facturas Pendientes",
+    "View All": "Ver Todo",
+    "Outstanding": "Pendiente",
+    "Outstanding Invoices": "Facturas Pendientes"
   }
