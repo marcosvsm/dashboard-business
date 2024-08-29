@@ -20,7 +20,14 @@
                     </b-col>
                     </b-row>
                     <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 0.00%</span>
+                    <span class="text-success mr-2">
+                        <base-feather-icon
+                            icon="ArrowUpIcon"
+                            size="16"
+                            class=""
+                        />
+                        {{invoiceChangePercentage}}%
+                    </span>
                     <span class="text-nowrap">{{ t ('Since last month') }}</span>
                     </p>
                 </b-card-body>
@@ -45,7 +52,14 @@
                     </b-col>
                     </b-row>
                     <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 0.00%</span>
+                    <span class="text-success mr-2">
+                        <base-feather-icon
+                            icon="ArrowUpIcon"
+                            size="16"
+                            class=""
+                        />
+                        {{profitChangePercentage}}%
+                    </span>
                     <span class="text-nowrap">{{ t('Since last month') }}</span>
                     </p>
                 </b-card-body>
@@ -71,7 +85,14 @@
                     </b-col>
                     </b-row>
                     <p class="mt-3 mb-0 text-sm">
-                    <span class="text-success mr-2"><i class="fa fa-arrow-up"></i> 0.00%</span>
+                    <span class="text-success mr-2">
+                        <base-feather-icon
+                            :icon="pendingChangeIcon"
+                            size="16"
+                            class=""
+                        />
+                        {{pendingChangePercentage}}%
+                    </span>
                     <span class="text-nowrap">{{ t('Since last month') }}</span>
                     </p>
                 </b-card-body>
@@ -149,7 +170,6 @@ export default {
       try {
         await this.$store.dispatch('invoices/list');
         this.invoices = this.$store.getters["invoices/list"] 
-        console.log('invoices data:', this.invoices);// Assuming 'list' contains the list of invoices
         this.isBusy = false
       } catch (error) {
         console.error('Error fetching invoices:', error);
@@ -165,6 +185,42 @@ export default {
         unpaidInvoices(){
             return this.invoices.filter(invoice => invoice.status === 0);
         },
+        invoiceChangePercentage() {
+            if (!Array.isArray(this.invoices)) {
+                return '0.00'; // Return 0.00 if invoices are not ready
+            }
+            const lastMonthInvoices = this.getInvoicesForLastMonth().length;
+            const currentMonthInvoices = this.getInvoicesForThisMonth().length;
+            if (lastMonthInvoices === 0) {
+                return currentMonthInvoices > 0 ? '100.00' : '0.00'; 
+                // If no invoices last month and some this month, return 100% increase
+            }
+            const change = ((currentMonthInvoices - lastMonthInvoices) / lastMonthInvoices) * 100;
+            return isNaN(change) ? '0.00' : change.toFixed(2);
+        },
+        profitChangePercentage() {
+            const lastMonthProfit = this.getProfitForLastMonth();
+            const currentMonthProfit = this.getTotalAmount();
+            if (lastMonthProfit === '0.00') {
+                return currentMonthProfit > 0 ? '100.00' : '0.00'; 
+                // If no invoices last month and some this month, return 100% increase
+            }
+            const change = ((currentMonthProfit - lastMonthProfit) / lastMonthProfit) * 100;
+            return isNaN(change) ? '0.00' : change.toFixed(2);
+        },
+        pendingChangePercentage() {
+            const lastMonthPending = this.getPendingForLastMonth();
+            const currentMonthPending = this.getPendingTotalAmount;
+             if (lastMonthPending === '0.00') {
+                return currentMonthPending > 0 ? '100.00' : '0.00'; 
+                // If no invoices last month and some this month, return 100% increase
+            }
+            const change = ((currentMonthPending - lastMonthPending) / lastMonthPending) * 100;
+            return isNaN(change) ? '0.00' : change.toFixed(2);
+        },
+        pendingChangeIcon(){
+            return this.pendingChangePercentage >= 0 ? 'ArrowUpIcon' : 'ArrowDownIcon';
+        }
     },
     methods:{
         getNumberInvoices(){
@@ -193,6 +249,67 @@ export default {
                 }); // Log the response data for debugging
             }   
         },
+        getInvoicesForThisMonth() {
+            if (!Array.isArray(this.invoices)) {
+                console.warn('Invoices is not an array or is undefined');
+                return [];
+            }
+            const currentMonthDate = new Date();
+            return this.invoices.filter(invoice => {
+                const invoiceDate = new Date(invoice.invoice_date);
+                return (
+                    invoiceDate.getMonth() === currentMonthDate.getMonth() &&
+                    invoiceDate.getFullYear() === currentMonthDate.getFullYear()
+                );
+            });
+        },
+        getInvoicesForLastMonth(){
+            if (!Array.isArray(this.invoices)) {
+                console.warn('Invoices is not an array or is undefined');
+                return [];
+            }
+            const lastMonthDate = new Date();
+            lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+            return this.invoices.filter(invoice => {
+                const invoiceDate = new Date(invoice.invoice_date);
+                return(
+                    invoiceDate.getMonth() === lastMonthDate.getMonth() &&
+                    invoiceDate.getFullYear() === lastMonthDate.getFullYear()
+                );
+            });
+        },
+        getPendingForLastMonth(){
+            if (!Array.isArray(this.invoices)) {
+                console.warn('Invoices is not an array or is undefined');
+                return [];
+            }
+            const lastMonthInvoices = this.getInvoicesForLastMonth();
+                // Calculate the outstanding amount
+            const outstandingAmount = lastMonthInvoices.reduce((total, invoice) => {
+                if (invoice.status === 0) { // Assuming 0 indicates an outstanding invoice
+                    return total + parseFloat(invoice.amount);
+                }
+                return total;
+            }, 0);
+
+            return outstandingAmount.toFixed(2); // Return as a fixed decimal numbe
+        },
+        getProfitForLastMonth(){
+            if (!Array.isArray(this.invoices)) {
+                console.warn('Invoices is not an array or is undefined');
+                return [];
+            }
+            const lastMonthInvoices = this.getInvoicesForLastMonth();
+                // Calculate the outstanding amount
+            const profit = lastMonthInvoices.reduce((total, invoice) => {
+                if (invoice.status === 1) { // Assuming 0 indicates an outstanding invoice
+                    return total + parseFloat(invoice.amount);
+                }
+                return total;
+            }, 0);
+
+            return profit.toFixed(2); // Return as a fixed decimal numbe
+        }
     }
 }
 </script>

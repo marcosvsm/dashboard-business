@@ -1,7 +1,7 @@
 <template>
   <section>
     <div>
-        <h4>Invoice > List</h4>
+        <h4>{{t('Invoice')}} > {{t('List')}}</h4>
     </div>
     <div>
       <template v-if="invoices && invoices.length">
@@ -13,7 +13,9 @@
                 :key="index"
                 class="mb-1 col-12"
               >
-                <b-card class="invoice-card" :class="{ expanded: expandedCard === index }">
+                <b-card class="invoice-card" :class="{ expanded: expandedCard === index, 'status-paid': invoice.status === 1, 'status-overdue': invoice.status === 0 && invoice.due_date < now }">
+                   <!-- Status Indicator -->
+                  <div class="status-indicator"></div>
                   <div class="d-flex justify-content-between align-items-center invoice-header">
                     <div >
                       <b-card-title class="mb-0">{{ invoice.name }}</b-card-title>
@@ -146,7 +148,8 @@ export default {
             name: 'Create Invoice',
             route: 'invoice-add',
           }],
-          t: null
+          t: null,
+          now: dateNow()
       }
   },
   created(){
@@ -232,10 +235,9 @@ export default {
       }
     },
     invoiceStatusText(invoice){
-      var now = dateNow()
       if (invoice.status == 1)
         return 'Paid'
-      else if(invoice.status == 0 && invoice.due_date < now)
+      else if(invoice.status == 0 && invoice.due_date < this.now)
         return 'Overdue'
       else
         return 'Pending';
@@ -302,8 +304,21 @@ export default {
   text-align: right; /* Align text to the right */
 }
 
-.invoice-card {
-  /* Additional card styles */
+.status-indicator {
+  width: 4px;
+  height: 20px;
+  border-radius: 15px;
+  position: absolute;
+  top: 0px;
+  left: 10px;
+}
+
+.status-paid .status-indicator {
+  background-color: green;
+}
+
+.status-overdue .status-indicator {
+  background-color: red;
 }
 
 @media (max-width: 768px) {

@@ -74,7 +74,7 @@
                     <template #header>
                       <b-card>
                         <b-card-title>
-                          {{ t('Payment Method - PAYID') }}
+                          {{ t('Payment Method - ') }} <img src="@/assets/img/PayID_logo.svg" style="width:50px;"/>
                         </b-card-title>
                         <small>{{ t('Details for payments') }}</small>
                       </b-card>
@@ -117,7 +117,7 @@
                     <template #header>
                       <b-card>
                         <b-card-title>
-                          {{ t('Payment Method - PAYID') }}
+                          {{ t('Payment Method - ') }} <img src="@/assets/img/PayID_logo.svg" style="width:50px;"/>
                         </b-card-title>
                         <small>{{ t('Details for payments') }}</small>
                       </b-card>
