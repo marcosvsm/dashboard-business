@@ -23,7 +23,7 @@
                     </div>
                     <div>
                       <b-card-title class="mb-0">${{ invoice.amount }}</b-card-title>
-                      <small>{{ t('Amount') }}</small>
+                      <small>{{ t('Total') }}</small>
                     </div>
                     <div style="min-width:max-content;">
                       <b-card-text class="mb-0">{{ formatDateForDisplay(invoice.invoice_date) }}</b-card-text>
@@ -38,7 +38,7 @@
                       <b-row no-gutters>
                       <b-col cols="12" class="invoice-info">    
                         <b-card-text>
-                            {{ t('Amount') }}  ${{ invoice.amount }}
+                            {{ t('Total') }}  ${{ invoice.amount }}
                         </b-card-text>
                       </b-col>  
                       <b-col cols="12">    
