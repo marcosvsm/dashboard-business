@@ -146,7 +146,8 @@
                     cols="12"
                     lg="5"
                 >
-                    #{{index+1}} Item
+                    #{{index+1}} Description
+                    
                 </b-col>
                 <b-col
                     cols="12"
@@ -179,15 +180,34 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">1#Item</label>
-                    <b-form-input
-                    v-model="item.name"
-                    :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-                    label="name"
-                    :clearable="false"
-                    class="mb-2 item-selector-title"
-                    maxlength="50"
-                    />
+                    <label class="d-inline d-lg-none">#{{index+1}} Description</label>
+                    <div class="d-flex align-items-baseline">
+                      <b-form-input
+                      v-model="item.name"
+                      :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
+                      label="name"
+                      :clearable="false"
+                      class="mb-2 item-selector-title"
+                      maxlength="50"
+                      />
+                      <flat-pickr
+                        v-model="selectedDates[index]"
+                        class="form-control invoice-edit-input"
+                        @change="handleDateChange(index)"
+                        :config="datePickerConfig"
+                        placeholder="DATE"
+                        :data-index="index"
+                        style="visibility:hidden; width:0px"
+                      />
+                       
+                      <base-feather-icon
+                        :id="`calendarIcon-${index}`"
+                        size="20"
+                        icon="CalendarIcon"
+                        class="cursor-pointer"
+                        @click="openDatePicker(index)"
+                      />
+                    </div>
                 </b-col>
                 <b-col
                     cols="12"
@@ -195,11 +215,11 @@
                 >
                     <label class="d-inline d-lg-none">{{t("Qty")}}</label>
                     <b-form-input
-                    v-model="item.quantity"
-                    type="number"
-                    class="mb-2"
-                    placeholder="0"
-                    @keyup="setAmount"
+                      v-model="item.quantity"
+                      type="number"
+                      class="mb-2"
+                      placeholder="0"
+                      @keyup="setAmount"
                     />
                 </b-col>
                 <b-col
@@ -296,16 +316,18 @@ import vSelect from 'vue-select'
 import Ripple from 'vue-ripple-directive'
 import VBToggle from 'bootstrap-vue'
 import { heightTransition } from '@/mixins/ui/transition'
-import { toRefs } from 'vue'
-import { ref, onUnmounted } from 'vue'
+import { toRefs, ref, onMounted, nextTick, getCurrentInstance } from 'vue'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
+import FlatPickr from 'vue-flatpickr-component'
+import {formatDateForDisplay} from '@/libs/dateUtils'
 
 export default {
   components:{
     BaseFeatherIcon,
     vSelect,
     InvoiceSidebarAddNewCustomer,
+    FlatPickr,
   },
   props:{
     invoiceData:{
@@ -410,6 +432,47 @@ export default {
       // Optionally handle closing logic here if needed
       customerSelect.value.$refs.search.blur()
     }
+
+    const flatpickrRef = ref({}); // Initialize as an array for multiple instances
+    const selectedDates = ref([]); // Initialize as an array to hold dates for each item
+    const datePickerConfig  = {
+      dateFormat: 'd/m/Y',
+      onReady(dates, dateStr, instance) {
+        const index = instance.element.dataset.index;
+        flatpickrRef.value[index] = instance; // Store instance by item index
+        //flatpickrRef.value.push(instance);
+      },
+      onChange(dates, dateStr, instance) {
+        //const index = flatpickrRef.value.indexOf(instance);
+        const index = instance.element.dataset.index;
+     //   if (index !== -1 && dates.length > 0){
+         // selectedDates.value.splice(index, 1, dates[0]);
+          handleDateChange(index,dates);
+    //    }
+      },
+    };
+
+    const openDatePicker = (index) => {
+        // Ensure the flatpickr instance is available before trying to open it
+      nextTick(() => {
+        if (flatpickrRef.value[index]) {
+          flatpickrRef.value[index].open();
+        }
+      });
+    }
+
+    const handleDateChange = (index,dates) => {
+        if(invoiceData.value.items[index].name){
+          const itemName = invoiceData.value.items[index].name;
+          const lastLetter = itemName.charAt(itemName.length - 1); 
+          if(lastLetter === ' ')
+            invoiceData.value.items[index].name += formatDateForDisplay(dates);
+          else
+            invoiceData.value.items[index].name += ' '+formatDateForDisplay(dates);
+        }else{
+          invoiceData.value.items[index].name += formatDateForDisplay(dates)
+        }
+    }
   
     return {
         itemFormBlankItem,
@@ -419,6 +482,10 @@ export default {
         t,
         closeSelectDropdown,
         customerSelect,
+        datePickerConfig,
+        openDatePicker,
+        handleDateChange,
+        selectedDates,
     }
   },
 }
@@ -427,6 +494,7 @@ export default {
 @import '~@/scss/base/pages/app-invoice.scss';
 @import '~@/scss/base/components/variables-dark';
 @import '~@/scss/vue/libs/vue-select.scss';
+@import '~@/scss/vue/libs/vue-flatpicker.scss';
 .no-options-message {
   font-weight: bold;
   padding: 10px;
