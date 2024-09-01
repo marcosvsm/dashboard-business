@@ -192,11 +192,12 @@
                       />
                       <flat-pickr
                         v-model="selectedDates[index]"
-                        class="form-control invoice-edit-input invisible"
+                        class="form-control invoice-edit-input"
                         @change="handleDateChange(index)"
                         :config="datePickerConfig"
                         placeholder="DATE"
                         :data-index="index"
+                        style="display:none"
                       />
                        
                       <base-feather-icon
