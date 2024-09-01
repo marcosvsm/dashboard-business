@@ -192,12 +192,11 @@
                       />
                       <flat-pickr
                         v-model="selectedDates[index]"
-                        class="form-control invoice-edit-input"
+                        class="form-control invoice-edit-input invisible"
                         @change="handleDateChange(index)"
                         :config="datePickerConfig"
                         placeholder="DATE"
                         :data-index="index"
-                        style="visibility:hidden; width:0px"
                       />
                        
                       <base-feather-icon
@@ -499,5 +498,13 @@ export default {
   font-weight: bold;
   padding: 10px;
   text-align: center;
+}
+
+.invisible {
+  opacity: 0;
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 </style>
