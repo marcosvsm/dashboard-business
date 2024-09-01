@@ -190,7 +190,7 @@
                       class="mb-2 item-selector-title"
                       maxlength="50"
                       />
-                      <flat-pickr
+                  <!--    <flat-pickr
                         v-model="selectedDates[index]"
                         class="form-control invoice-edit-input"
                         @change="handleDateChange(index)"
@@ -206,8 +206,8 @@
                         icon="CalendarIcon"
                         class="cursor-pointer"
                         @click="openDatePicker(index)"
-                      />
-                    </div>
+                      /> -->
+                    </div> 
                 </b-col>
                 <b-col
                     cols="12"
