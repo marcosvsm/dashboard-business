@@ -157,7 +157,7 @@
               </span>
             </div>
           </div>
-          <div v-if="selectedPaymentMethod === 'Bank Account'" class="mb-2">
+          <div v-if="selectedPaymentMethod === 'Bank Account' && paymentDetails" class="mb-2">
             <label for="bankName">{{ t('Bank Name') }}</label>
             <b-input 
               id="bankName" 
