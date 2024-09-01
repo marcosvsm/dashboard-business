@@ -180,7 +180,7 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">#{{index+1}} Description</label>
+                    <label class="d-inline d-lg-none">#{{index+1}} {{t('Description')}}</label>
                     <div class="d-flex align-items-baseline">
                       <b-form-input
                       v-model="item.name"
@@ -247,7 +247,7 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">{{t("Description")}}</label>
+                    <label class="d-inline d-lg-none">{{t("Note")}}</label>
                     <b-form-textarea
                     v-model="item.description"
                     class="mb-2 mb-lg-0"
@@ -501,10 +501,12 @@ export default {
 }
 
 .invisible {
-  opacity: 0;
   position: absolute;
+  opacity: 0;
+  visibility: hidden;
   width: 0;
   height: 0;
   overflow: hidden;
+  z-index: -1; /* Ensure it doesn't interfere with other elements */
 }
 </style>
