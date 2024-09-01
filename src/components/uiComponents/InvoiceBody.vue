@@ -504,8 +504,8 @@ export default {
   position: absolute;
   opacity: 0;
   visibility: hidden;
-  width: 0;
-  height: 0;
+  width: 0px;
+  height: 0px;
   overflow: hidden;
   z-index: -1; /* Ensure it doesn't interfere with other elements */
 }
