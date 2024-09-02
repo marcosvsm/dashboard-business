@@ -190,14 +190,13 @@
                       class="mb-2 item-selector-title"
                       maxlength="50"
                       />
-                  <!--    <flat-pickr
+                      <flat-pickr
                         v-model="selectedDates[index]"
-                        class="form-control invoice-edit-input"
+                        class="form-control invoice-edit-input invisible"
                         @change="handleDateChange(index)"
                         :config="datePickerConfig"
                         placeholder="DATE"
                         :data-index="index"
-                        style="display:none"
                       />
                        
                       <base-feather-icon
@@ -206,8 +205,8 @@
                         icon="CalendarIcon"
                         class="cursor-pointer"
                         @click="openDatePicker(index)"
-                      /> -->
-                    </div> 
+                      />
+                    </div>
                 </b-col>
                 <b-col
                     cols="12"
@@ -505,8 +504,8 @@ export default {
   position: absolute;
   opacity: 0;
   visibility: hidden;
-  width: 0px;
-  height: 0px;
+  width: 0 !important;
+  height: 0 !important;
   overflow: hidden;
   z-index: -1; /* Ensure it doesn't interfere with other elements */
 }
