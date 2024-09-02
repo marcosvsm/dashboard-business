@@ -72,10 +72,15 @@ export default {
           doc.text("Phone: " + data.customer.phone, 15, 85, customerLeft);
         if (data.customer.email)
           doc.text(data.customer.email, 15, 90, customerLeft);
-
+        const lengthNumber = data.number.length;
         // HEADER INVOICE RIGHT
         doc.text("Invoice Number: ", 170, 70, headerRight);
-        doc.text(data.number, 190, 70, headerRight);
+        if(lengthNumber<=13)
+          doc.text(data.number, 190, 70, headerRight);
+        else{
+          const desc = lengthNumber-10;
+          doc.text(data.number, 190+desc, 70, headerRight);
+        }
         doc.text("Invoice Date: ", 170, 75, headerRight);
         doc.text(formatDateForDisplay(data.date), 190, 75, headerRight);
         doc.text("Payment Due: ", 170, 80, headerRight);
@@ -92,17 +97,18 @@ export default {
 
       const addFooter = () => {
         const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
-        const footerPosition = pageHeight - 20; // 20 units from the bottom of the page
+        const footerPosition = pageHeight - 10; // 10 units from the bottom of the page
         doc.setFillColor(173, 216, 230); // Light blue color
         doc.rect(0, footerPosition - 10, 210, 20, 'F'); // Rectangle for footer background
         doc.setTextColor(0, 0, 0); // Black color
         doc.text('THANK YOU FOR YOUR BUSINESS!', 75, footerPosition);
+        doc.textWithLink('Powered by Simplify Business', 82, footerPosition+5,{url:"simplifybusiness.com.au"});
       };
 
       addHeader();
       var row = 110;
       const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
-      const marginBottom = 30;
+      const marginBottom = 40;
       
       for (var i = 0; i < data.items.length; i++) {
         if (row > pageHeight - marginBottom) {
@@ -162,9 +168,10 @@ export default {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
         doc.text("PayID: "+data.company.paymentDetail.payid, 15, rowGst, customerLeft);
-         doc.text("PayID Name: "+data.company.paymentDetail.name, 15, rowTotal, customerLeft);
-      }
-      doc.text(data.note, 15, rowTotal+20, customerLeft);
+        doc.text("PayID Name: "+data.company.paymentDetail.name, 15, rowTotal, customerLeft);
+        doc.text(data.note, 15, rowTotal+5, customerLeft);
+      }else
+        doc.text(data.note, 15, rowSubtotal, customerLeft);
       doc.text("Subtotal:", 150, rowSubtotal, headerTable);
       doc.text("GST:", 150, rowGst, headerTable);
       doc.text("Total:", 150, rowTotal, headerTable);
