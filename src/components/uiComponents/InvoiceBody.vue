@@ -190,22 +190,16 @@
                       class="mb-2 item-selector-title"
                       maxlength="50"
                       />
-                      <b-popover
-                         ref="popover"
-                        :placement="'bottom'"
-                        :target="`calendarIcon-${index}`"
-                        triggers="click"
-                        v-model="popoverVisible[index]"
-                      >
+                      
                       <flat-pickr
                         v-model="selectedDates[index]"
-                        class="form-control invoice-edit-input"
                         @change="handleDateChange(index)"
                         :config="datePickerConfig"
                         placeholder="DATE"
                         :data-index="index"
+                        style="width:0; height:0; z-index:-1"
                       />
-                       </b-popover>
+                       
                       <base-feather-icon
                         :id="`calendarIcon-${index}`"
                         size="20"
@@ -441,7 +435,6 @@ export default {
 
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
-    const popoverVisible = ref([]); // Initialize as an array to hold dates for each item
     const datePickerConfig  = {
       dateFormat: 'd/m/Y',
       onReady(dates, dateStr, instance) {
@@ -477,7 +470,7 @@ export default {
           else
             invoiceData.value.items[index].name += ' '+formatDateForDisplay(dates);
         }else{
-          invoiceData.value.items[index].name += formatDateForDisplay(dates);
+          invoiceData.value.items[index].name += formatDateForDisplay(dates)
         }
     }
   
@@ -493,7 +486,6 @@ export default {
         openDatePicker,
         handleDateChange,
         selectedDates,
-        popoverVisible,
     }
   },
 }
