@@ -197,7 +197,7 @@
                         :config="datePickerConfig"
                         placeholder="DATE"
                         :data-index="index"
-                        style="width:0; height:0; z-index:-1"
+                        class="invisible"
                       />
                        
                       <base-feather-icon
@@ -437,6 +437,7 @@ export default {
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
     const datePickerConfig  = {
       dateFormat: 'd/m/Y',
+      allowInput: true, // Allows manual input without picking a date
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
@@ -500,7 +501,6 @@ export default {
   padding: 10px;
   text-align: center;
 }
-
 .invisible {
   position: absolute;
   opacity: 0;
@@ -510,4 +510,19 @@ export default {
   overflow: hidden;
   z-index: -1; /* Ensure it doesn't interfere with other elements */
 }
+
+@media not all and (min-resolution:.001dpcm) { 
+  @supports (-webkit-appearance:none) {
+    .invisible {
+      position: absolute;
+      opacity: 0;
+      visibility: hidden;
+      width: 0 !important;
+      height: 0 !important;
+      overflow: hidden;
+      z-index: -1; /* Ensure it doesn't interfere with other elements */
+    }
+  }
+}
+
 </style>
