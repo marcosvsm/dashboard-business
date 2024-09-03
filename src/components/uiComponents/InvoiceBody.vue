@@ -190,22 +190,29 @@
                       class="mb-2 item-selector-title"
                       maxlength="50"
                       />
-                      
-                      <flat-pickr
-                        v-model="selectedDates[index]"
-                        @change="handleDateChange(index)"
-                        :config="datePickerConfig"
-                        placeholder="DATE"
-                        :data-index="index"
-                        class="invisible"
-                      />
+                       <b-popover
+                        :ref="'popover-' + index"
+                        placement="bottom"
+                        :target="`calendarIcon-${index}`"
+                        triggers="click"
+                        v-model="popoverVisible[index]"
+                      >
+                        <flat-pickr
+                          v-model="selectedDates[index]"
+                          @change="handleDateChange(index)"
+                          :config="datePickerConfig"
+                          placeholder="DATE"
+                          :data-index="index"
+                          class="form-control invoice-edit-input"
+                        />
+                      </b-popover>
                        
                       <base-feather-icon
                         :id="`calendarIcon-${index}`"
                         size="20"
-                        icon="CalendarIcon"
+                        icon="MoreVerticalIcon"
                         class="cursor-pointer"
-                        @click="openDatePicker(index)"
+                        @click="openPopover(index)"
                       />
                     </div>
                 </b-col>
@@ -316,7 +323,7 @@ import vSelect from 'vue-select'
 import Ripple from 'vue-ripple-directive'
 import VBToggle from 'bootstrap-vue'
 import { heightTransition } from '@/mixins/ui/transition'
-import { toRefs, ref, onMounted, nextTick, getCurrentInstance } from 'vue'
+import { toRefs, ref, onMounted, nextTick} from 'vue'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import FlatPickr from 'vue-flatpickr-component'
@@ -432,7 +439,7 @@ export default {
       // Optionally handle closing logic here if needed
       customerSelect.value.$refs.search.blur()
     }
-
+    const popoverVisible = ref([]);
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
     const datePickerConfig  = {
@@ -441,7 +448,7 @@ export default {
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
-        //flatpickrRef.value.push(instance);
+       // flatpickrRef.value[index].push(instance);
       },
       onChange(dates, dateStr, instance) {
         //const index = flatpickrRef.value.indexOf(instance);
@@ -453,7 +460,7 @@ export default {
       },
     };
 
-    const openDatePicker = (index) => {
+    const openPopover = (index) => {
         // Ensure the flatpickr instance is available before trying to open it
       nextTick(() => {
         if (flatpickrRef.value[index]) {
@@ -473,6 +480,10 @@ export default {
         }else{
           invoiceData.value.items[index].name += formatDateForDisplay(dates)
         }
+         // Close the popover after date selection
+      nextTick(() => {
+        popoverVisible.value[index] = false;
+      });
     }
   
     return {
@@ -484,9 +495,10 @@ export default {
         closeSelectDropdown,
         customerSelect,
         datePickerConfig,
-        openDatePicker,
+        openPopover,
         handleDateChange,
         selectedDates,
+        popoverVisible,
     }
   },
 }
