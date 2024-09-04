@@ -181,7 +181,7 @@
                     lg="5"
                 >
                     <label class="d-inline d-lg-none">#{{index+1}} {{t('Description')}}</label>
-                    <div class="d-flex align-items-baseline">
+                    <div class="d-flex align-items-top">
                       <b-form-input
                       v-model="item.name"
                       :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
@@ -194,9 +194,17 @@
                         :ref="'popover-' + index"
                         placement="bottom"
                         :target="`calendarIcon-${index}`"
-                        triggers="click"
-                        v-model="popoverVisible[index]"
+                        :show.sync="popoverVisible[index]"
+                        class="col-6 col-md-4"
                       >
+                      <label class="d-inline d-lg-none">{{t('Date')}}</label>
+                      <base-feather-icon
+                        :id="`calendarIcon-${index}`"
+                        size="24"
+                        icon="CalendarIcon"
+                        class="cursor-pointer"
+                        @click="openPopover(index)"
+                      />
                         <flat-pickr
                           v-model="selectedDates[index]"
                           @change="handleDateChange(index)"
@@ -204,12 +212,13 @@
                           placeholder="DATE"
                           :data-index="index"
                           class="form-control invoice-edit-input"
+                          style="min-width:50px"
                         />
                       </b-popover>
                        
                       <base-feather-icon
                         :id="`calendarIcon-${index}`"
-                        size="20"
+                        size="24"
                         icon="MoreVerticalIcon"
                         class="cursor-pointer"
                         @click="openPopover(index)"
@@ -444,7 +453,13 @@ export default {
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
     const datePickerConfig  = {
       dateFormat: 'd/m/Y',
-      allowInput: true, // Allows manual input without picking a date
+      defaultDate: null,
+      allowInput: true,
+       onOpen(selectedDates, dateStr, instance) {
+        if (!instance.input.value) {
+          instance.clear(); // Clear any pre-selection
+        }
+      },
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
@@ -461,15 +476,22 @@ export default {
     };
 
     const openPopover = (index) => {
+       // Close any currently open popover
+      popoverVisible.value.forEach((visible, i) => {
+        if (visible && i !== index) {
+          popoverVisible.value[i] = false;
+        }
+      });
         // Ensure the flatpickr instance is available before trying to open it
       nextTick(() => {
-        if (flatpickrRef.value[index]) {
+       if (flatpickrRef.value[index]) {
           flatpickrRef.value[index].open();
         }
       });
     }
 
     const handleDateChange = (index,dates) => {
+      if(dates && dates.length > 0){
         if(invoiceData.value.items[index].name){
           const itemName = invoiceData.value.items[index].name;
           const lastLetter = itemName.charAt(itemName.length - 1); 
@@ -477,13 +499,13 @@ export default {
             invoiceData.value.items[index].name += formatDateForDisplay(dates);
           else
             invoiceData.value.items[index].name += ' '+formatDateForDisplay(dates);
-        }else{
+        }else {
           invoiceData.value.items[index].name += formatDateForDisplay(dates)
         }
-         // Close the popover after date selection
-      nextTick(() => {
-        popoverVisible.value[index] = false;
-      });
+        selectedDates.value[index] = '';
+        popoverVisible.value[index] = false
+      }
+        
     }
   
     return {
