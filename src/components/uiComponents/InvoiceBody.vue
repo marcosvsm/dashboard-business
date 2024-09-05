@@ -195,7 +195,6 @@
                         placement="bottom"
                         :target="`calendarIcon-${index}`"
                         :show.sync="popoverVisible[index]"
-                        class="col-6 col-md-4"
                       >
                         <flat-pickr
                           v-model="selectedDates[index]"
@@ -203,7 +202,7 @@
                           placeholder="DATE"
                           :data-index="index"
                           class="form-control invoice-edit-input cursor-pointer"
-                          style="width:120px"
+                          style="width:150px!important"
                         />
                       </b-popover>
                        
@@ -446,11 +445,6 @@ export default {
       dateFormat: 'd/m/Y',
       defaultDate: null,
       allowInput: true,
-       onOpen(selectedDates, dateStr, instance) {
-        if (!instance.input.value) {
-          instance.clear(); // Clear any pre-selection
-        }
-      },
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
@@ -459,10 +453,11 @@ export default {
       onChange(dates, dateStr, instance) {
         //const index = flatpickrRef.value.indexOf(instance);
         const index = instance.element.dataset.index;
-     //   if (index !== -1 && dates.length > 0){
-         // selectedDates.value.splice(index, 1, dates[0]);
-          handleDateChange(index,dates);
-    //    }
+
+        // If the new date is different from the previous one, update and call handleDateChange
+        if (selectedDates.value[index]) {
+            handleDateChange(index, dates);  // Call only if the date is truly changed
+        }
       },
     };
 
