@@ -27,7 +27,7 @@
       <!-- Body -->
       <b-form
         class="p-2"
-        @submit.prevent="addCustomer"
+        @submit.prevent="addCustomer(hide)"
       >
 
         <!-- Customer Name -->
@@ -78,7 +78,7 @@
           <b-form-input
             id="contact"
             v-model="customer.phone"
-            type="number"
+            maxlength="13"
             trim
           />
         </b-form-group>
@@ -90,7 +90,6 @@
             variant="primary"
             class="mr-2"
             type="submit"
-            @click="hide"
           >
           {{ t('Add') }}
           </b-button>
@@ -138,7 +137,7 @@ export default {
     })
 
      // Async function to fetch invoices
-    const addCustomer = async () => {
+    const addCustomer = async (hide) => {
       try {
         const user = store.getters["profile/me"];
         const data = {
@@ -160,12 +159,19 @@ export default {
             },
          }
         };
-        await store.dispatch('customers/add', data)
-        props.addCustomerToInvoice(customer.value)
-        emit('close-dropdown')
-        resetCustomer()
+        await store.dispatch('customers/add', data);
+
+        props.addCustomerToInvoice(customer.value);
+        resetCustomer();
+        if (hide) hide();
+        emit('close-dropdown');
       } catch (error) {
         console.error('Error create client:', error);
+        this.message = "Something went wrong! Try again later or contact the support.";
+        await this.$store.dispatch('alerts/showNotification', {
+          message: this.message,
+          type: 'error'
+        });
       }
     }
 
@@ -179,6 +185,7 @@ export default {
     }
 
     const {t} = useI18nUtils()
+
 
     return {
       customer,
