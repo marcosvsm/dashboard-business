@@ -201,8 +201,7 @@
                           :config="datePickerConfig"
                           placeholder="DATE"
                           :data-index="index"
-                          class="form-control invoice-edit-input cursor-pointer"
-                          style="width:150px!important"
+                          class="form-control invoice-edit-input cursor-pointer col-xs-12"
                         />
                       </b-popover>
                        
@@ -453,7 +452,6 @@ export default {
       onChange(dates, dateStr, instance) {
         //const index = flatpickrRef.value.indexOf(instance);
         const index = instance.element.dataset.index;
-
         // If the new date is different from the previous one, update and call handleDateChange
         if (selectedDates.value[index]) {
             handleDateChange(index, dates);  // Call only if the date is truly changed
