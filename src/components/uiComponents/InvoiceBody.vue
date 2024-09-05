@@ -197,22 +197,13 @@
                         :show.sync="popoverVisible[index]"
                         class="col-6 col-md-4"
                       >
-                      <label class="d-inline d-lg-none">{{t('Date')}}</label>
-                      <base-feather-icon
-                        :id="`calendarIcon-${index}`"
-                        size="24"
-                        icon="CalendarIcon"
-                        class="cursor-pointer"
-                        @click="openPopover(index)"
-                      />
                         <flat-pickr
                           v-model="selectedDates[index]"
-                          @change="handleDateChange(index)"
                           :config="datePickerConfig"
                           placeholder="DATE"
                           :data-index="index"
-                          class="form-control invoice-edit-input"
-                          style="min-width:50px"
+                          class="form-control invoice-edit-input cursor-pointer"
+                          style="width:120px"
                         />
                       </b-popover>
                        
