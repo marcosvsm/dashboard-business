@@ -16,7 +16,7 @@
           </b-form-group>
 
           <b-form-group label="Email">
-            <b-form-input type="email" v-model="user.email" :state="!apiValidationErrors.email"></b-form-input>
+            <b-form-input type="email" v-model="user.email" :state="!apiValidationErrors.email" readonly></b-form-input>
             <validation-error :errors="apiValidationErrors.email"></validation-error>
           </b-form-group>
         </b-card-body>

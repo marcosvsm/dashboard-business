@@ -17,12 +17,12 @@
                       </b-col>
                       <b-col cols="12">
                         <b-form-group :label="t('Phone')" label-for="h-phone" label-cols-md="1">
-                          <b-input id="h-phone" placeholder="Phone" v-model="phone" />
+                          <b-input id="h-phone" placeholder="Phone" v-model="phone" maxlength="13" />
                         </b-form-group>
                       </b-col>
                       <b-col cols="12">
                         <b-form-group label="ABN" label-for="h-abn" label-cols-md="1">
-                          <b-input id="h-abn" placeholder="ABN" v-model="abn" required />
+                          <b-input id="h-abn" placeholder="ABN" v-model="abn" maxlength="11" required />
                         </b-form-group>
                       </b-col>
                       <b-col cols="12">

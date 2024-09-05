@@ -195,6 +195,7 @@
                         placement="bottom"
                         :target="`calendarIcon-${index}`"
                         :show.sync="popoverVisible[index]"
+                        style="width: 100%;max-width: none !important;"
                       >
                         <flat-pickr
                           v-model="selectedDates[index]"
@@ -321,7 +322,7 @@ import vSelect from 'vue-select'
 import Ripple from 'vue-ripple-directive'
 import VBToggle from 'bootstrap-vue'
 import { heightTransition } from '@/mixins/ui/transition'
-import { toRefs, ref, onMounted, nextTick} from 'vue'
+import { toRefs, ref, nextTick} from 'vue'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import FlatPickr from 'vue-flatpickr-component'
