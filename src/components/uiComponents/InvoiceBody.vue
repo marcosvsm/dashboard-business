@@ -525,7 +525,7 @@ export default {
 /* Ensure that the flat-pickr input is wider on mobile */
 @media (max-width: 768px) {
   .flat-pickr-input {
-    min-width: 100%; /* Make sure it takes the full width on smaller screens */
+    min-width: 80%; /* Make sure it takes the full width on smaller screens */
     flex-grow: 1;
   }
 
@@ -536,7 +536,7 @@ export default {
   .popover-body {
     width: 100%; /* Ensure popover content uses full width */
     display:flex;
-  align-items: center;
+    align-items: center;
   }
 }
 
