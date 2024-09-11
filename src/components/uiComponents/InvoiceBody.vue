@@ -197,12 +197,17 @@
                         :show.sync="popoverVisible[index]"
                         style="width: 100%;max-width: none !important;"
                       >
+                        <base-feather-icon
+                          size="24"
+                          icon="CalendarIcon"
+                          style="margin-right: 5px;"
+                        />
                         <flat-pickr
                           v-model="selectedDates[index]"
                           :config="datePickerConfig"
                           placeholder="DATE"
                           :data-index="index"
-                          class="form-control invoice-edit-input cursor-pointer col-xs-12"
+                          class="form-control invoice-edit-input cursor-pointer col-xs-12 flat-pickr-input"
                         />
                       </b-popover>
                        
@@ -515,6 +520,38 @@ export default {
 @import '~@/scss/base/components/variables-dark';
 @import '~@/scss/vue/libs/vue-select.scss';
 @import '~@/scss/vue/libs/vue-flatpicker.scss';
+</style>
+<style>
+/* Ensure that the flat-pickr input is wider on mobile */
+@media (max-width: 768px) {
+  .flat-pickr-input {
+    min-width: 100%; /* Make sure it takes the full width on smaller screens */
+    flex-grow: 1;
+  }
+
+  .b-popover {
+    min-width: 300px !important; /* Adjust the minimum width of the popover */
+  }
+
+  .popover-body {
+    width: 100%; /* Ensure popover content uses full width */
+    display:flex;
+  align-items: center;
+  }
+}
+
+.flat-pickr-input {
+  width: 100%; /* Ensure the input is full width */
+  max-width: 100%; /* Restrict maximum width */
+  flex-grow: 1;
+}
+
+.popover-body {
+  width: auto; /* Allow it to expand based on content */
+  display:flex;
+  align-items: center;
+}
+
 .no-options-message {
   font-weight: bold;
   padding: 10px;
