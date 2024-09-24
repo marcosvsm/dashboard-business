@@ -21,7 +21,7 @@
                       <b-card-title class="mb-0">{{ invoice.name }}</b-card-title>
                       <small>{{ t('Invoice') }}</small>
                     </div>
-                    <div v-if="invoice.customer.name" >
+                    <div v-if="invoice.customer" >
                       <b-card-text class="mb-0">{{ invoice.customer.name }}</b-card-text>
                     </div>
                     <div style="align-items:center">
