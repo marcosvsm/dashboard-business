@@ -17,11 +17,14 @@
                    <!-- Status Indicator -->
                   <div class="status-indicator"></div>
                   <div class="d-flex justify-content-between align-items-center invoice-header">
-                    <div >
+                    <div>
                       <b-card-title class="mb-0">{{ invoice.name }}</b-card-title>
                       <small>{{ t('Invoice') }}</small>
                     </div>
-                    <div>
+                    <div v-if="invoice.customer.name" >
+                      <b-card-text class="mb-0">{{ invoice.customer.name }}</b-card-text>
+                    </div>
+                    <div style="align-items:center">
                       <b-card-title class="mb-0">${{ invoice.amount }}</b-card-title>
                       <small>{{ t('Total') }}</small>
                     </div>
