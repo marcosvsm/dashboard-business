@@ -41,9 +41,8 @@ export default {
         maxWidth: "20",
         align: "center"
       };
-
+      console.log(data)
       const doc = new jspdf();
-      
       const addHeader = () => {
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
@@ -65,13 +64,15 @@ export default {
         
         // HEADER CUSTOMER DATA LEFT
         doc.text("BILL TO", 15, 70, customerLeft);
-        doc.text(data.customer.name, 15, 75, customerLeft);
+        if(data.customer){
+          doc.text(data.customer.name, 15, 75, customerLeft);
         if (data.customer.abn)
           doc.text("ABN: " + data.customer.abn, 15, 80, customerLeft);
         if (data.customer.phone)  
           doc.text("Phone: " + data.customer.phone, 15, 85, customerLeft);
         if (data.customer.email)
           doc.text(data.customer.email, 15, 90, customerLeft);
+        }
         const lengthNumber = data.number.length;
         // HEADER INVOICE RIGHT
         doc.text("Invoice Number: ", 170, 70, headerRight);
@@ -118,10 +119,10 @@ export default {
           row = 110; // Reset row position for new page
         }
 
-        if (data.items[i].description == null)
+        if (!data.items[i].description)
           data.items[i].description = "";
         // TABLE ROW
-        doc.text(data.items[i].name, 15, row);
+        doc.text(data.items[i]?.name || "", 15, row);
         if (data.items[i].description.length > 45) {
           let x = 45;
           let j = 0;
@@ -161,16 +162,16 @@ export default {
       }
 
       doc.line(0, row + 10, 220, row + 10);
-      if(data.company.paymentDetail && this.paymentDetails && this.selectedPaymentMethod === 'PAYID'){
+      if(data.company?.paymentDetail?.payid && this.paymentDetails && this.selectedPaymentMethod === 'PAYID'){
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text("Payment Details", 15, rowSubtotal, customerLeft);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        doc.text("PayID: "+data.company.paymentDetail.payid, 15, rowGst, customerLeft);
-        doc.text("PayID Name: "+data.company.paymentDetail.name, 15, rowTotal, customerLeft);
+        doc.text("PayID: "+data.company.paymentDetail?.payid, 15, rowGst, customerLeft);
+        doc.text("PayID Name: "+data.company.paymentDetail?.name, 15, rowTotal, customerLeft);
         doc.text(data.note, 15, rowTotal+5, customerLeft);
-      }else
+      }else if(data.note)
         doc.text(data.note, 15, rowSubtotal, customerLeft);
       doc.text("Subtotal:", 150, rowSubtotal, headerTable);
       doc.text("GST:", 150, rowGst, headerTable);

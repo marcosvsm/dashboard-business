@@ -5,9 +5,9 @@ import Jsona from 'jsona';
 const url = process.env.VUE_APP_API_BASE_URL;
 const jsona = new Jsona();
 
-function list(params) {
+function list(include = []) {
   const options = {
-    params: params,
+    params: include.length ? { include: include.join(',') } : {},
     paramsSerializer: function (params) {
       return qs.stringify(params, { encode: false });
     }
@@ -22,15 +22,19 @@ function list(params) {
     });
 }
 
-function get(id) {
+function get(id, include = []) {
   const options = {
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
+    },
+    params: include.length ? { include: include.join(',') } : {},
+    paramsSerializer: function (params) {
+      return qs.stringify(params, { encode: false });
     }
   };
 
-  return axios.get(`${url}/invoices/${id}`, options)
+  return axios.get(`${url}/invoice/${id}`, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });

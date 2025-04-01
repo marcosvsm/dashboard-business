@@ -20,6 +20,7 @@ import Overview from '@/components/views/pages/dashboard/overview/Overview.vue'
 import InvoiceAdd from '@/components/views/pages/invoice/InvoiceAdd.vue'
 import InvoiceList from '@/components/views/pages/invoice/InvoiceList.vue'
 import InvoiceFree from '@/components/views/pages/invoice/InvoiceAdd.vue'
+import InvoiceOverview from '@/components/views/pages/invoice/InvoiceOverview.vue'
 
 import Company from '@/components/views/pages/Company.vue'
 import CompanyList from '@/components/views/pages/company/CompanyList.vue'
@@ -110,7 +111,15 @@ let invoicePage = {
       meta:{
         middleware: auth,
       },
-    }
+    },
+    {
+      path: 'overview/:id',
+      name: 'invoice',
+      component: InvoiceOverview,
+      meta:{
+        middleware: auth,
+      },
+    },
   ]
 }
 
