@@ -21,8 +21,9 @@
                       <b-card-title class="mb-0">{{ invoice.name }}</b-card-title>
                       <small>{{ t('Invoice') }}</small>
                     </div>
-                    <div v-if="invoice.customer" >
-                      <b-card-text class="mb-0">{{ invoice.customer.name }}</b-card-text>
+                    <div>
+                      <b-card-text v-if="invoice.customer" class="mb-0">{{ invoice.customer.name }}</b-card-text>
+                      <b-card-text v-else class="mb-0 text-muted">&mdash;</b-card-text> <!-- Placeholder -->
                     </div>
                     <div style="align-items:center">
                       <b-card-title class="mb-0">${{ invoice.amount }}</b-card-title>
@@ -60,7 +61,7 @@
                           <span class="mr-1">{{t('Actions')}}</span>
                           <span
                             v-if="invoice.status == 0"
-                            class="btn btn-sm mr-1 text-primary"
+                            class="btn btn-sm mr-1 text-success"
                             @click="updateInvoiceStatus(invoice,1)">
                               <base-feather-icon
                                       icon="DollarSignIcon"
@@ -77,6 +78,15 @@
                                       size="20"
                                       
                               />{{t('Unpaid')}}
+                          </span>  |
+                          <span
+                            class="btn btn-sm mr-1 ml-1 text-primary"
+                            >
+                              <base-feather-icon
+                                      icon="EyeIcon"
+                                      size="20"
+                                      
+                              /><router-link :to="{ name: 'invoice', params: {id: invoice.id}}"> {{ t("View") }}</router-link>
                           </span>  |
                           <span
                             name="delete"
@@ -160,7 +170,7 @@ export default {
     // Async function to fetch invoices
     const getinvoices = async () => {
       try {
-        await this.$store.dispatch('invoices/list');
+        await this.$store.dispatch('invoices/list', ['customer']);
         this.invoices = this.$store.getters["invoices/list"] 
         console.log('invoices data:', this.invoices);// Assuming 'list' contains the list of invoices
         this.loading = false

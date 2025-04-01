@@ -126,6 +126,9 @@
                 input-id="payment-id"
                 :clearable="false"
               >
+                <template  #open-indicator>
+                  <base-feather-icon icon="ChevronDownIcon" />
+                </template>
               </v-select>
             </div>
           <div 

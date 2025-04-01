@@ -23,7 +23,7 @@ const mutations = {
 };
 
 const actions = {
-  list({commit, dispatch}, params) {
+  list({commit, dispatch}, params = []) {
     return service.list(params)
       .then(({list, meta}) => {
         commit('SET_LIST', list);
@@ -31,8 +31,8 @@ const actions = {
       });
   },
 
-  get({commit, dispatch}, params) {
-    return service.get(params)
+  get({commit, dispatch}, { id, include = [] }) {
+    return service.get(id, include)
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
   },
 
