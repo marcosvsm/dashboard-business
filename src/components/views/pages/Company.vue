@@ -44,7 +44,7 @@
           </div>
         </section>
       </b-tab>
-      <b-tab title="Add Payment Details" :disabled="!companyCreated">
+      <b-tab title='Add Payment Details' :disabled="!companyCreated">
         <section>
           <div class="mt-1">
             <b-row>

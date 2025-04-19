@@ -46,7 +46,7 @@ export default {
       const addHeader = () => {
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 126, 202);
+        doc.setTextColor(0, 126, 202); // Existing blue for TAX INVOICE
         doc.text("TAX INVOICE", 15, 20, options);
         doc.setFontSize(14);
         doc.setFont('helvetica', 'normal');
@@ -85,7 +85,8 @@ export default {
         doc.text("Invoice Date: ", 170, 75, headerRight);
         doc.text(formatDateForDisplay(data.date), 190, 75, headerRight);
         doc.text("Payment Due: ", 170, 80, headerRight);
-        doc.text(formatDateForDisplay(data.dueDate), 190, 80, headerRight);
+        if(data.dueDate)
+          doc.text(formatDateForDisplay(data.dueDate), 190, 80, headerRight);
         doc.text("Amount Due: ", 170, 85, headerRight);
         doc.text("$" + data.amount, 190, 85, headerRight);
 
@@ -103,7 +104,7 @@ export default {
         doc.rect(0, footerPosition - 10, 210, 20, 'F'); // Rectangle for footer background
         doc.setTextColor(0, 0, 0); // Black color
         doc.text('THANK YOU FOR YOUR BUSINESS!', 75, footerPosition);
-        doc.textWithLink('Powered by Simplify Business', 82, footerPosition+5,{url:"simplifybusiness.com.au"});
+        doc.textWithLink('Powered by Simplify Business', 82, footerPosition+5,{url:"https://simplifybusiness.com.au"});
       };
 
       addHeader();

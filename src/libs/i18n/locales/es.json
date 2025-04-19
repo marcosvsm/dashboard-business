@@ -1,5 +1,5 @@
 {
-    "Dashboard": "Tablero",
+    "Dashboard": "Dashboard",
     "Company": "Empresa",
     "UI Elements": "Elementos de IU",
     "Forms & Tables": "Formularios y Tablas",
@@ -119,7 +119,7 @@
     "Wishlist": "Lista de Deseos",
     "Checkout": "Checkout",
     "User": "Usuario",
-    "View": "Vista",
+    "View": "Ver",
     "Authentication": "Autenticación",
     "Miscellaneous": "Diverso",
     "Coming Soon": "Próximamente",
@@ -136,7 +136,7 @@
     "Apps": "Aplicaciones",
     "User Interface": "Interfaz de Usuario",
     "Mail Templates": "Plantillas de Correo",
-    "Welcome": "Bienvenida",
+    "Welcome": "Bienvenido",
     "Reset Password": "Restablecer Contraseña",
     "Verify Email": "Verificar Correo Electrónico",
     "Deactivate Account": "Desactivar Cuenta",
@@ -190,7 +190,7 @@
     "Invoice Due": "Vencimiento de la Factura",
     "Paid": "Pagado",
     "Unpaid": "No Pagado",
-    "Overdue": "Atrasado",
+    "Overdue": "Vencido",
     "Update Profile": "Actualizar Perfil",
     "delete": "borrar",
     "My Invoices": "Mis Facturas",
@@ -205,5 +205,13 @@
     "Pending Invoices": "Facturas Pendientes",
     "View All": "Ver Todo",
     "Outstanding": "Pendiente",
-    "Outstanding Invoices": "Facturas Pendientes"
+    "Outstanding Invoices": "Facturas Pendientes",
+    "Income": "Ingresos",
+    "This Month": "Este Mes",
+    "Last Month": "Último Mes",
+    "Next": "Siguiente",
+    "Skip": "Omitir",
+    "Details for payments": "Detalles para pago",
+    "Payment Method": "Método de Pago",
+    "Add Payment Details": "Agregar Detalles de Pago"
   }
