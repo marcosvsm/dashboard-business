@@ -7,7 +7,7 @@
     <template #button-content>
       <div class="d-sm-flex d-none user-nav">
         <p class="user-name font-weight-bolder mb-0">
-          {{ user.name || user.name }}
+          {{ user.name}}
         </p>
         <span class="user-status"></span>
       </div>
@@ -16,7 +16,8 @@
         variant="light-primary"
         badge
         class="badge-minimal"
-        badge-variant="success"
+        :badge-variant="badgeVariant"
+        :text="user.name ? user.name.charAt(0) : ''"
       >
         <base-feather-icon
           v-if="!user.name"
@@ -112,8 +113,16 @@ export default {
       user: {
         name: "",
       },
+      isLoading: false,
       //avatarText,
     }
+  },
+  computed:{
+    badgeVariant(){
+      if(!this.isLoading)
+        return 'light';
+      return this.user.name ? 'success' : 'danger';
+    },
   },
   created(){
     this.getMe();
@@ -122,6 +131,7 @@ export default {
     async getMe(){
       await this.$store.dispatch("profile/me")
       this.user = await this.$store.getters["profile/me"]
+      this.isLoading = true;
     },
     logout() {
       this.$store.dispatch("logout");
