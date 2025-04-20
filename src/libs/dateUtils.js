@@ -13,3 +13,7 @@ export function formatDateForStorage(date) {
 export function dateNow(){
     return dayjs().format('YYYY-MM-DD');
 }
+
+export function formatDateForInvoiceDisplay(date) {
+    return dayjs(date).format('dddd, MMMM D, YYYY'); // e.g., "Monday, October 15, 2023"
+}

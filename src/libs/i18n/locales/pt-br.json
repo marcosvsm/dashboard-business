@@ -233,5 +233,7 @@
   "Skip": "Pular",
   "Details for payments": "Detalhes para pagamento",
   "Payment Method": "Método de Pagamento",
-  "Add Payment Details": "Adicionar Detalhes de Pagamento"
+  "Add Payment Details": "Adicionar Detalhes de Pagamento",
+  "Last Invoice": "Última Fatura",
+  "Amount Received": "Valor Recebido"
 }
