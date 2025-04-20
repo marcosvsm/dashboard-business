@@ -15,5 +15,5 @@ export function dateNow(){
 }
 
 export function formatDateForInvoiceDisplay(date) {
-    return dayjs(date).format('dddd, MMMM D, YYYY'); // e.g., "Monday, October 15, 2023"
+    return dayjs(date).format('dddd, MMMM D'); // e.g., "Monday, October 15, 2023"
 }
