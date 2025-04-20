@@ -213,5 +213,7 @@
     "Skip": "Omitir",
     "Details for payments": "Detalles para pago",
     "Payment Method": "Método de Pago",
-    "Add Payment Details": "Agregar Detalles de Pago"
+    "Add Payment Details": "Agregar Detalles de Pago",
+    "Last Invoice": "Última Factura",
+    "Amount Received": "Monto Recibido"
   }

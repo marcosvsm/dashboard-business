@@ -9,7 +9,7 @@
         <!-- Invoices Card -->  
         <b-col md="4" sm="6" xs="12">
           <b-card class="card-stats mb-4 mb-xl-0">
-            <b-card-body>
+            <b-card-body class="d-flex flex-column">
               <b-row>
                 <b-col>
                   <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">{{ t('Invoices') }}</h5>
@@ -24,11 +24,17 @@
                   </div>
                 </b-col>
               </b-row>
-              <p class="mt-3 mb-0 text-sm">
+              <p class="mt-1 mb-0 text-sm">
                 <span class="text-nowrap">
                   {{ t('Paid') }}: {{ getInvoicePaid() }} | {{ t('Unpaid') }}: {{ getInvoiceUnpaid() }}
                 </span>
               </p>
+              <!-- Move Last Invoice to bottom with flex-grow -->
+              <div class="last-invoice mt-auto">
+                <span class="text-nowrap">
+                <span class="text-muted">{{ t('Last Invoice') }}:</span> {{ getLastInvoice() }}
+                </span>
+              </div>
             </b-card-body>
           </b-card>
         </b-col>
@@ -38,9 +44,9 @@
             <b-card-body>
               <b-row>
                 <b-col>
-                  <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
-                    {{ t('Income') }}
-                  </h5>
+                    <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
+                      {{ t('Amount Received') }}
+                    </h5>
                   <span class="h2 font-weight-bold mb-0">{{getTotalAmount()}}</span>
                   <div class="mt-2 text-sm">
                     <span class="text-muted"> {{ t('This Month') }}: </span>
@@ -170,6 +176,7 @@ import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
 import { mapGetters, mapActions } from 'vuex';
+import { formatDateForInvoiceDisplay } from '@/libs/dateUtils.js'
 export default {
     components:{
         BaseFeatherIcon,
@@ -400,13 +407,19 @@ export default {
           return overdue.length;
         },
         getOverdueAmount(){
-        const today = new Date();
+          const today = new Date();
           const overdue = this.invoices.filter(
             invoice => invoice.status === 0 && new Date(invoice.due_date) < today
           );
           const amount = overdue.reduce((total, invoice) => total + (parseFloat(invoice.amount) || 0), 0);
           return amount; 
         },
+        getLastInvoice(){
+          const dates = this.invoices.map((invoice) => new Date(invoice.invoice_date));
+          const latestDate = new Date(Math.max(...dates));
+          
+          return formatDateForInvoiceDisplay(latestDate) !== 'Invalid Date' ? formatDateForInvoiceDisplay(latestDate) : "N/A" 
+        }
     },
  //   mounted(){
  //       this.startTutorial();
@@ -514,5 +527,24 @@ export default {
     padding: 0.2rem 0.4rem;
     font-size: 0.75rem;
   }
+}
+/* Flexbox styling for last-invoice */
+.last-invoice {
+  margin-top: auto; /* Push to bottom in flex context */
+  padding-top: 0.5rem; /* Visual separation */
+}
+
+/* Fallback: Absolute positioning with spacer */
+.card-stats .card-body.position-relative {
+  position: relative;
+}
+.last-invoice.absolute-bottom {
+  position: absolute;
+  bottom: 1rem; /* Align with padding */
+  left: 1.25rem;
+  right: 1.25rem;
+}
+.last-invoice-spacer {
+  height: 1.5rem; /* Reserve space for absolute-positioned last-invoice */
 }
 </style>
