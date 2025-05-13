@@ -504,6 +504,7 @@ export default {
     const popoverVisible = ref([]);
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
+    const userInteracted = ref([]);
     const datePickerConfig  = {
       dateFormat: 'd/m/Y',
       defaultDate: null,
@@ -512,16 +513,27 @@ export default {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
        // flatpickrRef.value[index].push(instance);
+       // Prevent auto-setting today's date if not specified
+       userInteracted.value[index] = false;
+       if(!selectedDates.value[index]){
+         instance.clear();
+       }
+      },
+      onChange(dates, dateStr, instance) {
+        const index = instance.element.dataset.index;
+        userInteracted.value[index] = true;
       },
       onClose(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
-        if (dates && dates.length > 0) {
+          // Only handle if the user really interacted
+        if (userInteracted.value[index] && dates && dates.length > 0) {
           // Delay to ensure iOS processes the touch event
           setTimeout(() => {
             handleDateChange(index, dates);
             // Force input update for iOS
             instance.element.value = dateStr;
             instance.element.dispatchEvent(new Event('input', { bubbles: true }));
+            userInteracted.value[index] = false; // reset for next use
           }, 100); // Small delay for iOS touch event
         }
       },

@@ -178,7 +178,7 @@ export default {
           const img = require('@/assets/img/payid.png') // Adjust path if needed (e.g., '@/assets/img/payment-icon.png')
           doc.addImage(img, 'PNG', 53, rowSubtotal-12, 20, 20) // 20x20px icon, positioned left of header
           doc.text(data.company.paymentDetail?.payid, 15, rowGst, customerLeft);
-          doc.text("name: "+data.company.paymentDetail?.name, 15, rowTotal, customerLeft);
+          doc.text(data.company.paymentDetail?.name, 15, rowTotal, customerLeft);
         } catch (e) {
           doc.text("Payid: "+data.company.paymentDetail?.payid, 15, rowGst, customerLeft);
           doc.text("name: "+data.company.paymentDetail?.name, 15, rowTotal, customerLeft);
