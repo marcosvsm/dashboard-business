@@ -45,7 +45,12 @@ export default {
                 name: 'add-invoice'
               }
             },
-            
+            {
+              title: 'Tax Calculator',
+              route:{
+                name: 'tax-calculator'
+              },
+            },
           ],
         },
       ],

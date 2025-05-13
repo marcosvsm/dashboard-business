@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
 //import VueRouter from 'vue-router'
-import VueNotify from 'vue-notifyjs'
-
+//import VueNotify from 'vue-notifyjs'
+import Toast from 'vue-toastification'
 //router setup
 import router from './router/index'
 
@@ -18,7 +18,11 @@ import store from "./store";
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
-Vue.use(VueNotify);
+Vue.use(Toast, {
+  transition: "Vue-Toastification__fade",
+  maxToasts: 5,
+  newestOnTop: true
+});
 
 //plugin setup
 //Vue.use(VueRouter);

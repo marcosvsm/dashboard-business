@@ -25,6 +25,9 @@ import InvoiceOverview from '@/components/views/pages/invoice/InvoiceOverview.vu
 import Company from '@/components/views/pages/Company.vue'
 import CompanyList from '@/components/views/pages/company/CompanyList.vue'
 
+//tax
+import TaxCalculator from '@/components/views/pages/tax/TaxCalculator.vue'
+
 //User
 import UserProfile from '@/components/views/pages/user/Profile.vue'
 
@@ -186,6 +189,15 @@ let dashboardPage = {
     }
 }
 
+let taxPage = {
+  path: '/tax/calculator',
+  name: 'tax-calculator',
+  component: TaxCalculator,
+  meta: {
+    middleware: auth
+  }
+}
+
 let notFoundPage = {
   // Add a catch-all route for 404 Not Found
     path: '/:catchAll(.*)',
@@ -214,6 +226,7 @@ const routes = [
     passwordResetPage,
     faqPage,
     confirmRegisterPage,
+    taxPage,
     notFoundPage,
 ];
 

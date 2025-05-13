@@ -24,6 +24,7 @@
               :companies="companies" 
               :customers="customers" 
               :addCustomerToInvoice="addCustomerToInvoice"
+              :formErrors="formErrors"
             />
             <hr class="invoice-spacing">
             <b-card-body v-if="noteSwitch" class="invoice-padding pt-0">
@@ -193,6 +194,11 @@ export default {
   },
   directives: {
     Ripple,
+  },
+  data(){
+    return{
+      formErrors: Object
+    }
   },
   methods: {
     async saveInvoice() {
