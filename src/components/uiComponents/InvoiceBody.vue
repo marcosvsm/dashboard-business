@@ -504,7 +504,6 @@ export default {
     const popoverVisible = ref([]);
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
-    const userInteracted = ref([]);
     const datePickerConfig  = {
       dateFormat: 'd/m/Y',
       defaultDate: null,
@@ -513,31 +512,17 @@ export default {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
        // flatpickrRef.value[index].push(instance);
-       // Prevent auto-setting today's date if not specified
-       userInteracted.value[index] = false;
-       if(!selectedDates.value[index]){
-         instance.clear();
-       }
+       // Don't auto-select today's date
+      // instance.clear();
       },
       onChange(dates, dateStr, instance) {
+        //const index = flatpickrRef.value.indexOf(instance);
         const index = instance.element.dataset.index;
-        userInteracted.value[index] = true;
-      },
-      onClose(dates, dateStr, instance) {
-        const index = instance.element.dataset.index;
-          // Only handle if the user really interacted
-        if (userInteracted.value[index] && dates && dates.length > 0) {
-          // Delay to ensure iOS processes the touch event
-          setTimeout(() => {
-            handleDateChange(index, dates);
-            // Force input update for iOS
-            instance.element.value = dateStr;
-            instance.element.dispatchEvent(new Event('input', { bubbles: true }));
-            userInteracted.value[index] = false; // reset for next use
-          }, 100); // Small delay for iOS touch event
+        // If the new date is different from the previous one, update and call handleDateChange
+        if (selectedDates.value[index]) {
+            handleDateChange(index, dates);  // Call only if the date is truly changed
         }
       },
-      
     };
 
     const openPopover = (index) => {
@@ -549,6 +534,7 @@ export default {
       });
         // Ensure the flatpickr instance is available before trying to open it
       nextTick(() => {
+        //popoverVisible.value[index] = true;
        if (flatpickrRef.value[index]) {
           flatpickrRef.value[index].open();
         }
