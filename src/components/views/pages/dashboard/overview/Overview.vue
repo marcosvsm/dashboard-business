@@ -16,12 +16,14 @@
                   <span class="h2 font-weight-bold mb-0">{{getNumberInvoices()}}</span>
                 </b-col>
                 <b-col cols="auto">
+                    <router-link :to="{ name: 'invoices'}">
                   <div class="icon icon-shape bg-gradient-blue text-white rounded-circle shadow">
                     <base-feather-icon
                       icon="FileTextIcon"
                       size="30"
                     />
                   </div>
+                    </router-link>
                 </b-col>
               </b-row>
               <p class="mt-1 mb-0 text-sm">

@@ -24,7 +24,20 @@
             <hr 
               class="invoice-spacing"
             >
-            <invoice-body :invoiceData="invoiceData" :companies="companies" :customers="customers" :addCustomerToInvoice="addCustomerToInvoice"/>
+            <!-- Add Suggest Button Above Body 
+            <b-card-body class="invoice-padding pb-0">
+              <b-button
+                v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+                variant="outline-primary"
+                class="mb-1"
+                :disabled="!invoiceData.customer.id || isSuggesting"
+                @click="suggestInvoice"
+              >
+                {{ isSuggesting ? 'Suggesting...' : 'Suggest Invoice' }}
+              </b-button>
+            </b-card-body>
+-->
+            <invoice-body :invoiceData="invoiceData" :companies="companies" :customers="customers" :addCustomerToInvoice="addCustomerToInvoice" :formErrors="formErrors"/>
             <!-- Spacer -->
             <hr 
               class="invoice-spacing"
@@ -59,7 +72,7 @@
         <!-- Action Buttons -->
         <b-card>
           <!-- Button: DOwnload -->
-          <pdf :invoiceData="invoiceData" :paymentDetails="paymentDetails" :selectedPaymentMethod="selectedPaymentMethod" />
+          <pdf :invoiceData="invoiceData" :paymentDetails="paymentDetails" :selectedPaymentMethod="selectedPaymentMethod" :validateForm="validateForm" />
         <!--  
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
@@ -77,6 +90,7 @@
             variant="outline-primary"
             block
             @click="saveInvoice()"
+            :disabled="isSubmitting"
           >
             {{ t('Save') }}
           </b-button>
@@ -193,11 +207,12 @@
       </b-col>
     </b-row>
     <payment-method-sidebar :company="invoiceData.company" @payment-added="handlePaymentAdded" />
+    <notifications></notifications>
   </section>
 </template>
 
 <script>
-import { ref, computed, getCurrentInstance, watch } from 'vue'
+import { ref, computed, getCurrentInstance, watch, reactive } from 'vue'
 import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import vSelect from 'vue-select'
@@ -206,9 +221,9 @@ import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
 import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
-import axios from '@/axios';
 import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
-
+import axios from 'axios'
+import "vue-toastification/dist/index.css";
 export default {
   components: {
     BaseFeatherIcon,
@@ -222,36 +237,100 @@ export default {
     Ripple,
   },
   methods:{
-    async saveInvoice(){
-      const data = { 
-        data: {
-          type: "invoices",
-          attributes: {
-            name: this.invoiceData.number,
-            invoice_date: this.invoiceData.date,
-            due_date: this.invoiceData.dueDate,
-            amount: this.invoiceData.amount,
-            ref: this.invoiceData.number,
-            company_id : this.invoiceData.company.id,
-            customer_id: this.invoiceData.customer.id,
-            items: this.invoiceData.items
-          },
-            relationships:{
-              company: {
-                data: {
-                  type: "companies",
-                  id: this.invoiceData.company.id,
-                }
-              },
-            },
-        }
+    validateForm() {
+      const errors = {}
+      let isValid = true
+
+      // Validate company
+      if (!this.invoiceData.company || !this.invoiceData.company.id) {
+        errors.company = 'Company is required'
+        isValid = false
       }
+
+      // Validate items
+      let hasValidItem = false
+      if (!this.invoiceData.items || !this.invoiceData.items.length) {
+        errors.items = 'At least one item is required'
+        isValid = false
+      } else {
+        this.invoiceData.items.forEach((item, index) => {
+          const qty = parseFloat(item.quantity)
+          const price = parseFloat(item.price)
+
+          if (!qty || qty < 1) {
+            errors[`quantity-${index}`] = 'Quantity must be at least 1'
+            isValid = false
+          }
+          if (!price || price < 0.01) {
+            errors[`price-${index}`] = 'Price must be greater than 0'
+            isValid = false
+          }
+          if (qty >= 1 && price >= 0.01) {
+            hasValidItem = true
+          }
+        })
+      }
+
+      // Update formErrors reactively
+      this.formErrors = { ...errors }
+
+      // Scroll to first error
+      if (!isValid) {
+        this.$nextTick(() => {
+          const firstErrorKey = Object.keys(this.formErrors)[0]
+          if (firstErrorKey) {
+            if (firstErrorKey === 'company') {
+              document.querySelector('#companies-id')?.scrollIntoView({ behavior: 'smooth' })
+            } else if (firstErrorKey.startsWith('quantity-') || firstErrorKey.startsWith('price-')) {
+              const index = firstErrorKey.split('-')[1]
+              document.querySelector(`.repeater-form .row:nth-child(${parseInt(index) + 1})`)?.scrollIntoView({ behavior: 'smooth' })
+            } else if (firstErrorKey === 'items') {
+              document.querySelector('.form-item-section')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          }
+        })
+      }
+
+      return isValid
+    },
+    async saveInvoice(){
+      this.isSubmitting = true
+      // Run validation synchronously first
+      const isValid = this.validateForm()
+      if(isValid){
+        const data = { 
+          data: {
+            type: "invoices",
+            attributes: {
+              name: this.invoiceData.number,
+              invoice_date: this.invoiceData.date,
+              due_date: this.invoiceData.dueDate,
+              amount: this.invoiceData.amount,
+              ref: this.invoiceData.number,
+              company_id : this.invoiceData.company.id,
+              customer_id: this.invoiceData.customer.id,
+              items: this.invoiceData.items
+            },
+              relationships:{
+                company: {
+                  data: {
+                    type: "companies",
+                    id: this.invoiceData.company.id,
+                  }
+                },
+              },
+          }
+        }
       try{
         await this.$store.dispatch('invoices/add',data);
-        await this.$store.dispatch('alerts/showNotification', {
-          message:"Invoice saved successfully",
-          type:"success"
-        })
+        this.$toast.success("Invoice saved",
+            {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+            })
       } catch(e){
         console.log('Response data:', e.response.data);
         await this.$store.dispatch('alerts/showNotification', {
@@ -259,15 +338,78 @@ export default {
           type: "error"
         })
       }
+      } else {
+        console.log('Validation failed:', this.formErrors)
+        this.$nextTick(() => {
+          this.$toast.error('Please correct the errors in the form before saving the invoice.',
+          {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          })
+        })
+      }
+      this.isSubmitting = false
     },
     formatPrice(value) {
       // Ensure the value is a number and format it to two decimal places
       return Number(value).toFixed(2);
     },
+    async suggestInvoice() {
+      this.isSuggesting = true;
+      try {
+        const response = await axios.get(`http://localhost:3000/api/v1/invoices/suggest/${this.invoiceData.customer.id}`, {
+          headers: {
+            'Accept': 'application/vnd.api+json',
+            'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiZWFlMGFmNTI0NmFiNWY1ODQ3YTRhNzEzZTcxMTdiNzg3Njg5YTg1NDFhYTI4ODY4ZDdhMWUzNGM3NGZkMTgxYTM1M2VkNjRmYTU2ZjNmMjQiLCJpYXQiOjE3NDI4MDQzOTUsIm5iZiI6MTc0MjgwNDM5NSwiZXhwIjoxNzc0MzQwMzk1LCJzdWIiOiIyIiwic2NvcGVzIjpbXX0.RahyvrrSy8azlQY6eVzRHmnavzdywbObwgU7-20L50r7Iv3mKoHDv5y-110OqOT9ozWAbijkmZS7zREawmrFr8ILw6Hwtg5WzXD2iuZ7ip6p-69epzPaBgLAQ9KTF08mA3Y6RrODFm3i5upQoCUdUkwo91C7Fg4GxgyTPVpY8LH7ITs7UjXdD3A3JQgiNvwZtKH3mu4yU2RxdqPaTpyBM24MQIrQCggA78iXnwSBGw_VHRNyv2GfjeoOP1QYbqhvK5HvHHNzIpPOTG5cErYeu0nTmi0eDjm9uoUPcX6kh1f4cpUuVUWbWPkI76gC1giNBMSV_gwFZ_P0O00Ua358NDMDMYQ_-pY7HkMXgnfPATNHGQLKUhEYxGUssjkfuQ3Ai8_xI0L3mVQbHbPLqrXjIubMltLbf-vIPpcplXoIAxSkQAmYf2w305hGi0Nhsyfr2HuOb_5CS0yL17KHoCPjRjZ7ycRWQNB4Cbp12jGCUty5FhW1ftj9s67X5GCvP35C69ReJjwwdlUQdGDTOJJb5mfl02_Er2nps-Q3MtNEAi_CvrmUloak8UGR0nnNxMxiYKDzRn50F06HTXGSOQNKbPRa4K22HBKnU59KEP5m73z19Kd1jgfMvQSiAJl6jFRN1KpFjzyjynRuJLsqh7UORUJC4sjus5rrgoB1yKDwhPc`, // Adjust based on your auth setup
+          },
+        });console.log('Requesting:', response.included); // Debug URL
+        const { data } = response.data;
+
+        // Populate invoiceData with suggestion
+        this.invoiceData.number = data.attributes.number;
+        this.invoiceData.date = data.attributes.invoice_date;
+        this.invoiceData.dueDate = data.attributes.due_date;
+        this.invoiceData.amount = data.attributes.amount;
+        this.invoiceData.status = data.attributes.status;
+        // Replace items with API data
+        this.invoiceData.items = data.included.map(item => {
+           if (!item.attributes) {
+                console.warn('Item missing attributes:', item);
+                return { ...JSON.parse(JSON.stringify(itemFormBlankItem)) }; // Fallback
+            }
+            return {
+                description: item.attributes.description,
+                quantity: String(item.attributes.quantity),
+                price: String(item.attributes.price),
+                amount: String(item.attributes.amount),
+                name: item.attributes.name || '',
+            };
+        });
+        
+        await this.$store.dispatch('alerts/showNotification', {
+          message: 'Invoice suggestion loaded!',
+          type: 'success',
+        });
+      } catch (error) {
+        console.log(this.invoiceData.response)
+        console.error('Suggestion failed:', error.response?.data.errors);
+        await this.$store.dispatch('alerts/showNotification', {
+          message: 'Couldn’t load suggestion. Try again later.',
+          type: 'error',
+        });
+      }
+      this.isSuggesting = false;
+    },
   },
   setup() { 
     const { proxy } = getCurrentInstance()
     const customers = ref([]);
+    const isSubmitting = ref(false);
+    const isSuggesting = ref(false); // New flag for suggestion loading
+    const formErrors = ref({})
     const getCustomers = async () => {
       try{
         await store.dispatch('customers/list');
@@ -341,6 +483,7 @@ export default {
     const handlePaymentAdded = (payment) =>{
         proxy.$set(invoiceData.value.company, 'paymentDetail', payment);
     }
+
     
     return {
       invoiceData,
@@ -358,12 +501,16 @@ export default {
       newPayID,
       handlePaymentAdded,
       selectedPaymentMethod,
+      isSubmitting,
+      isSuggesting, // Expose to template
+      formErrors,
     }
   },
 }
 </script>
 
 <style lang="scss">
+
 @import '~@/scss/vue/libs/vue-select.scss';
 .invoice-add-wrapper {
   .add-new-client-header {
@@ -430,4 +577,8 @@ export default {
     min-height: 200px;
   }
 }
+
+.is-invalid { border-color: #dc3545; }
+.error { color: #dc3545; font-size: 0.875rem; }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>

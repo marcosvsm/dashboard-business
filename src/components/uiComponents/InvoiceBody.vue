@@ -86,6 +86,9 @@
             label="name"
             input-id="companies-id"
             :clearable="false"
+            :class="{ 'is-invalid': formErrors.company }"
+            ref="companySelect"
+            required
             >
             <template #no-options>
               <li class="no-options-message d-flex align-items-center my-50">
@@ -95,11 +98,14 @@
                 </span>
               </li>
             </template>
-            
             </v-select>
+              <!-- Error message -->
+              <b-form-invalid-feedback>
+                {{ formErrors.company }}
+              </b-form-invalid-feedback>
             <div
-            v-if="invoiceData.company"
-            class="mt-1"
+              v-if="invoiceData.company"
+              class="mt-1"
             >
               <table>
                   <tbody>
@@ -231,7 +237,12 @@
                       class="mb-2"
                       placeholder="0"
                       @keyup="setAmount"
+                      :class="{ 'is-invalid': formErrors[`quantity-${index}`] }"
                     />
+                    <!-- Error message -->
+                    <b-form-invalid-feedback> 
+                      {{ formErrors[`quantity-${index}`] }}
+                    </b-form-invalid-feedback>
                 </b-col>
                 <b-col
                     cols="12"
@@ -244,7 +255,12 @@
                     class="mb-2"
                     placeholder="0.00"
                     @keyup="setAmount"
+                    :class="{ 'is-invalid': formErrors[`price-${index}`] }"
                     />
+                    <!-- Error message -->
+                    <b-form-invalid-feedback>
+                      {{ formErrors[`price-${index}`] }}
+                    </b-form-invalid-feedback>
                 </b-col>
                 <b-col
                     cols="12"
@@ -288,6 +304,10 @@
         >
         Add Item
         </b-button>
+        <!-- Items Error Feedback -->
+        <b-form-invalid-feedback class="mt-1" :state="!formErrors.items">
+          {{ formErrors.items }}
+        </b-form-invalid-feedback>
     </b-card-body>
 
     <!-- Invoice Description: Total -->
@@ -354,6 +374,7 @@ export default {
       type: Function,
       required: true,
     },
+    formErrors: { type: Object}, // Receive errors from parent
   },
   directives: {
     Ripple,
@@ -417,10 +438,47 @@ export default {
       },
       immediate: true, // This will run the watcher when the component is mounted
       deep: true // In case you want to watch for nested changes in companies
-    }
+    },
+    'invoiceData.company':{
+      handler(company){
+        if(company)
+          this.formErrors['company'] = ''
+      },
+      deep: true
+    },
+    'invoiceData.items':{
+      handler(items){
+        const errors = { ...this.formErrors }
+
+        // Clear items error if non David's empty
+        if (items && items.length > 0) {
+          errors.items = ''
+        }
+
+        // Check each item for valid quantity and price
+        items.forEach((item, index) => {
+          const qty = parseFloat(item.quantity)
+          const price = parseFloat(item.price)
+
+          // Clear quantity error if valid
+          if (qty >= 1) {
+            errors[`quantity-${index}`] = ''
+            this.formErrors[`quantity-${index}`] = ''
+          }
+
+          // Clear price error if valid
+          if (price >= 0.01) {
+            errors[`price-${index}`] = ''
+            this.formErrors[`price-${index}`] = ''
+          }
+        })
+      },
+      deep:true
+    },
   },
   setup(props){
     const customerSelect = ref(null)
+    const {formErrors} = toRefs(props)
     const itemFormBlankItem = {
       name: '',
       price: '',
@@ -455,14 +513,19 @@ export default {
         flatpickrRef.value[index] = instance; // Store instance by item index
        // flatpickrRef.value[index].push(instance);
       },
-      onChange(dates, dateStr, instance) {
-        //const index = flatpickrRef.value.indexOf(instance);
+      onClose(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
-        // If the new date is different from the previous one, update and call handleDateChange
-        if (selectedDates.value[index]) {
-            handleDateChange(index, dates);  // Call only if the date is truly changed
+        if (dates && dates.length > 0) {
+          // Delay to ensure iOS processes the touch event
+          setTimeout(() => {
+            handleDateChange(index, dates);
+            // Force input update for iOS
+            instance.element.value = dateStr;
+            instance.element.dispatchEvent(new Event('input', { bubbles: true }));
+          }, 100); // Small delay for iOS touch event
         }
       },
+      
     };
 
     const openPopover = (index) => {
@@ -497,7 +560,6 @@ export default {
       }
         
     }
-  
     return {
         itemFormBlankItem,
         updateItemForm,
@@ -511,6 +573,7 @@ export default {
         handleDateChange,
         selectedDates,
         popoverVisible,
+        formErrors,
     }
   },
 }
@@ -520,6 +583,7 @@ export default {
 @import '~@/scss/base/components/variables-dark';
 @import '~@/scss/vue/libs/vue-select.scss';
 @import '~@/scss/vue/libs/vue-flatpicker.scss';
+
 </style>
 <style>
 /* Ensure that the flat-pickr input is wider on mobile */
@@ -579,6 +643,15 @@ export default {
       z-index: -1; /* Ensure it doesn't interfere with other elements */
     }
   }
+}
+
+.is-invalid .vs__dropdown-toggle{
+    border-color: #ea5455 !important;
+    padding-right: calc(1.45em + 0.876rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23ea5455' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23ea5455' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.3625em + 0.219rem) center;
+    background-size: calc(0.725em + 0.438rem) calc(0.725em + 0.438rem);
 }
 
 </style>
