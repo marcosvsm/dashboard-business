@@ -521,7 +521,7 @@ export default {
         const totalTax = incomeTax + medicareLevy + companyTax;
 
         // Calculate net income after tax
-        const netIncome = taxableIncome - totalTax;
+        const netIncome = grossIncome - totalTax;
 
         // Calculate effective tax rate
         const effectiveTaxRate = taxableIncome > 0 ? (totalTax / taxableIncome) * 100 : 0;
