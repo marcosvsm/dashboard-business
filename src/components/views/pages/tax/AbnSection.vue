@@ -240,14 +240,6 @@
             >
               <span class="truncate">{{ taxPercentage.toFixed(1) }}%</span>
             </div>
-            <div
-              class="bg-amber-500 flex items-center justify-center text-xs font-medium text-white"
-              :style="{ width: `${expensesPercentage}%`, minWidth: expensesPercentage > 0 ? '20px' : '0'}"
-              v-b-tooltip.hover.click
-              :title="`${t('Expenses')}: ${expensesPercentage.toFixed(2)}%`"
-            >
-              <span class="truncate">{{ expensesPercentage.toFixed(1) }}%</span>
-            </div>
           </div>
           <div class="flex flex-wrap gap-4">
             <div class="flex items-center">
@@ -257,10 +249,6 @@
             <div class="flex items-center">
               <div class="w-3 h-3 bg-red-500 rounded-full mr-1"></div>
               <span class="text-sm text-gray-700">{{t('Tax')}}</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-3 h-3 bg-amber-500 rounded-full mr-1"></div>
-              <span class="text-sm text-gray-700">{{t('Expenses')}}</span>
             </div>
           </div>
         </b-card-body>
@@ -368,16 +356,12 @@ export default {
   },
   computed: {
     netIncomePercentage() {
-      const total = this.netIncome + this.totalTax + parseFloat(this.expenses.replace(/,/g, '') || 0)
+      const total = this.grossIncome
       return total > 0 ? (this.netIncome / total) * 100 : 0
     },
     taxPercentage() {
-      const total = this.netIncome + this.totalTax + parseFloat(this.expenses.replace(/,/g, '') || 0)
+      const total = this.grossIncome
       return total > 0 ? (this.totalTax / total) * 100 : 0
-    },
-    expensesPercentage() {
-      const total = this.netIncome + this.totalTax + parseFloat(this.expenses.replace(/,/g, '') || 0)
-      return total > 0 ? (parseFloat(this.expenses.replace(/,/g, '') || 0) / total) * 100 : 0
     },
     incomeTaxPercentage() {
       return this.totalTax > 0 ? (this.incomeTax / this.totalTax) * 100 : 0
