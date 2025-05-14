@@ -43,6 +43,7 @@
             :invoiceData="invoiceData" 
             :paymentDetails="paymentDetails" 
             :selectedPaymentMethod="selectedPaymentMethod" 
+            :validateForm="validateForm"
           />
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
@@ -195,46 +196,113 @@ export default {
   directives: {
     Ripple,
   },
-  data(){
-    return{
-      formErrors: Object
-    }
-  },
   methods: {
-    async saveInvoice() {
-      const data = { 
-        data: {
-          type: "invoices",
-          id: this.invoiceData.id,
-          attributes: {
-            name: this.invoiceData.number,
-            invoice_date: this.invoiceData.date,
-            due_date: this.invoiceData.dueDate,
-            amount: this.invoiceData.amount,
-            ref: this.invoiceData.number,
-            company_id: this.invoiceData.company?.id,
-            customer_id: this.invoiceData.customer?.id,
-            items: this.invoiceData.items,
-            note: this.invoiceData.note
-          },
-          relationships: {
-            company: {
-              data: this.invoiceData.company ? { type: "companies", id: this.invoiceData.company.id } : null
-            },
-          },
-        }
+    validateForm() {
+      const errors = {}
+      let isValid = true
+
+      // Validate company
+      if (!this.invoiceData.company || !this.invoiceData.company.id) {
+        errors.company = 'Company is required'
+        isValid = false
       }
-      try {
-        await this.$store.dispatch('invoices/update', data)
-        await this.$store.dispatch('alerts/showNotification', {
-          message: "Invoice updated successfully",
-          type: "success"
+
+      // Validate items
+      let hasValidItem = false
+      if (!this.invoiceData.items || !this.invoiceData.items.length) {
+        errors.items = 'At least one item is required'
+        isValid = false
+      } else {
+        this.invoiceData.items.forEach((item, index) => {
+          const qty = parseFloat(item.quantity)
+          const price = parseFloat(item.price)
+
+          if (!qty || qty < 1) {
+            errors[`quantity-${index}`] = 'Quantity must be at least 1'
+            isValid = false
+          }
+          if (!price || price < 0.01) {
+            errors[`price-${index}`] = 'Price must be greater than 0'
+            isValid = false
+          }
+          if (qty >= 1 && price >= 0.01) {
+            hasValidItem = true
+          }
         })
-      } catch (e) {
-        console.log('Response data:', e.response?.data)
-        await this.$store.dispatch('alerts/showNotification', {
-          message: "Something went wrong! Try again later or contact support.",
-          type: "error"
+      }
+
+      // Update formErrors reactively
+      this.formErrors = { ...errors }
+
+      // Scroll to first error
+      if (!isValid) {
+        this.$nextTick(() => {
+          const firstErrorKey = Object.keys(this.formErrors)[0]
+          if (firstErrorKey) {
+            if (firstErrorKey === 'company') {
+              document.querySelector('#companies-id')?.scrollIntoView({ behavior: 'smooth' })
+            } else if (firstErrorKey.startsWith('quantity-') || firstErrorKey.startsWith('price-')) {
+              const index = firstErrorKey.split('-')[1]
+              document.querySelector(`.repeater-form .row:nth-child(${parseInt(index) + 1})`)?.scrollIntoView({ behavior: 'smooth' })
+            } else if (firstErrorKey === 'items') {
+              document.querySelector('.form-item-section')?.scrollIntoView({ behavior: 'smooth' })
+            }
+          }
+        })
+      }
+
+      return isValid
+    },
+    async saveInvoice() {
+       // Run validation synchronously first
+      const isValid = this.validateForm()
+      if(isValid){
+        const data = { 
+          data: {
+            type: "invoices",
+            id: this.invoiceData.id,
+            attributes: {
+              name: this.invoiceData.number,
+              invoice_date: this.invoiceData.date,
+              due_date: this.invoiceData.dueDate,
+              amount: this.invoiceData.amount,
+              ref: this.invoiceData.number,
+              company_id: this.invoiceData.company?.id,
+              customer_id: this.invoiceData.customer?.id,
+              items: this.invoiceData.items,
+              note: this.invoiceData.note
+            },
+            relationships: {
+              company: {
+                data: this.invoiceData.company ? { type: "companies", id: this.invoiceData.company.id } : null
+              },
+            },
+          }
+        }
+        try {
+          await this.$store.dispatch('invoices/update', data)
+          await this.$store.dispatch('alerts/showNotification', {
+            message: "Invoice updated successfully",
+            type: "success"
+          })
+        } catch (e) {
+          console.log('Response data:', e.response?.data)
+          await this.$store.dispatch('alerts/showNotification', {
+            message: "Something went wrong! Try again later or contact support.",
+            type: "error"
+          })
+        }
+      } else {
+        console.log('Validation failed:', this.formErrors)
+        this.$nextTick(() => {
+          this.$toast.error('Please correct the errors in the form before saving the invoice.',
+          {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          })
         })
       }
     },
@@ -245,7 +313,7 @@ export default {
   setup() {
     const { proxy } = getCurrentInstance()
     const { t } = useI18nUtils()
-
+    const formErrors = ref({})
     const invoiceData = ref({})
     const customers = ref([])
     const companies = ref([])
@@ -377,6 +445,7 @@ export default {
       handlePaymentAdded,
       loading, // Expose loading state
       errors, // Expose error state
+      formErrors,
     }
   },
 }
