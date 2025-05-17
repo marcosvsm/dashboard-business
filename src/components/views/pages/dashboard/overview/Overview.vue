@@ -45,10 +45,10 @@
           <b-card class="card-stats mb-4 mb-xl-0">
             <b-card-body>
               <b-row>
-                <b-col>
+                <b-col class="pr-0">
                     <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
                       {{ t('Amount Received') }} 
-                      <b-span 
+                      <span 
                       class="cursor-pointer" 
                       @click="handleHideAmount"
                       >
@@ -56,7 +56,7 @@
                           :icon="this.hideAmount ? 'EyeOffIcon' : 'EyeIcon'" 
                           size="22"
                         />
-                      </b-span>
+                      </span>
                     </h5>
                   <span class="h2 font-weight-bold mb-0">{{this.hideAmount ? '******' : getTotalAmount()}}</span>
                   <div class="mt-2 text-sm">
@@ -68,7 +68,7 @@
                     <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForLastMonth() }} </span>
                   </div>
                 </b-col>
-                <b-col cols="auto">
+                <b-col cols="auto" class="pl-0">
                   <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
                       <base-feather-icon
                         icon="TrendingUpIcon" 
