@@ -107,7 +107,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
 import Ripple from 'vue-ripple-directive'
 import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
@@ -135,7 +135,7 @@ export default {
       abn: '',
       phone: '',
     })
-
+  //  const { proxy } = getCurrentInstance()
      // Async function to fetch invoices
     const addCustomer = async (hide) => {
       try {
@@ -160,8 +160,8 @@ export default {
          }
         };
         await store.dispatch('customers/add', data);
-
-        props.addCustomerToInvoice(customer.value);
+        const customerResponse = await store.getters['customers/customer'];
+        props.addCustomerToInvoice(customerResponse);
         resetCustomer();
         if (hide) hide();
         emit('close-dropdown');
