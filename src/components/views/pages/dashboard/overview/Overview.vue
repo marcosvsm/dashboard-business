@@ -47,16 +47,25 @@
               <b-row>
                 <b-col>
                     <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
-                      {{ t('Amount Received') }}
+                      {{ t('Amount Received') }} 
+                      <b-span 
+                      class="cursor-pointer" 
+                      @click="handleHideAmount"
+                      >
+                        <base-feather-icon
+                          :icon="this.hideAmount ? 'EyeOffIcon' : 'EyeIcon'" 
+                          size="22"
+                        />
+                      </b-span>
                     </h5>
-                  <span class="h2 font-weight-bold mb-0">{{getTotalAmount()}}</span>
+                  <span class="h2 font-weight-bold mb-0">{{this.hideAmount ? '******' : getTotalAmount()}}</span>
                   <div class="mt-2 text-sm">
                     <span class="text-muted"> {{ t('This Month') }}: </span>
-                    <span class="font-weight-bold"> {{ getIncomeForThisMonth() }} </span>
+                    <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForThisMonth() }} </span>
                   </div>
                   <div class="text-sm">
                     <span class="text-muted"> {{ t('Last Month') }}: </span>
-                    <span class="font-weight-bold"> {{ getIncomeForLastMonth() }} </span>
+                    <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForLastMonth() }} </span>
                   </div>
                 </b-col>
                 <b-col cols="auto">
@@ -80,7 +89,7 @@
                   <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
                     {{ t('Outstanding') }}
                   </h5>
-                  <span class="h2 font-weight-bold mb-0">{{this.getPendingTotalAmount}}</span>
+                  <span class="h2 font-weight-bold mb-0">{{getPendingAmount()}}</span>
                 </b-col>
                 <b-col cols="auto">
                   <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
@@ -187,7 +196,6 @@ export default {
         return {
             invoices: [],
             isLoadingInvoices: false,
-            getPendingTotalAmount: 0,
             t: null,
             formatDateForDisplay,
             showTutorial: false,
@@ -206,6 +214,7 @@ export default {
             }),
             paid: 0,
             unpaid: 0,
+            hideAmount: true,
 
         }
     },
@@ -290,6 +299,16 @@ export default {
             });
             this.getPendingTotalAmount = this.currencyFormatter.format(totalPendingAmount);
             return this.currencyFormatter.format(totalAmount);
+        },
+        getPendingAmount(){
+          let totalPendingAmount = 0
+          this.invoices.forEach(invoice => {
+            if(invoice.status == 0)
+              totalPendingAmount += parseFloat(invoice.amount)
+          })
+          const pendingTotalAmount = totalPendingAmount;
+
+          return this.currencyFormatter.format(pendingTotalAmount);
         },
         async updateInvoiceStatus(invoice, status){
             try{
@@ -421,7 +440,17 @@ export default {
           const latestDate = new Date(Math.max(...dates));
           
           return formatDateForInvoiceDisplay(latestDate) !== 'Invalid Date' ? formatDateForInvoiceDisplay(latestDate) : "N/A" 
+        },
+        handleHideAmount(){
+          this.hideAmount = !this.hideAmount
+          localStorage.setItem('hideAmount', this.hideAmount)
         }
+    },
+    mounted() {
+      const isHide = localStorage.getItem('hideAmount');
+      if (isHide !== null) {
+        this.hideAmount = isHide === 'true'; // convert string to boolean
+      }
     },
  //   mounted(){
  //       this.startTutorial();
@@ -548,5 +577,8 @@ export default {
 }
 .last-invoice-spacer {
   height: 1.5rem; /* Reserve space for absolute-positioned last-invoice */
+}
+.eyes{
+  cursor: pointer;
 }
 </style>
