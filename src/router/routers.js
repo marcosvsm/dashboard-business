@@ -33,6 +33,8 @@ import UserProfile from '@/components/views/pages/user/Profile.vue'
 
 import Faq from '@/components/views/pages/menu/Faq.vue'
 
+import GoogleCallback from '@/components/views/pages/GoogleCallback.vue'
+
 let loginPage = {
     path: '/login',
     name: 'Login',
@@ -198,6 +200,15 @@ let taxPage = {
   }
 }
 
+let googleCallbackPage = {
+  path: '/auth/google/callback',
+  name: 'GoogleCallback',
+  component: GoogleCallback,
+  meta: {
+    middleware: guest,
+  },
+}
+
 let notFoundPage = {
   // Add a catch-all route for 404 Not Found
     path: '/:catchAll(.*)',
@@ -207,6 +218,7 @@ let notFoundPage = {
       layout: 'full',
     },
 }
+
 
 
 const routes = [
@@ -227,6 +239,7 @@ const routes = [
     faqPage,
     confirmRegisterPage,
     taxPage,
+    googleCallbackPage,
     notFoundPage,
 ];
 

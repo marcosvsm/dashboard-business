@@ -32,12 +32,18 @@ export default {
 
   actions: {
     login(context, payload){
-      return vueAuth.login(payload.user, payload.requestOptions).then(response => {
-        context.commit("isAuthenticated", {
-          isAuthenticated: vueAuth.isAuthenticated()
-        });
-          router.push({path: "/dashboard/overview"});
+      const requestOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    };
+    return vueAuth.login(payload.user, requestOptions ).then(response => {
+      context.commit("isAuthenticated", {
+        isAuthenticated: vueAuth.isAuthenticated()
       });
+      router.push({ path: "/dashboard/overview" });
+    })
     },
 
     register(context, payload){
