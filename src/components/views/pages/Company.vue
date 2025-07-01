@@ -1,6 +1,6 @@
 <template>
     <b-tabs v-model="currentTab">
-      <b-tab title="Create Company">
+      <b-tab :title="t('Create Business')">
         <section>
           <div class="mt-1">
             <b-row>
@@ -44,7 +44,7 @@
           </div>
         </section>
       </b-tab>
-      <b-tab title='Add Payment Details' :disabled="!companyCreated">
+      <b-tab :title="t('Add Payment Details')" :disabled="!companyCreated">
         <section>
           <div class="mt-1">
             <b-row>
@@ -151,15 +151,20 @@ export default {
         this.$router.push({ name: 'companies' });
       } catch (e) {
         console.log('Response data:', e.response.data);
+        let message = 'Something went wrong! Try again later or contact the support.'
         if (e.response.data.errors[0].detail === 'Your email address is not verified.') {
-          this.message = "Your email address is not verified. Please verify your email.";
-        } else {
-          this.message = "Something went wrong! Try again later or contact the support.";
+          message = "Your email address is not verified. Please verify your email.";
+        } else if(e.response.data.errors[0].detail === 'You have reached your limit for this feature.') {
+          message = 'You have reached your limit to create a Company';
         }
-        await this.$store.dispatch('alerts/showNotification', {
-          message: this.message,
-          type: 'error'
-        });
+       this.$toast.error(message,
+          {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          })
       }
     },async saveCompany() {
       try {
@@ -183,16 +188,20 @@ export default {
         await this.$store.dispatch('companies/add', data);
         this.$router.push({ name: 'companies' });
       } catch (e) {
-        console.log('Response data:', e.response.data);
+        let message = 'Something went wrong! Try again later or contact the support.'
         if (e.response.data.errors[0].detail === 'Your email address is not verified.') {
-          this.message = "Your email address is not verified. Please verify your email.";
-        } else {
-          this.message = "Something went wrong! Try again later or contact the support.";
+          message = "Your email address is not verified. Please verify your email.";
+        } else if(e.response.data.errors[0].detail === 'You have reached your limit for this feature.') {
+          message = 'You have reached your limit to create a Company';
         }
-        await this.$store.dispatch('alerts/showNotification', {
-          message: this.message,
-          type: 'error'
-        });
+         this.$toast.error(message,
+          {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          })
       }
     },
     async skipPaymentDetails() {

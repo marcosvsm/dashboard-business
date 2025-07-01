@@ -12,7 +12,7 @@
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center content-sidebar-header px-2 py-1">
         <h5 class="mb-0">
-          {{ t('Add Client') }}
+          {{ isEditing ? t('Edit Client') : t('Add Client') }}
         </h5>
 
         <base-feather-icon
@@ -21,19 +21,19 @@
           size="16"
           @click="hide"
         />
-
       </div>
 
       <!-- Body -->
       <b-form
         class="p-2"
-        @submit.prevent="addCustomer(hide)"
+        @submit.prevent="submitCustomer(hide)"
       >
-
         <!-- Customer Name -->
         <b-form-group
           :label="t('Client Name')"
           label-for="customer-name"
+          :invalid-feedback="t('Client Name is required')"
+          :state="customer.name ? null : false"
         >
           <b-form-input
             id="customer-name"
@@ -90,15 +90,16 @@
             variant="primary"
             class="mr-2"
             type="submit"
+            :disabled="isLoading"
           >
-          {{ t('Add') }}
+            {{ isLoading ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? t('Update') : t('Add')) }}
           </b-button>
           <b-button
             v-ripple.400="'rgba(186, 191, 199, 0.15)'"
             variant="outline-secondary"
             @click="hide"
           >
-          {{ t('Cancel') }}
+            {{ t('Cancel') }}
           </b-button>
         </div>
       </b-form>
@@ -107,92 +108,146 @@
 </template>
 
 <script>
-import { ref, getCurrentInstance } from 'vue'
+import { ref, watch, getCurrentInstance } from 'vue'
 import Ripple from 'vue-ripple-directive'
-import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import store from '@/store'
+import "vue-toastification/dist/index.css";
 
 export default {
   components: {
-    vSelect,
     BaseFeatherIcon,
   },
   directives: {
     Ripple,
   },
-  props:{
+  props: {
     addCustomerToInvoice: {
       type: Function,
       required: true
+    },
+    customerToEdit: {
+      type: Object,
+      default: null
     }
   },
   setup(props, { emit }) {
+    const { proxy } = getCurrentInstance();
+    const { t } = useI18nUtils();
+    const isLoading = ref(false);
+    const isEditing = ref(false);
+
     const customer = ref({
       name: '',
       email: '',
       abn: '',
       phone: '',
-    })
-  //  const { proxy } = getCurrentInstance()
-     // Async function to fetch invoices
-    const addCustomer = async (hide) => {
-      try {
-        const user = store.getters["profile/me"];
-        const data = {
-         data:{
-            type: "customers",
-            attributes:{
-              name: customer.value.name,
-              phone: customer.value.phone,
-              abn: customer.value.abn,
-              email: customer.value.email,
-            },
-            relationships:{
-              user: {
-                data: {
-                  type: "users",
-                  id: user.id,
-                }
-              }
-            },
-         }
+    });
+
+    // Watch for changes in customerToEdit prop to populate form for editing
+    watch(() => props.customerToEdit, (newCustomer) => {
+      if (newCustomer) {
+        isEditing.value = true;
+        customer.value = {
+          id: newCustomer.id,
+          name: newCustomer.name || '',
+          email: newCustomer.email || '',
+          abn: newCustomer.abn || '',
+          phone: newCustomer.phone || '',
         };
-        await store.dispatch('customers/add', data);
-        const customerResponse = await store.getters['customers/customer'];
-        props.addCustomerToInvoice(customerResponse);
-        resetCustomer();
-        if (hide) hide();
-        emit('close-dropdown');
-      } catch (error) {
-        console.error('Error create client:', error);
-        this.message = "Something went wrong! Try again later or contact the support.";
-        await this.$store.dispatch('alerts/showNotification', {
-          message: this.message,
-          type: 'error'
-        });
+      } else {
+        isEditing.value = false;
       }
-    }
+    }, { immediate: true });
 
     const resetCustomer = () => {
       customer.value = {
+        id: null,
         name: '',
         email: '',
         abn: '',
         phone: '',
+      };
+    };
+
+    const submitCustomer = async (hide) => {
+      isLoading.value = true;
+      try {
+        let customerResponse;
+        if (isEditing.value) {
+          // Add type to the customer object for updates
+      const updatePayload = {
+        ...customer.value,
+        type: 'customers' // Ensure type matches what ModelsSerializer expects
+      };
+          await store.dispatch('customers/update', updatePayload);
+          customerResponse = await store.getters['customers/customer'];
+          // Call addCustomerToInvoice with normalized customer
+          props.addCustomerToInvoice(customerResponse);
+          proxy.$toast.success("Customer Updated", {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          });
+        } else {
+          const user = store.getters["profile/me"];
+          const data = {
+            data: {
+              type: "customers",
+              attributes: {
+                name: customer.value.name,
+                phone: customer.value.phone,
+                abn: customer.value.abn,
+                email: customer.value.email,
+              },
+              relationships: {
+                user: {
+                  data: {
+                    type: "users",
+                    id: user.id,
+                  }
+                }
+              },
+            }
+          };
+          // Add new customer
+          await store.dispatch('customers/add', data);
+          customerResponse = await store.getters['customers/customer'];
+          props.addCustomerToInvoice(customerResponse);
+          proxy.$toast.success("Customer Created", {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          });
+        }
+        resetCustomer();
+        if (hide) hide();
+        emit('close-dropdown');
+      } catch (error) {
+        proxy.$toast.error("Failed to update client. Please try again.", {
+          position: "top-right",
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000
+        });
+      } finally {
+        isLoading.value = false;
       }
-    }
-
-    const {t} = useI18nUtils()
-
+    };
 
     return {
       customer,
       t,
-      addCustomer,
-     // countries,
-    }
+      submitCustomer,
+      isLoading,
+      isEditing,
+    };
   },
 }
 </script>

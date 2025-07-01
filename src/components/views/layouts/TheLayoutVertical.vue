@@ -33,6 +33,12 @@ export default {
               name: 'companies'
             }
             },
+            {
+              title: 'Client',
+              route: {
+                name: 'client-list'
+              },
+            },
           ],
         },
         {
