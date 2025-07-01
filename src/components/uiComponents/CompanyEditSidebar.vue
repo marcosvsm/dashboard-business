@@ -138,30 +138,29 @@ export default {
     async updateCompany(){
       try{
         await this.$store.dispatch('companies/update', this.company);
-        await this.$store.dispatch('alerts/showNotification', {
-                  message: 'Business updated successfully.',
-                  type: 'success'
-          });
+        await this.$toast.success("Business updated successfully.",
+        {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+        });
       } catch (e){
-        console.log('Response data:', e.response.data);
-         await this.$store.dispatch('alerts/showNotification', {
-                message: 'Something went wrong! Try again later or contact the support.',
-                type: 'error'
-        }); // Log the response data for debugging
+        await this.$toast.error('Failed to update business. Please try again.', {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
       }   
     },
   },
-  setup(props) {
-    const customer = ref({
-      name: '',
-      email: '',
-      abn: '',
-      phone: '',
-    })
+  setup() {
     const {t} = useI18nUtils()
 
     return {
-      customer,
       t,
     }
   },

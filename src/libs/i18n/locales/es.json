@@ -302,5 +302,12 @@
     "Company Tax": "Impuesto Empresarial",
     "Business Owner Note": "Nota para Propietarios de Negocios",
     "This calculator provides a simplified estimate of your tax situation. As a business owner, you may be eligible for additional deductions and tax concessions. Consider consulting with a tax professional for personalized advice": "Esta calculadora proporciona una estimación simplificada de su situación tributaria. Como propietario de un negocio, puede ser elegible para deducciones adicionales y beneficios fiscales. Considere consultar a un contador o asesor tributario para asesoramiento personalizado.",
-    "This tax calculator provides estimates based on current Australian tax rates and simplified assumptions. It is for informational purposes only and does not account for all tax offsets, deductions, or individual circumstances. For accurate tax advice, please consult a qualified tax professional.": "Esta calculadora tributaria proporciona estimaciones basadas en las tasas tributarias australianas actuales y suposiciones simplificadas. Es solo para fines informativos y no considera todas las exenciones, deducciones o circunstancias individuales. Para asesoramiento tributario preciso, consulte a un profesional tributario calificado."
+    "This tax calculator provides estimates based on current Australian tax rates and simplified assumptions. It is for informational purposes only and does not account for all tax offsets, deductions, or individual circumstances. For accurate tax advice, please consult a qualified tax professional.": "Esta calculadora tributaria proporciona estimaciones basadas en las tasas tributarias australianas actuales y suposiciones simplificadas. Es solo para fines informativos y no considera todas las exenciones, deducciones o circunstancias individuales. Para asesoramiento tributario preciso, consulte a un profesional tributario calificado.",
+    "Client": "Cliente",
+    "Client List": "Lista de Clientes",
+    "Overview":"Descripción general",
+    "Loading":"Cargando",
+    "Search client...": "Buscar Cliente...",
+    "Search invoice...": "Buscar Factura...",
+    "Last Invoices": "Últimas facturas"
   }

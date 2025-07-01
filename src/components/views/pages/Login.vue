@@ -4,7 +4,7 @@
         <div class="d-none d-lg-flex align-items-center p-5 col-lg-8">
 
         </div>
-        <div class="d-flex align-items-center auth-bg px-2 p-lg-5 col-lg-4 right-bg">
+        <div class="d-flex align-items-center auth-bg px-2 p-lg-2 col-lg-4 right-bg">
             <div class="px-xl-5 mx-auto col-sm-8 col-md-6 col-lg-12">
               <span class="brand-logo">
                 <b-img
@@ -37,7 +37,7 @@
                         <div v-if="genericError" class="text-danger text-center mt-2">
                             {{ genericError }}
                         </div>
-                        <div class="text-center mt-3">
+                        <div class="text-center mt-2">
                             <b-button 
                               variant="primary" 
                               size="sm"
@@ -49,7 +49,7 @@
                         <p class="card-text text-center mt-2"><span>New on our platform? </span><a href="/register" class="" target="_self"><span> Create an account</span></a></p>
                     </b-form-group>
                 </form>
-            <div  class="separator my-3">
+            <div  class="separator my-2">
               <span class="separator-text">OR</span>
             </div>
             <div class="col-lg-12">

@@ -1,15 +1,17 @@
 <template>
   <section>
-    <div>
-        <h4>{{t('Invoice')}} > {{t('List')}}</h4>
+    <div class="d-flex justify-content-end align-items-center">
+        <div class="pb-1">
+          <b-form-input v-model="searchQuery" :placeholder="t('Search invoice...')" />
+        </div>
     </div>
     <div>
-      <template v-if="invoices && invoices.length">
+      <template v-if="filteredInvoices && filteredInvoices.length">
         <b-row>
           <b-form class="mb-lg-2 col-xl-12 col-12">
             <b-row>
               <b-card-group
-                v-for="(invoice, index) in invoices" 
+                v-for="(invoice, index) in filteredInvoices" 
                 :key="index"
                 class="mb-1 col-12"
               >
@@ -17,12 +19,12 @@
                    <!-- Status Indicator -->
                   <div class="status-indicator"></div>
                   <div class="d-flex justify-content-between align-items-center invoice-header">
-                    <div>
+                    <div style="min-width:fit-content;">
                       <b-card-title class="mb-0">{{ invoice.name }}</b-card-title>
                       <small>{{ t('Invoice') }}</small>
                     </div>
                     <div>
-                      <b-card-text v-if="invoice.customer" class="mb-0">{{ invoice.customer.name }}</b-card-text>
+                      <b-card-text v-if="invoice.customer" class="mb-0">{{ invoice.customer.name.substring(0,25) }}</b-card-text>
                       <b-card-text v-else class="mb-0 text-muted">&mdash;</b-card-text> <!-- Placeholder -->
                     </div>
                     <div style="align-items:center">
@@ -112,7 +114,7 @@
       <template v-else-if="loading">
         <div v-if="loading" class="text-center text-danger my-2">
           <b-spinner class="align-middle"></b-spinner>
-          <strong>Loading...</strong>
+          <strong> {{t('Loading')}}...</strong>
         </div>
       </template>
       <template v-else>
@@ -153,7 +155,7 @@ export default {
   },
   data(){
       return {
-          invoices: {},
+          invoices: [],
           invoice:{},
           expandedCard: null,
           loading: false,
@@ -162,32 +164,44 @@ export default {
             route: 'invoice-add',
           }],
           t: null,
-          now: dateNow()
+          now: dateNow(),
+          searchQuery: '',
       }
   },
   created(){
     this.loading = true;
-    // Async function to fetch invoices
-    const getinvoices = async () => {
-      try {
-        await this.$store.dispatch('invoices/list', ['customer']);
-        this.invoices = this.$store.getters["invoices/list"] 
-        console.log('invoices data:', this.invoices);// Assuming 'list' contains the list of invoices
-        this.loading = false
-      } catch (error) {
-        this.loading = false
-        await this.$store.dispatch('alerts/showNotification', {
-                message: 'Something went wrong! Try again later or contact the support.',
-                type: 'error'
-        }); // Log the response data for debugging
-      }
-    };
     const { t } = useI18nUtils()
     this.t = t;
     // Call the function to fetch invoices
-    getinvoices();
+    this.fetchInvoices();
+  },
+  computed:{
+    filteredInvoices(){
+      if(!this.searchQuery.trim()) return this.invoices;
+      const query = this.searchQuery.trim().toLowerCase();
+      return this.invoices.filter(invoice =>
+        invoice.ref?.toLowerCase().includes(query) ||
+        invoice.customer?.name.toLowerCase().includes(query)
+      );
+    },
   },
   methods:{
+    async fetchInvoices(){
+      try {
+        await this.$store.dispatch('invoices/list', ['customer']);
+        this.invoices = this.$store.getters["invoices/list"] 
+      } catch (error) {
+        this.$toast.error(this.t('Failed to load customers. Please try again.'), {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
+      } finally{
+        this.loading = false;
+      }
+    },
     async handleInvoiceDelete(InvoiceId){
       try{
         await this.$store.dispatch('invoices/destroy',InvoiceId);
@@ -219,6 +233,7 @@ export default {
           okVariant: 'danger',
           okTitle: 'YES',
           cancelTitle: 'NO',
+          cancelVariant: 'primary',
           footerClass: 'p-2',
           hideHeaderClose: false,
           centered: true
@@ -340,6 +355,16 @@ export default {
   }
 }
 
+.badge{
+  border-radius: 0.75rem !important;
+}
 
+.success{
+  background-color: green !important;
+}
+
+.danger{
+  background-color: red !important;
+}
 
 </style>

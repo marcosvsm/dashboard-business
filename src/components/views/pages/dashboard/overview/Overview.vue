@@ -7,10 +7,10 @@
     -->
       <b-row>
         <!-- Invoices Card -->  
-        <b-col md="4" sm="6" xs="12">
+        <b-col class="mb-2" md="4" sm="6" xs="12">
           <b-card class="card-stats mb-4 mb-xl-0">
             <b-card-body class="d-flex flex-column">
-              <b-row>
+              <b-row class="flex-nowrap align-items-center">
                 <b-col>
                   <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">{{ t('Invoices') }}</h5>
                   <span class="h2 font-weight-bold mb-0">{{getNumberInvoices()}}</span>
@@ -33,18 +33,16 @@
               </p>
               <!-- Move Last Invoice to bottom with flex-grow -->
               <div class="last-invoice mt-auto">
-                <span class="text-nowrap">
-                <span class="text-muted">{{ t('Last Invoice') }}:</span> {{ getLastInvoice() }}
-                </span>
+                <span class="text-muted">{{ t('Last Invoice') }}:</span> <p>{{ getLastInvoice() }}</p>
               </div>
             </b-card-body>
           </b-card>
         </b-col>
         <!-- Income Card  -->
-        <b-col md="4" sm="6" xs="12">
+        <b-col class="mb-2" md="4" sm="6" xs="12">
           <b-card class="card-stats mb-4 mb-xl-0">
-            <b-card-body>
-              <b-row>
+            <b-card-body class="d-flex flex-column">
+              <b-row class="flex-nowrap">
                 <b-col class="pr-0">
                     <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
                       {{ t('Amount Received') }} 
@@ -59,33 +57,33 @@
                       </span>
                     </h5>
                   <span class="h2 font-weight-bold mb-0">{{this.hideAmount ? '******' : getTotalAmount()}}</span>
-                  <div class="mt-2 text-sm">
-                    <span class="text-muted"> {{ t('This Month') }}: </span>
-                    <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForThisMonth() }} </span>
-                  </div>
-                  <div class="text-sm">
-                    <span class="text-muted"> {{ t('Last Month') }}: </span>
-                    <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForLastMonth() }} </span>
-                  </div>
-                </b-col>
-                <b-col cols="auto" class="pl-0">
-                  <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
+                  </b-col>
+                  <b-col cols="auto">
+                    <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
                       <base-feather-icon
                         icon="TrendingUpIcon" 
                         size="30"
                       />
                     </div>  
-                </b-col>
+                  </b-col>
               </b-row>
+              <div class="mt-2 text-sm">
+                <span class="text-muted"> {{ t('This Month') }}: </span>
+                <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForThisMonth() }} </span>
+              </div>
+              <div class="text-sm">
+                <span class="text-muted"> {{ t('Last Month') }}: </span>
+                <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForLastMonth() }} </span>
+              </div>
             </b-card-body>
           </b-card>
         </b-col>
         <!-- Outstanding Card -->
-        <b-col md="4" sm="6" xs="12">
+        <b-col class="mb-2" md="4" sm="6" xs="12">
           <b-card class="card-stats mb-4 mb-xl-0">
             <b-card-body>
-              <b-row>
-                <b-col>
+              <b-row class="flex-nowrap align-items-center">
+                <b-col class="pr-0">
                   <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
                     {{ t('Outstanding') }}
                   </h5>
@@ -109,7 +107,7 @@
           </b-card>
         </b-col>
        <!-- Unpaid Invoices Card -->
-  <b-col md="4" xs="12" class="mt-2 mb-4" v-if="unpaidInvoices.length">
+  <b-col class="mb-4" md="6" xs="12" sm="6" lg="4" v-if="unpaidInvoices.length">
     <b-card role="region" aria-labelledby="unpaid-invoices-title" class="unpaid-invoices-card">
       <b-card-body>
         <b-row>
@@ -194,28 +192,27 @@ export default {
     },
     data(){
         return {
-            invoices: [],
-            isLoadingInvoices: false,
-            t: null,
-            formatDateForDisplay,
-            showTutorial: false,
-            user: {name:""},
-            tutorialSteps: [
-                { title: 'Welcome', description: 'Learn how to use Simplify Business!' },
-                { title: 'Create Company', description: 'Start by creating your company.' },
-                { title: 'Add Customers', description: 'Easily add your customers.' },
-                { title: 'Create Invoice', description: 'Now you can create your first invoice.' }
-            ],
-            // AUD formatter
-            currencyFormatter: new Intl.NumberFormat('en-AU', {
-                style: 'currency',
-                currency: 'AUD',
-                minimumFractionDigits: 2,
-            }),
-            paid: 0,
-            unpaid: 0,
-            hideAmount: true,
-
+          invoices: [],
+          isLoadingInvoices: false,
+          t: null,
+          formatDateForDisplay,
+          showTutorial: false,
+          user: {name:""},
+          tutorialSteps: [
+              { title: 'Welcome', description: 'Learn how to use Simplify Business!' },
+              { title: 'Create Company', description: 'Start by creating your company.' },
+              { title: 'Add Customers', description: 'Easily add your customers.' },
+              { title: 'Create Invoice', description: 'Now you can create your first invoice.' }
+          ],
+          // AUD formatter
+          currencyFormatter: new Intl.NumberFormat('en-AU', {
+              style: 'currency',
+              currency: 'AUD',
+              minimumFractionDigits: 2,
+          }),
+          paid: 0,
+          unpaid: 0,
+          hideAmount: true,
         }
     },
     created(){
@@ -460,13 +457,40 @@ export default {
 
 <style scoped>
 
+.card{
+  height:100%;
+}
+.card-stats{
+  height: 100%;
+}
+.card-stats .card-body{
+  height: 100%;
+  padding:0.75rem !important;
+}
+.card-body{
+  padding:0.75rem !important;
+}
+
 .icon-shape {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 50px;
   height: 50px;
+  transition: width 0.2s ease, height 0.2s ease; /* Smooth resizing */
 }
+/* Reduce icon size and adjust layout on smaller screens */
+@media (max-width: 820px) {
+  .icon-shape {
+    width: 40px;
+    height: 40px;
+  }
+  .icon-shape .feather {
+    width: 24px; /* Reduce icon size */
+    height: 24px;
+  }
+}
+
 .bg-gradient-green {
   background: linear-gradient(87deg, #2dce89 0, #2dcecc 100%);
 }
@@ -524,8 +548,8 @@ export default {
 
 .paid-button {
   color:white;
-  background-color:  #4fd1c5 !important;
-  border-color: #4fd1c5 !important;
+  background-color:  #0366d6 !important;
+  border-color: #0366d6 !important;
   min-width: 70px;
   min-height: 36px;
   padding: 0.25rem 0.5rem;
@@ -539,8 +563,8 @@ export default {
   transform: scale(1.05);
   opacity: 0.9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: #3cb7a9 !important; /* Darker teal for hover/focus */
-  border-color: #3cb7a9 !important;
+  background-color: #0366d6 !important; /* Darker teal for hover/focus */
+  border-color: #0366d6 !important;
 }
 
 @media (max-width: 576px) {
@@ -561,8 +585,17 @@ export default {
 }
 /* Flexbox styling for last-invoice */
 .last-invoice {
-  margin-top: auto; /* Push to bottom in flex context */
-  padding-top: 0.5rem; /* Visual separation */
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping when space is tight */
+    align-items: baseline; /* Aligns text vertically */
+}
+
+/* On small screens, allow p to wrap naturally */
+@media (max-width: 576px) {
+  .last-invoice p {
+    flex-basis: 100%; /* Forces p to take full width, moving to next line */
+    margin: 0; /* Remove default margin for tighter layout */
+  }
 }
 
 /* Fallback: Absolute positioning with spacer */
@@ -580,5 +613,9 @@ export default {
 }
 .eyes{
   cursor: pointer;
+}
+
+.text-muted{
+  font-weight: 500;
 }
 </style>

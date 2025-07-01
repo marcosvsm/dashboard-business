@@ -35,6 +35,10 @@ import Faq from '@/components/views/pages/menu/Faq.vue'
 
 import GoogleCallback from '@/components/views/pages/GoogleCallback.vue'
 
+//Client
+import ClientList from '@/components/views/pages/client/ClientList.vue'
+import Client from '@/components/views/pages/client/Client.vue'
+
 let loginPage = {
     path: '/login',
     name: 'Login',
@@ -209,6 +213,24 @@ let googleCallbackPage = {
   },
 }
 
+let clientListPage = {
+  path: '/client/list',
+  name: 'client-list',
+  component: ClientList,
+  meta:{
+    middleware: auth,
+  },
+}
+
+let clientPage = {
+  path: '/client/:id',
+  name: 'client',
+  component: Client,
+  meta:{
+    middleware: auth,
+  },
+}
+
 let notFoundPage = {
   // Add a catch-all route for 404 Not Found
     path: '/:catchAll(.*)',
@@ -240,6 +262,8 @@ const routes = [
     confirmRegisterPage,
     taxPage,
     googleCallbackPage,
+    clientListPage,
+    clientPage,
     notFoundPage,
 ];
 

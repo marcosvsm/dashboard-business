@@ -322,5 +322,12 @@
   "Company Tax": "Imposto Empresarial",
   "Business Owner Note": "Nota para Proprietários de Negócios",
   "This calculator provides a simplified estimate of your tax situation. As a business owner, you may be eligible for additional deductions and tax concessions. Consider consulting with a tax professional for personalized advice": "Esta calculadora oferece uma estimativa simplificada da sua situação tributária. Como proprietário de um negócio, você pode ser elegível para deduções adicionais e incentivos fiscais. Considere consultar um contador ou consultor tributário para orientação personalizada.",
-  "This tax calculator provides estimates based on current Australian tax rates and simplified assumptions. It is for informational purposes only and does not account for all tax offsets, deductions, or individual circumstances. For accurate tax advice, please consult a qualified tax professional.": "Esta calculadora tributária fornece estimativas baseadas nas alíquotas tributárias australianas atuais e suposições simplificadas. É apenas para fins informativos e não considera todas as isenções, deduções ou circunstâncias individuais. Para aconselhamento tributário preciso, consulte um profissional tributário qualificado."
+  "This tax calculator provides estimates based on current Australian tax rates and simplified assumptions. It is for informational purposes only and does not account for all tax offsets, deductions, or individual circumstances. For accurate tax advice, please consult a qualified tax professional.": "Esta calculadora tributária fornece estimativas baseadas nas alíquotas tributárias australianas atuais e suposições simplificadas. É apenas para fins informativos e não considera todas as isenções, deduções ou circunstâncias individuais. Para aconselhamento tributário preciso, consulte um profissional tributário qualificado.",
+  "Client": "Cliente",
+  "Client List": "Lista de Clientes",
+  "Overview": "Visão geral",
+  "Loading": "Carregando",
+  "Search client...": "Buscar Cliente...",
+  "Search invoice...": "Buscar Fatura...",
+  "Last Invoices": "Últimas faturas"
 }

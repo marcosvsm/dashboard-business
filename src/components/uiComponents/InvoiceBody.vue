@@ -152,7 +152,7 @@
                     cols="12"
                     lg="5"
                 >
-                    #{{index+1}} Description
+                    #{{index+1}} {{t('Description')}}
                     
                 </b-col>
                 <b-col
@@ -472,6 +472,9 @@ export default {
             this.formErrors[`price-${index}`] = ''
           }
         })
+        this.$nextTick(() => {
+          this.initTrHeight();
+        });
       },
       deep:true
     },

@@ -16,6 +16,7 @@
 // Loading some plugin css asynchronously
 import 'sweetalert2/dist/sweetalert2.css'
 import 'vue-notifyjs/themes/default.css'
+import "vue-toastification/dist/index.css";
 import { watch } from 'vue'
 import useAppConfig from '@/appConfig/useAppConfig' 
 import LayoutVertical from '@/components/views/layouts/TheLayoutVertical.vue'

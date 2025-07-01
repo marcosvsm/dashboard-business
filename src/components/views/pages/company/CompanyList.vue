@@ -1,8 +1,5 @@
 <template>
   <section>
-    <div class="mt-1">
-      <h4>{{ t('Business') +' > '+ t('List') }}</h4>
-    </div>
     <div>
       <template v-if="companies && companies.length">
         <b-row>
@@ -154,7 +151,7 @@
       <template v-else-if="loading">
         <div v-if="loading" class="text-center text-danger my-2">
           <b-spinner class="align-middle"></b-spinner>
-          <strong>Loading...</strong>
+          <strong> {{t('Loading')}}...</strong>
         </div>
       </template>
       <template v-else>
@@ -264,13 +261,15 @@ export default {
     },
     showMsgBoxTwo(action,id) {
       this.boxTwo = ''
-      this.$bvModal.msgBoxConfirm('Please confirm that you want to delete everything.', {
+      const name = action === 'deleteCompany' ? 'your Business' : action === 'deletePaymentDetail' ? 'the payID' : ''
+      this.$bvModal.msgBoxConfirm('Are you sure you want to delete '+name+'? This action cannot be undone.', {
         title: 'Please Confirm',
         size: 'sm',
         buttonSize: 'sm',
         okVariant: 'danger',
         okTitle: 'YES',
         cancelTitle: 'NO',
+        cancelVariant: 'primary',
         footerClass: 'p-2',
         hideHeaderClose: false,
         centered: true

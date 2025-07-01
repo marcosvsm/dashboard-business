@@ -41,7 +41,6 @@ function get(id, include = []) {
 }
 
 function add(payload) {
-  console.log("test "+JSON.stringify(payload, null, 2))
   const options = {
     headers: {
       'Accept': 'application/vnd.api+json',

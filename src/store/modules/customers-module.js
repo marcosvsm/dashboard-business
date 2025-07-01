@@ -31,8 +31,8 @@ const actions = {
       });
   },
 
-  get({commit, dispatch}, params) {
-    return service.get(params)
+  get({commit, dispatch}, {id, include= []}) {
+    return service.get(id,include)
       .then((customer) => { commit('SET_RESOURCE', customer); });
   },
 

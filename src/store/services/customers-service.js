@@ -22,15 +22,19 @@ function list(params) {
     });
 }
 
-function get(id) {
+function get(id, include = []) {
   const options = {
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
+    },
+    params: include.length ? { include: include.join(',') } : {},
+    paramsSerializer: function (params) {
+      return qs.stringify(params, { encode: false });
     }
   };
 
-  return axios.get(`${url}/customers/${id}`, options)
+  return axios.get(`${url}/customer/${id}`, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -63,7 +67,7 @@ function update(customer) {
     }
   };
 
-  return axios.patch(`${url}/customers/${customer.id}`, payload, options)
+  return axios.patch(`${url}/customer/${customer.id}`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
