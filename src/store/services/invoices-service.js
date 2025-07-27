@@ -13,7 +13,7 @@ function list(include = []) {
     }
   };
 
-  return axios.get(`${url}/invoice/list`, options)
+  return axios.get(`${url}/invoices?sort=-invoice_date`, options)
     .then(response => {
       return {
         list: jsona.deserialize(response.data),
@@ -34,7 +34,7 @@ function get(id, include = []) {
     }
   };
 
-  return axios.get(`${url}/invoice/${id}`, options)
+  return axios.get(`${url}/invoices/${id}`, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -48,7 +48,7 @@ function add(payload) {
     }
   };
 
-  return axios.post(`${url}/invoice`, payload, options)
+  return axios.post(`${url}/invoices`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -81,7 +81,23 @@ function destroy(id) {
     }
   };
 
-  return axios.delete(`${url}/invoice/${id}`, options);
+  return axios.delete(`${url}/invoices/${id}`, options);
+}
+
+function suggest(params) {
+  const options = {
+    headers: {
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json',
+    },
+    paramsSerializer: function (params) {
+      return qs.stringify(params, { encode: false });
+    }
+  };
+  return axios.get(`${url}/invoices/suggest/${params}`, options)
+    .then(response => {
+      return jsona.deserialize(response.data);
+    });
 }
 
 export default {
@@ -89,5 +105,6 @@ export default {
   get,
   add,
   update,
-  destroy
+  destroy,
+  suggest
 };

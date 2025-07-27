@@ -331,6 +331,7 @@ export default {
     const getInvoice = async () => {
       try {
         const id = proxy.$route.params.id
+        console.log(id)
         await store.dispatch('invoices/get', { id: id, include: ['company','company.paymentDetail','customer','items'] })
         const rawInvoice = store.getters["invoices/invoice"]
         if (!rawInvoice) {

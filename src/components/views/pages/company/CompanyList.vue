@@ -172,6 +172,7 @@
 <script>
 import ValidationError from "@/components/uiComponents/ValidationError"
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 import CompanyEditSidebar from '@/components/uiComponents/CompanyEditSidebar.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
@@ -220,10 +221,17 @@ export default {
       try {
         await this.$store.dispatch('companies/list');
         this.companies = this.$store.getters["companies/list"];
-        this.loading = false;
-        console.log(this.companies)
       } catch (error) {
-        console.error('Error fetching companies:', error);
+         this.$toast.error(this.t('Failed to load business. Please try again.'), {
+          position: 'top-right',
+          icon: AlertCircleIcon,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
+      }
+      finally{
+        this.loading = false;
       }
     };
 
@@ -237,11 +245,22 @@ export default {
       try {
         await this.$store.dispatch('companies/destroy', companyId);
         this.companies = this.companies.filter(company => company.id !== companyId);
+         this.$toast.success("Business deleted",
+        {
+            position: "top-right",
+            icon: CheckCircleIcon,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+        });
       } catch (e) {
-        await this.$store.dispatch('alerts/showNotification', {
-          message: 'Oops, something went wrong!',
-          type: 'error'
-        }); // Log the response data for debugging
+         await this.$toast.error('Failed to delete business. Please try again.', {
+          position: 'top-right',
+          icon: AlertCircleIcon,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
       }
     },
     async handlePaymentDelete(paymentId) {
@@ -252,11 +271,22 @@ export default {
         if (companyIndex > -1) {
           this.companies[companyIndex].paymentDetail = null;
         }
+        this.$toast.success("Payment method deleted.",
+        {
+            position: "top-right",
+            icon: CheckCircleIcon,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+        });
       } catch (e) {
-        await this.$store.dispatch('alerts/showNotification', {
-          message: 'Oops, something went wrong!',
-          type: 'error'
-        }); // Log the response data for debugging
+        this.$toast.error(this.t('Failed to delete the payment method. Please try again.'), {
+          position: 'top-right',
+          icon: AlertCircleIcon,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
       }
     },
     showMsgBoxTwo(action,id) {

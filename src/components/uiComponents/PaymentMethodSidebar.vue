@@ -83,6 +83,7 @@
 import { ref, watch, getCurrentInstance } from 'vue'
 import Ripple from 'vue-ripple-directive'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
@@ -129,7 +130,6 @@ export default {
             attributes: {
               name: formData.value.name ,
               payid: formData.value.payid ,
-              company_id: companyId,
             },
             relationships: {
               company: {
@@ -144,6 +144,14 @@ export default {
         if (props.mode === 'create') {
          await proxy.$store.dispatch('paymentMethods/add', data)
          const response = await proxy.$store.getters["paymentMethods/paymentMethod"]
+         await proxy.$toast.success("Payment method created.",
+        {
+            position: "top-right",
+            icon: CheckCircleIcon,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+        });
           // Emit event to notify parent about the new payment method
           emit('payment-added', response)
         } else {
@@ -154,7 +162,6 @@ export default {
                 attributes: {
                 name: formData.value.name ,
                 payid: formData.value.payid ,
-                company_id: companyId,
                 },
                 relationships: {
                     company: {
@@ -168,14 +175,25 @@ export default {
           }
         await proxy.$store.dispatch('paymentMethods/update', dataUpdate)
         const response = await proxy.$store.getters["paymentMethods/paymentMethod"]
+        await proxy.$toast.success("Payment method updated.",
+        {
+            position: "top-right",
+            icon: CheckCircleIcon,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+        });
         // Emit event to update the payment data in the parent
         emit('payment-updated', response)
         }
       } catch (e) {
-        await proxy.$store.dispatch('alerts/showNotification', {
-          message: 'Something went wrong! Try again later or contact support.',
-          type: 'error',
-        })
+        proxy.$toast.error('Something went wrong. Please try again.', {
+          position: 'top-right',
+          icon: AlertCircleIcon,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
       }
     }
 

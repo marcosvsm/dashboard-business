@@ -4,7 +4,8 @@ const state = {
   list: {},
   user: {},
   meta: {},
-  url: null
+  url: null,
+  roles: JSON.parse(localStorage.getItem('userRoles') || '[]') // Restore roles from localStorage on load
 };
 
 const mutations = {
@@ -13,6 +14,13 @@ const mutations = {
   },
   SET_RESOURCE: (state, user) => {
     state.user = user;
+    if (user && user.roles) {
+      state.roles = user.roles; // Only set roles if user and roles exist
+      localStorage.setItem('userRoles', JSON.stringify(state.roles)); // Persist roles
+    } else {
+      state.roles = []; // Reset roles if no user or no roles
+      localStorage.setItem('userRoles', '[]'); // Clear roles in localStorage
+    }
   },
   SET_META: (state, meta) => {
     state.meta = meta;
@@ -34,6 +42,13 @@ const actions = {
   get({commit, dispatch}, params) {
     return service.get(params)
       .then((user) => { commit('SET_RESOURCE', user); });
+  },
+
+  getMe({commit, dispatch}) {
+    return service.getMe()
+      .then((user) => {
+        commit('SET_RESOURCE', user);
+      });
   },
 
   add({commit, dispatch}, params) {
@@ -62,7 +77,9 @@ const getters = {
   list: state => state.list,
   listTotal: state => state.meta.page.total,
   user: state => state.user,
-  url: state => state.url
+  url: state => state.url,
+  roles: state => state.roles,
+  hasRole: (state) => (slug) => state.roles.includes(slug),
 };
 
 const users = {

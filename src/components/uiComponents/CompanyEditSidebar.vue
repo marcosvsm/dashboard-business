@@ -113,6 +113,7 @@ import { ref, computed } from 'vue'
 import Ripple from 'vue-ripple-directive'
 import vSelect from 'vue-select'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
@@ -141,7 +142,7 @@ export default {
         await this.$toast.success("Business updated successfully.",
         {
             position: "top-right",
-            icon: false,
+            icon: CheckCircleIcon,
             closeButton: false,
             hideProgressBar: true,
             timeout: 2000
@@ -149,7 +150,7 @@ export default {
       } catch (e){
         await this.$toast.error('Failed to update business. Please try again.', {
           position: 'top-right',
-          icon: false,
+          icon: AlertCircleIcon,
           closeButton: false,
           hideProgressBar: true,
           timeout: 3000,

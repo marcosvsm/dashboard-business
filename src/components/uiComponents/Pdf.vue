@@ -12,6 +12,7 @@
 <script>
 import jspdf from 'jspdf'
 import { formatDateForDisplay } from '@/libs/dateUtils.js'
+import { AlertCircleIcon } from 'vue-feather-icons'
 
 export default {
   props: {
@@ -207,7 +208,7 @@ export default {
           this.$toast.error('Please correct the errors in the form to Download the PDF.',
           {
             position: "top-right",
-            icon: false,
+            icon: AlertCircleIcon,
             closeButton: false,
             hideProgressBar: true,
             timeout: 3000

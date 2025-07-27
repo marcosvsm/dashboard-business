@@ -25,6 +25,8 @@
             input-id="invoice-data-client"
             :clearable="false"
             ref="customerSelect"
+            :class="{ 'is-invalid': formErrors.customer }"
+            required
             >
             <template #list-header>
                 <li
@@ -45,7 +47,10 @@
               </li>
             </template>
             </v-select>
-
+             <!-- Error message -->
+              <b-form-invalid-feedback>
+                {{ formErrors.customer }}
+              </b-form-invalid-feedback>
             <!-- Selected customer -->
             <div
             v-if="invoiceData.customer"
@@ -438,6 +443,13 @@ export default {
       },
       immediate: true, // This will run the watcher when the component is mounted
       deep: true // In case you want to watch for nested changes in companies
+    },
+    'invoiceData.customer':{
+      handler(customer){
+        if(customer)
+          this.formErrors['customer'] = ''
+      },
+      deep: true
     },
     'invoiceData.company':{
       handler(company){

@@ -50,6 +50,11 @@ const actions = {
     return service.destroy(params);
   },
 
+  suggest({commit, dispatch}, params = []) {
+    return service.suggest(params)
+      .then((invoice) => { commit('SET_RESOURCE', invoice); });
+  },
+
 };
 
 const getters = {
