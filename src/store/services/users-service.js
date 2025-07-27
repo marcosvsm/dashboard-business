@@ -38,6 +38,26 @@ function get(id) {
     });
 }
 
+function getMe() {
+  const options = {
+    headers: {
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json',
+    }
+  };
+
+  return axios.get(`${url}/me?include=role`, options) // Assume /me endpoint exists and returns user with roles
+    .then(response => {
+      let user = jsona.deserialize(response.data);
+      delete user.links;
+      // Extract roles from included (assuming single role for simplicity; adjust for multiple)
+      user.roles = response.data.included
+        .filter(item => item.type === 'roles')
+        .map(role => role.attributes.slug); // Extract role names
+      return user;
+    });
+}
+
 function add(user) {
   const payload = jsona.serialize({
     stuff: user,
@@ -100,6 +120,7 @@ function upload(user, image) {
 export default {
   list,
   get,
+  getMe,
   add,
   update,
   destroy,

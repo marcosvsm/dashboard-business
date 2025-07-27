@@ -42,6 +42,8 @@ export default {
       context.commit("isAuthenticated", {
         isAuthenticated: vueAuth.isAuthenticated()
       });
+      // After successful login, fetch user data with roles
+      context.dispatch('users/getMe', null, { root: true }); // Dispatch to users module to fetch and store user with roles
       router.push({ path: "/dashboard/overview" });
     })
     },
@@ -60,6 +62,9 @@ export default {
         context.commit("isAuthenticated", {
           isAuthenticated: vueAuth.isAuthenticated()
         });
+        // Clear user data on logout
+        context.commit('users/SET_RESOURCE', null, { root: true });
+        localStorage.removeItem('userRoles'); // Clear roles on logout
         router.push({name: "Login"});
       });
     },

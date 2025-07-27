@@ -24,8 +24,8 @@
             <hr 
               class="invoice-spacing"
             >
-            <!-- Add Suggest Button Above Body 
-            <b-card-body class="invoice-padding pb-0">
+            <!-- Add Suggest Button Above Body -->
+            <b-card-body class="invoice-padding pb-0" v-if="hasRole('grow')">
               <b-button
                 v-ripple.400="'rgba(113, 102, 240, 0.15)'"
                 variant="outline-primary"
@@ -36,7 +36,7 @@
                 {{ isSuggesting ? 'Suggesting...' : 'Suggest Invoice' }}
               </b-button>
             </b-card-body>
--->
+
             <invoice-body :invoiceData="invoiceData" :companies="companies" :customers="customers" :addCustomerToInvoice="addCustomerToInvoice" :formErrors="formErrors" />
             <!-- Spacer -->
             <hr 
@@ -212,9 +212,10 @@
 </template>
 
 <script>
-import { ref, computed, getCurrentInstance, watch, reactive } from 'vue'
+import { ref, getCurrentInstance, watch } from 'vue'
 import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 import vSelect from 'vue-select'
 import Ripple from 'vue-ripple-directive'
 import InvoiceHeader from '@/components/uiComponents/InvoiceHeader.vue'
@@ -222,7 +223,7 @@ import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
-import axios from 'axios'
+import { mapGetters } from 'vuex';
 export default {
   components: {
     BaseFeatherIcon,
@@ -239,6 +240,12 @@ export default {
     validateForm() {
       const errors = {}
       let isValid = true
+
+      // Validate customer
+      if (!this.invoiceData.customer || !this.invoiceData.customer.id) {
+        errors.customer = 'Customer is required'
+        isValid = false
+      }
 
       // Validate company
       if (!this.invoiceData.company || !this.invoiceData.company.id) {
@@ -306,36 +313,54 @@ export default {
               due_date: this.invoiceData.dueDate,
               amount: this.invoiceData.amount,
               ref: this.invoiceData.number,
-              company_id : this.invoiceData.company.id,
-              customer_id: this.invoiceData.customer.id,
-              items: this.invoiceData.items
+              item: this.invoiceData.items
             },
-              relationships:{
-                company: {
-                  data: {
-                    type: "companies",
-                    id: this.invoiceData.company.id,
-                  }
-                },
+            relationships:{
+              company: {
+                data: {
+                  type: "companies",
+                  id: this.invoiceData.company.id,
+                }
               },
+              customer: {
+                data: {
+                  type: "customers",
+                  id: this.invoiceData.customer.id,
+                }
+              },
+            },
+            included: this.invoiceData.items.map((item, index) => ({
+              type: "invoiceItems",
+              attributes: {
+                description: item.description,
+                quantity: item.quantity,
+                price: item.price,
+                amount: item.amount,
+                // Other item fields
+              },
+            }))
           }
         }
       try{
         await this.$store.dispatch('invoices/add',data);
-        this.$toast.success("Invoice saved",
+        this.$toast.success(`Invoice saved: ${this.invoiceData.number}`,
             {
             position: "top-right",
-            icon: false,
+            icon: CheckCircleIcon,
             closeButton: false,
             hideProgressBar: true,
             timeout: 2000
             })
       } catch(e){
-        console.log('Response data:', e.response.data);
-        await this.$store.dispatch('alerts/showNotification', {
-          message: "Something went wrong! Try again later or contact the support.",
-          type: "error"
-        })
+        this.$toast.error('Something went wrong! Try again later or contact the support.',
+          {
+            position: "top-right",
+            icon: AlertCircleIcon,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          })
+        
       }
       } else {
         console.log('Validation failed:', this.formErrors)
@@ -343,7 +368,7 @@ export default {
           this.$toast.error('Please correct the errors in the form before saving the invoice.',
           {
             position: "top-right",
-            icon: false,
+            icon: AlertCircleIcon,
             closeButton: false,
             hideProgressBar: true,
             timeout: 3000
@@ -359,47 +384,51 @@ export default {
     async suggestInvoice() {
       this.isSuggesting = true;
       try {
-        const response = await axios.get(`http://localhost:3000/api/v1/invoices/suggest/${this.invoiceData.customer.id}`, {
-          headers: {
-            'Accept': 'application/vnd.api+json',
-            'Authorization': `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiZWFlMGFmNTI0NmFiNWY1ODQ3YTRhNzEzZTcxMTdiNzg3Njg5YTg1NDFhYTI4ODY4ZDdhMWUzNGM3NGZkMTgxYTM1M2VkNjRmYTU2ZjNmMjQiLCJpYXQiOjE3NDI4MDQzOTUsIm5iZiI6MTc0MjgwNDM5NSwiZXhwIjoxNzc0MzQwMzk1LCJzdWIiOiIyIiwic2NvcGVzIjpbXX0.RahyvrrSy8azlQY6eVzRHmnavzdywbObwgU7-20L50r7Iv3mKoHDv5y-110OqOT9ozWAbijkmZS7zREawmrFr8ILw6Hwtg5WzXD2iuZ7ip6p-69epzPaBgLAQ9KTF08mA3Y6RrODFm3i5upQoCUdUkwo91C7Fg4GxgyTPVpY8LH7ITs7UjXdD3A3JQgiNvwZtKH3mu4yU2RxdqPaTpyBM24MQIrQCggA78iXnwSBGw_VHRNyv2GfjeoOP1QYbqhvK5HvHHNzIpPOTG5cErYeu0nTmi0eDjm9uoUPcX6kh1f4cpUuVUWbWPkI76gC1giNBMSV_gwFZ_P0O00Ua358NDMDMYQ_-pY7HkMXgnfPATNHGQLKUhEYxGUssjkfuQ3Ai8_xI0L3mVQbHbPLqrXjIubMltLbf-vIPpcplXoIAxSkQAmYf2w305hGi0Nhsyfr2HuOb_5CS0yL17KHoCPjRjZ7ycRWQNB4Cbp12jGCUty5FhW1ftj9s67X5GCvP35C69ReJjwwdlUQdGDTOJJb5mfl02_Er2nps-Q3MtNEAi_CvrmUloak8UGR0nnNxMxiYKDzRn50F06HTXGSOQNKbPRa4K22HBKnU59KEP5m73z19Kd1jgfMvQSiAJl6jFRN1KpFjzyjynRuJLsqh7UORUJC4sjus5rrgoB1yKDwhPc`, // Adjust based on your auth setup
-          },
-        });
-        const { data, included } = response.data;
+        await this.$store.dispatch('invoices/suggest', this.invoiceData.customer.id);
+        const data = this.$store.getters["invoices/invoice"]
         // Populate invoiceData with suggestion
-        this.invoiceData.number = data.attributes.number;
-        this.invoiceData.date = data.attributes.invoice_date;
-        this.invoiceData.dueDate = data.attributes.due_date;
-        this.invoiceData.amount = data.attributes.amount;
-        this.invoiceData.status = data.attributes.status;
+        this.invoiceData.number = data.number;
+        this.invoiceData.date = data.invoice_date;
+        this.invoiceData.dueDate = data.due_date;
+        this.invoiceData.amount = data.amount;
+        this.invoiceData.status = data.status;
         // Replace items with API data
-        this.invoiceData.items = included.map(item => {
-           if (!item.attributes) {
+        this.invoiceData.items = data.items.map(item => {
+           if (!item) {
                 console.warn('Item missing attributes:', item);
                 return { ...JSON.parse(JSON.stringify(itemFormBlankItem)) }; // Fallback
             }
             return {
-                description: item.attributes.description,
-                quantity: String(item.attributes.quantity),
-                price: String(item.attributes.price),
-                amount: String(item.attributes.amount),
-                name: item.attributes.name || '',
+                name: item.name,
+                quantity: String(item.quantity),
+                price: String(item.price),
+                amount: String(item.amount),
+                description: item.description,
             };
         });
-        await this.$store.dispatch('alerts/showNotification', {
-          message: 'Invoice suggestion loaded!',
-          type: 'success',
-        });
+        this.$toast.success(`Invoice suggestion loaded!`,
+            {
+            position: "top-right",
+            icon: CheckCircleIcon,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000
+            })
       } catch (error) {
-        console.log(this.invoiceData.response)
-        console.error('Suggestion failed:', error.response?.data.errors);
-        await this.$store.dispatch('alerts/showNotification', {
-          message: 'Couldn’t load suggestion. Try again later.',
-          type: 'error',
-        });
+        this.$toast.error('Couldn’t load suggestion. Try again later.',
+        {
+          position: "top-right",
+          icon: AlertCircleIcon,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000
+        })
       }
       this.isSuggesting = false;
     },
+  },
+  computed: {
+    ...mapGetters('users', ['roles','hasRole']),
   },
   setup() { 
     const { proxy } = getCurrentInstance()
@@ -423,7 +452,6 @@ export default {
       try {
         await store.dispatch('companies/list');
         companies.value = store.getters["companies/list"] 
-        console.log('Companies data:', companies.value);// Assuming 'list' contains the list of companies
       } catch (error) {
         console.error('Error fetching companies:', error);
       }

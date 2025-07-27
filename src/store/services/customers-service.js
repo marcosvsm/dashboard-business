@@ -13,7 +13,7 @@ function list(params) {
     }
   };
 
-  return axios.get(`${url}/customer/list`, options)
+  return axios.get(`${url}/customers`, options)
     .then(response => {
       return {
         list: jsona.deserialize(response.data),
@@ -34,7 +34,7 @@ function get(id, include = []) {
     }
   };
 
-  return axios.get(`${url}/customer/${id}`, options)
+  return axios.get(`${url}/customers/${id}`, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -48,7 +48,7 @@ function add(payload) {
     }
   };
 
-  return axios.post(`${url}/customer`, payload, options)
+  return axios.post(`${url}/customers`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -67,7 +67,7 @@ function update(customer) {
     }
   };
 
-  return axios.patch(`${url}/customer/${customer.id}`, payload, options)
+  return axios.patch(`${url}/customers/${customer.id}`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -81,7 +81,7 @@ function destroy(id) {
     }
   };
 
-  return axios.delete(`${url}/customer/${id}`, options);
+  return axios.delete(`${url}/customers/${id}`, options);
 }
 
 export default {

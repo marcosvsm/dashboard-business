@@ -95,6 +95,7 @@
 
 <script>
 import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
@@ -145,7 +146,7 @@ export default {
       } catch(error){
         this.$toast.error(this.t('Failed to load customers. Please try again.'), {
           position: 'top-right',
-          icon: false,
+          icon: AlertCircleIcon,
           closeButton: false,
           hideProgressBar: true,
           timeout: 3000,
@@ -162,7 +163,7 @@ export default {
          this.$toast.success("Client "+customer.name+" deleted",
         {
             position: "top-right",
-            icon: false,
+            icon: CheckCircleIcon,
             closeButton: false,
             hideProgressBar: true,
             timeout: 2000
@@ -170,7 +171,7 @@ export default {
       } catch(error){
         this.$toast.error(this.t('Failed to delete client. Please try again.'), {
           position: 'top-right',
-          icon: false,
+          icon: AlertCircleIcon,
           closeButton: false,
           hideProgressBar: true,
           timeout: 3000,

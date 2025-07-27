@@ -14,7 +14,7 @@ function get(companyId) {
     }
   };
 
-  return axios.get(`${url}/company/${companyId}/payment-details`, options)
+  return axios.get(`${url}/companies/${companyId}/payment-details`, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -28,7 +28,7 @@ function add(payload) {
     }
   };
 
-  return axios.post(`${url}/company/payment-details`, payload, options)
+  return axios.post(`${url}/paymentDetails`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -43,7 +43,7 @@ function update(payload) {
     }
   };
   
-  return axios.patch(`${url}/company/payment-details/${payload.data.id}`, payload, options)
+  return axios.patch(`${url}/paymentDetails/${payload.data.id}`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -57,7 +57,7 @@ function destroy(id) {
     }
   };
 
-  return axios.delete(`${url}/company/payment-details/${id}`, options);
+  return axios.delete(`${url}/paymentDetails/${id}`, options);
 }
 
 export default {
