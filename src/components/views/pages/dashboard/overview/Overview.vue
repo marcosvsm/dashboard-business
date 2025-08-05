@@ -1,462 +1,214 @@
 <template>
-    <div v-if="!isLoadingInvoices">
-    <!-- Welcome Header 
-    <div class="welcome-header text-uppercase text-muted mb-4 text-sm-left" aria-label="User greeting">
-      <h4 class="font-weight-bold">Welcome, {{ user.name }}</h4>
-    </div>
-    -->
-      <b-row>
-        <!-- Invoices Card -->  
-        <b-col class="mb-2" md="4" sm="6" xs="12">
-          <b-card class="card-stats mb-4 mb-xl-0">
-            <b-card-body class="d-flex flex-column">
-              <b-row class="flex-nowrap align-items-center">
-                <b-col>
-                  <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">{{ t('Invoices') }}</h5>
-                  <span class="h2 font-weight-bold mb-0">{{getNumberInvoices()}}</span>
-                </b-col>
-                <b-col cols="auto">
-                    <router-link :to="{ name: 'invoices'}">
-                  <div class="icon icon-shape bg-gradient-blue text-white rounded-circle shadow">
-                    <base-feather-icon
-                      icon="FileTextIcon"
-                      size="30"
-                    />
-                  </div>
-                    </router-link>
-                </b-col>
-              </b-row>
-              <p class="mt-1 mb-0 text-sm">
-                <span class="text-nowrap">
-                  {{ t('Paid') }}: {{ getInvoicePaid() }} | {{ t('Unpaid') }}: {{ getInvoiceUnpaid() }}
-                </span>
-              </p>
-              <!-- Move Last Invoice to bottom with flex-grow -->
-              <div class="last-invoice mt-auto">
-                <span class="text-muted">{{ t('Last Invoice') }}:</span> <p>{{ getLastInvoice() }}</p>
-              </div>
-            </b-card-body>
-          </b-card>
-        </b-col>
-        <!-- Income Card  -->
-        <b-col class="mb-2" md="4" sm="6" xs="12">
-          <b-card class="card-stats mb-4 mb-xl-0">
-            <b-card-body class="d-flex flex-column">
-              <b-row class="flex-nowrap">
-                <b-col class="pr-0">
-                    <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
-                      {{ t('Amount Received') }} 
-                      <span 
-                      class="cursor-pointer" 
-                      @click="handleHideAmount"
-                      >
-                        <base-feather-icon
-                          :icon="this.hideAmount ? 'EyeOffIcon' : 'EyeIcon'" 
-                          size="22"
-                        />
-                      </span>
-                    </h5>
-                  <span class="h2 font-weight-bold mb-0">{{this.hideAmount ? '******' : getTotalAmount()}}</span>
-                  </b-col>
-                  <b-col cols="auto">
-                    <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
-                      <base-feather-icon
-                        icon="TrendingUpIcon" 
-                        size="30"
-                      />
-                    </div>  
-                  </b-col>
-              </b-row>
-              <div class="mt-2 text-sm">
-                <span class="text-muted"> {{ t('This Month') }}: </span>
-                <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForThisMonth() }} </span>
-              </div>
-              <div class="text-sm">
-                <span class="text-muted"> {{ t('Last Month') }}: </span>
-                <span class="font-weight-bold"> {{this.hideAmount ? '******' : getIncomeForLastMonth() }} </span>
-              </div>
-            </b-card-body>
-          </b-card>
-        </b-col>
-        <!-- Outstanding Card -->
-        <b-col class="mb-2" md="4" sm="6" xs="12">
-          <b-card class="card-stats mb-4 mb-xl-0">
-            <b-card-body>
-              <b-row class="flex-nowrap align-items-center">
-                <b-col class="pr-0">
-                  <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
-                    {{ t('Outstanding') }}
-                  </h5>
-                  <span class="h2 font-weight-bold mb-0">{{getPendingAmount()}}</span>
-                </b-col>
-                <b-col cols="auto">
-                  <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
-                    <base-feather-icon
-                      icon="RepeatIcon"
-                      size="30"
-                    />
-                  </div>
-                </b-col>
-              </b-row>
-              <p class="mt-3 mb-0 text-sm">
-                <span class="text-nowrap text-danger">
-                  {{ t('Overdue') }}: {{ getOverdueCount() }} ({{ currencyFormatter.format(getOverdueAmount()) }})
-                </span>
-              </p>
-            </b-card-body>
-          </b-card>
-        </b-col>
-       <!-- Unpaid Invoices Card -->
-  <b-col class="mb-4" md="6" xs="12" sm="6" lg="4" v-if="unpaidInvoices.length">
-    <b-card role="region" aria-labelledby="unpaid-invoices-title" class="unpaid-invoices-card">
-      <b-card-body>
-        <b-row>
-          <b-col class="d-flex align-items-center">
-            <h5 id="unpaid-invoices-title" class="card-title text-uppercase text-muted mb-0" style="color: #0366d6 !important">
-              {{ t('Outstanding Invoices') }}
-            </h5>
-          </b-col>
-          <b-col class="d-flex justify-content-end">
-            <b-link :to="{ name: 'invoices' }" variant="outline-primary" size="sm" aria-label="View all outstanding invoices">
-              {{ t('View All') }}
-            </b-link>
-          </b-col>
-        </b-row>
-      </b-card-body>
-      <b-card-body class="unpaid-invoices-list">
-        <div role="list" class="invoice-list">
-          <div
-            v-for="(invoice, index) in unpaidInvoices"
-            :key="index"
-            :class="['invoice-item', { 'bg-light': index % 2 === 0 }]"
-            role="listitem"
-          >
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="d-flex flex-column">
-                <div class="d-flex align-items-center">
-                  <h6 class="mb-0 text-dark text-sm font-weight-bold">
-                    {{ formatDateForDisplay(invoice.invoice_date) }}
-                  </h6>
-                </div>
-                <span class="text-xs text-muted">#{{ invoice.name }}</span>
-              </div>
-              <div class="d-flex align-items-center text-sm">
-                <span class="text-nowrap mr-2">{{ currencyFormatter.format(invoice.amount) }}</span>
-                <b-button
-                  size="sm"
-                  class="paid-button flex-shrink-0"
-                  @click="updateInvoiceStatus(invoice, 1)"
-                  :aria-label="`Mark invoice ${invoice.name} as paid`"
-                >
-                  <base-feather-icon icon="DollarSignIcon" size="16" />
-                  {{ t('Paid') }}
-                </b-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </b-card-body>
-    </b-card>
-  </b-col>
-      </b-row>
- <!--   <b-modal v-model="showTutorial">
-            <div v-if="currentStep">
-            <div class="tutorial-step">
-                <h2>{{ currentStep.title === 'Welcome' ? t(currentStep.title) +' '+ user.name : currentStep.title }}</h2>
-                <p>{{ currentStep.description }}</p>
-            </div>
-        </div>
-            Custom Footer Buttons 
-        <template #modal-footer>
-            <b-button variant="secondary" @click="closeTutorial">
-                {{ t('Skip') }}
-            </b-button>
+  <div v-if="!isLoadingInvoices">
+    <b-row>
+      <b-col class="mb-2" md="4" sm="6" xs="12">
+        <invoices-card
+          :invoices="invoices"
+          :t="t"
+          :currency-formatter="currencyFormatter"
+          :format-date-for-display="formatDateForDisplay"
+          :format-date-for-invoice-display="formatDateForInvoiceDisplay"
+        />
+      </b-col>
+      <b-col class="mb-2" md="4" sm="6" xs="12">
+        <income-card
+          :invoices="invoices"
+          :t="t"
+          :hide-amount="hideAmount"
+          :currency-formatter="currencyFormatter"
+          @toggle-hide-amount="handleHideAmount"
+        />
+      </b-col>
+      <b-col class="mb-2" md="4" sm="6" xs="12">
+        <outstanding-card
+          :invoices="invoices"
+          :t="t"
+          :currency-formatter="currencyFormatter"
+        />
+      </b-col>
+    </b-row>
 
-             Conditionally display Next or Finish based on the current step 
-            <b-button v-if="!tutorialCompleted" variant="primary" @click="nextStep">
-                {{ isLastStep ? t('Finish') : t('Next') }}
-            </b-button>
-        </template>
-    </b-modal>       -->
-    </div>
+    <b-row>
+      <b-col class="mb-2" md="6" lg="8">
+        <revenue-trend-chart
+          :invoices="invoices"
+          :t="t"
+          :time-period="timePeriod"
+          @set-time-period="setTimePeriod"
+          :currency-formatter="currencyFormatter"
+        />
+      </b-col>
+      <b-col class="mb-2" md="6" sm="6" xs="12" lg="4">
+        <tax-summary-card
+          :invoices="invoices"
+          :t="t"
+          :hide-amount="hideAmount"
+          :currency-formatter="currencyFormatter"
+        />
+      </b-col>
+<!--
+      <b-col class="mb-2" md="6" lg="4">
+        <invoice-status-pie
+          :invoices="invoices"
+          :t="t"
+        />
+      </b-col> -->
+    </b-row>
+
+    <b-row>
+      <b-col class="mb-2" md="6" xs="12" sm="6" lg="4" v-if="unpaidInvoices.length">
+        <outstanding-invoices-list
+          :unpaid-invoices="unpaidInvoices"
+          :t="t"
+          :currency-formatter="currencyFormatter"
+          :format-date-for-display="formatDateForDisplay"
+          @update-invoice-status="updateInvoiceStatus"
+        />
+      </b-col>
+
+      <b-col class="mb-2" md="6" lg="4">
+        <top-customers
+          :top-customers="topCustomers"
+          :max-customer-total="maxCustomerTotal"
+          :t="t"
+          :currency-formatter="currencyFormatter"
+        />
+      </b-col>
+
+      <b-col class="mb-2" md="6" lg="4">
+        <recent-activity-card
+          :invoices="invoices"
+          :t="t"
+          :currency-formatter="currencyFormatter"
+          :hide-amount="hideAmount"
+          :format-date-for-display="formatDateForDisplay"
+        />
+      </b-col>
+    </b-row>
+  </div>
 </template>
+
 <script>
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
-import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
-import { mapGetters, mapActions } from 'vuex';
+import { formatDateForDisplay } from '@/libs/dateUtils.js'
 import { formatDateForInvoiceDisplay } from '@/libs/dateUtils.js'
+
+import InvoicesCard from '@/components/views/pages/dashboard/InvoicesCard.vue';
+import IncomeCard from '@/components/views/pages/dashboard/IncomeCard.vue';
+import OutstandingCard from '@/components/views/pages/dashboard/OutstandingCard.vue';
+import RevenueTrendChart from '@/components/views/pages/dashboard/RevenueTrendChart.vue';
+import OutstandingInvoicesList from '@/components/views/pages/dashboard/OutstandingInvoicesList.vue';
+import TopCustomers from '@/components/views/pages/dashboard/TopCustomers.vue';
+import RecentActivityCard from '@/components/views/pages/dashboard/RecentActivityCard.vue';
+import TaxSummaryCard from '@/components/views/pages/dashboard/TaxSummaryCard.vue';
+
 export default {
-    components:{
-        BaseFeatherIcon,
+  components: {
+    BaseFeatherIcon,
+    InvoicesCard,
+    IncomeCard,
+    OutstandingCard,
+    RevenueTrendChart,
+    OutstandingInvoicesList,
+    TopCustomers,
+    RecentActivityCard,
+    TaxSummaryCard,
+  },
+  data() {
+    return {
+      invoices: [],
+      isLoadingInvoices: false,
+      t: null,
+      formatDateForDisplay,
+      formatDateForInvoiceDisplay,
+      hideAmount: true,
+      timePeriod: 'monthly',
+      currencyFormatter: new Intl.NumberFormat('en-AU', {
+        style: 'currency',
+        currency: 'AUD',
+        minimumFractionDigits: 2,
+      }),
+    }
+  },
+  created() {
+    const { t } = useI18nUtils();
+    this.t = t;
+    this.fetchInvoices('first');
+  },
+  computed: {
+    unpaidInvoices() {
+      return this.invoices.filter(invoice => invoice.status === 0).sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
     },
-    data(){
-        return {
-          invoices: [],
-          isLoadingInvoices: false,
-          t: null,
-          formatDateForDisplay,
-          showTutorial: false,
-          user: {name:""},
-          tutorialSteps: [
-              { title: 'Welcome', description: 'Learn how to use Simplify Business!' },
-              { title: 'Create Company', description: 'Start by creating your company.' },
-              { title: 'Add Customers', description: 'Easily add your customers.' },
-              { title: 'Create Invoice', description: 'Now you can create your first invoice.' }
-          ],
-          // AUD formatter
-          currencyFormatter: new Intl.NumberFormat('en-AU', {
-              style: 'currency',
-              currency: 'AUD',
-              minimumFractionDigits: 2,
-          }),
-          paid: 0,
-          unpaid: 0,
-          hideAmount: true,
-        }
+    topCustomers() {
+      const customerMap = this.invoices.reduce((acc, inv) => {
+        const name = inv.customer?.name || 'Unknown';
+        if (!acc[name]) acc[name] = 0;
+        if (inv.status === 1) acc[name] += parseFloat(inv.amount);
+        return acc;
+      }, {});
+      return Object.entries(customerMap)
+        .map(([name, total]) => ({ name, total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
     },
-    created(){
-    const {t} = useI18nUtils()
-    this.t = t
-    // Call the function to fetch invoices
-    // Fetch invoices
-    this.fetchInvoices();
+    maxCustomerTotal() {
+      return Math.max(...this.topCustomers.map(c => c.total), 1);
     },
-    computed:{
-        unpaidInvoices(){
-            return this.invoices.filter(invoice => invoice.status === 0);
-        },
-        invoiceChangePercentage() {
-            if (!Array.isArray(this.invoices)) {
-                return '0.00'; // Return 0.00 if invoices are not ready
-            }
-            const lastMonthInvoices = this.getInvoicesForLastMonth().length;
-            const currentMonthInvoices = this.getInvoicesForThisMonth().length;
-            if (lastMonthInvoices === 0) {
-                return currentMonthInvoices > 0 ? '100.00' : '0.00'; 
-                // If no invoices last month and some this month, return 100% increase
-            }
-            const change = ((currentMonthInvoices - lastMonthInvoices) / lastMonthInvoices) * 100;
-            return isNaN(change) ? '0.00' : change.toFixed(2);
-        },
-        incomeChangePercentage() {
-            const lastMonthIncome = this.getIncomeForLastMonth();
-            const currentMonthIncome = this.getTotalAmount();
-            if (lastMonthIncome === '0.00') {
-                return currentMonthIncome > 0 ? '100.00' : '0.00'; 
-                // If no invoices last month and some this month, return 100% increase
-            }
-            const change = ((currentMonthIncome - lastMonthIncome) / lastMonthIncome) * 100;
-            return isNaN(change) ? '0.00' : change.toFixed(2);
-        },
-        pendingChangePercentage() {
-            const lastMonthPending = this.getPendingForLastMonth();
-            const currentMonthPending = this.getPendingTotalAmount;
-             if (lastMonthPending === '0.00') {
-                return currentMonthPending > 0 ? '100.00' : '0.00'; 
-                // If no invoices last month and some this month, return 100% increase
-            }
-            const change = ((currentMonthPending - lastMonthPending) / lastMonthPending) * 100;
-            return isNaN(change) ? '0.00' : change.toFixed(2);
-        },
-        pendingChangeIcon(){
-            return this.pendingChangePercentage >= 0 ? 'ArrowUpIcon' : 'ArrowDownIcon';
-        },
- //       currentStep(){
-  //          return this.$store.getters.currentStep;
-  //      },
-  //      ...mapGetters('tutorial', ['currentStep', 'tutorialCompleted']),
-  //      isLastStep() {
-  //          return this.$store.state.tutorial.currentTutorialStep === this.$store.state.tutorial.tutorialSteps.length - 1;
-  //      },
-    },
-    methods:{
-        async fetchInvoices() {
-          this.isLoadingInvoices = true;
-          try {
-            await this.$store.dispatch('invoices/list');
-            this.invoices = this.$store.getters["invoices/list"] || [] 
-          } catch (error) {
-            console.error('Error fetching invoices:', error);
-          } finally {
-              this.isLoadingInvoices = false;
-          }
-        },
-        getNumberInvoices(){
-            return this.invoices.length
-        },
-        getTotalAmount(){
-            let totalAmount = 0
-            let totalPendingAmount = 0
-            this.invoices.forEach(invoice => {
-                if(invoice.status == 0)
-                    totalPendingAmount += parseFloat(invoice.amount)
-                else 
-                    totalAmount += parseFloat(invoice.amount)
-            });
-            this.getPendingTotalAmount = this.currencyFormatter.format(totalPendingAmount);
-            return this.currencyFormatter.format(totalAmount);
-        },
-        getPendingAmount(){
-          let totalPendingAmount = 0
-          this.invoices.forEach(invoice => {
-            if(invoice.status == 0)
-              totalPendingAmount += parseFloat(invoice.amount)
-          })
-          const pendingTotalAmount = totalPendingAmount;
-
-          return this.currencyFormatter.format(pendingTotalAmount);
-        },
-        async updateInvoiceStatus(invoice, status){
-            try{
-                invoice.status = status;
-                await this.$store.dispatch('invoices/update', invoice);
-            } catch (e){
-                await this.$store.dispatch('alerts/showNotification', {
-                        message: 'Something went wrong! Try again later or contact the support.',
-                        type: 'error'
-                }); // Log the response data for debugging
-            }   
-        },
-        getInvoicesForThisMonth() {
-            if (!Array.isArray(this.invoices)) {
-                console.warn('Invoices is not an array or is undefined');
-                return [];
-            }
-            const currentMonthDate = new Date();
-            return this.invoices.filter(invoice => {
-                const invoiceDate = new Date(invoice.invoice_date);
-                return (
-                    invoiceDate.getMonth() === currentMonthDate.getMonth() &&
-                    invoiceDate.getFullYear() === currentMonthDate.getFullYear()
-                );
-            });
-        },
-        getInvoicesForLastMonth(){
-            if (!Array.isArray(this.invoices)) {
-                console.warn('Invoices is not an array or is undefined');
-                return [];
-            }
-            const lastMonthDate = new Date();
-            lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-            return this.invoices.filter(invoice => {
-                const invoiceDate = new Date(invoice.invoice_date);
-                return(
-                    invoiceDate.getMonth() === lastMonthDate.getMonth() &&
-                    invoiceDate.getFullYear() === lastMonthDate.getFullYear()
-                );
-            });
-        },
-        getPendingForLastMonth(){
-            if (!Array.isArray(this.invoices)) {
-                console.warn('Invoices is not an array or is undefined');
-                return [];
-            }
-            const lastMonthInvoices = this.getInvoicesForLastMonth();
-                // Calculate the outstanding amount
-            const outstandingAmount = lastMonthInvoices.reduce((total, invoice) => {
-                if (invoice.status === 0) { // Assuming 0 indicates an outstanding invoice
-                    return total + parseFloat(invoice.amount);
-                }
-                return total;
-            }, 0);
-
-            return outstandingAmount.toFixed(2); // Return as a fixed decimal numbe
-        },
-        getIncomeForLastMonth(){
-            if (!Array.isArray(this.invoices)) {
-                console.warn('Invoices is not an array or is undefined');
-                return [];
-            }
-            const lastMonthInvoices = this.getInvoicesForLastMonth();
-                // Calculate the outstanding amount
-            const income = lastMonthInvoices.reduce((total, invoice) => {
-                if (invoice.status === 1) { // Assuming 0 indicates an outstanding invoice
-                    return total + parseFloat(invoice.amount);
-                }
-                return total;
-            }, 0);
-
-            return this.currencyFormatter.format(income); // Return as a fixed decimal numbe
-        },
-        getIncomeForThisMonth(){
-            if (!Array.isArray(this.invoices)) {
-                console.warn('Invoices is not an array or is undefined');
-                return [];
-            }
-            const thisMonthInvoices = this.getInvoicesForThisMonth();
-                // Calculate the outstanding amount
-            const income = thisMonthInvoices.reduce((total, invoice) => {
-                if (invoice.status === 1) { // Assuming 0 indicates an outstanding invoice
-                    return total + parseFloat(invoice.amount);
-                }
-                return total;
-            }, 0);
-
-            return this.currencyFormatter.format(income); // Return as a fixed decimal numbe
-        },
-  //      ...mapActions('tutorial', ['nextTutorialStep', 'completeTutorial']),
-   //     async startTutorial(){
-   //         await this.$store.dispatch("profile/me")
-   //         this.user = await this.$store.getters["profile/me"]
-   //         this.showTutorial = true;
-  //          this.tutorialSteps[0].title += ' '+this.user.name
-  //      },
-  //      nextStep(){
-  //          if(this.currentStep < this.tutorialSteps.length - 1)
-  //              this.nextTutorialStep();
-  //          else
-  //              this.completeTutorial();
-  //      },
-  //      completeTutorial(){
-  //          this.showTutorial = false;
-  //      },
-        getInvoicePaid(){
-            return this.invoices.filter(invoice => invoice.status === 1).length;
-        },
-        getInvoiceUnpaid(){
-            return this.invoices.filter(invoice => invoice.status === 0).length;
-        },
-        getOverdueCount(){
-          const today = new Date();
-          const overdue = this.invoices.filter(
-            invoice => invoice.status === 0 && new Date(invoice.due_date) < today
-          );
-          return overdue.length;
-        },
-        getOverdueAmount(){
-          const today = new Date();
-          const overdue = this.invoices.filter(
-            invoice => invoice.status === 0 && new Date(invoice.due_date) < today
-          );
-          const amount = overdue.reduce((total, invoice) => total + (parseFloat(invoice.amount) || 0), 0);
-          return amount; 
-        },
-        getLastInvoice(){
-          const dates = this.invoices.map((invoice) => new Date(invoice.invoice_date));
-          const latestDate = new Date(Math.max(...dates));
-          
-          return formatDateForInvoiceDisplay(latestDate) !== 'Invalid Date' ? formatDateForInvoiceDisplay(latestDate) : "N/A" 
-        },
-        handleHideAmount(){
-          this.hideAmount = !this.hideAmount
-          localStorage.setItem('hideAmount', this.hideAmount)
-        }
-    },
-    mounted() {
-      const isHide = localStorage.getItem('hideAmount');
-      if (isHide !== null) {
-        this.hideAmount = isHide === 'true'; // convert string to boolean
+  },
+  methods: {
+    async fetchInvoices(time) {
+      if(time === 'first')
+      this.isLoadingInvoices = true;
+      try {
+        await this.$store.dispatch('invoices/list',['customer']);
+        this.invoices = this.$store.getters["invoices/list"] || [];
+      } catch (error) {
+        console.error('Error fetching invoices:', error);
+      } finally {
+       if(time === 'first')
+       this.isLoadingInvoices = false;
       }
     },
- //   mounted(){
- //       this.startTutorial();
-//    },
+    async updateInvoiceStatus(invoice, status) {
+      try {
+        invoice.status = status;
+        await this.$store.dispatch('invoices/update', invoice);
+        this.fetchInvoices('update');
+      } catch (e) {
+        await this.$store.dispatch('alerts/showNotification', {
+          message: 'Something went wrong! Try again later or contact the support.',
+          type: 'error'
+        });
+      }
+    },
+    handleHideAmount() {
+      this.hideAmount = !this.hideAmount;
+      localStorage.setItem('hideAmount', this.hideAmount);
+    },
+    setTimePeriod(period) {
+      this.timePeriod = period;
+    },
+    getLastInvoice() {
+      if (!this.invoices.length) return 'N/A';
+      const latest = this.invoices.reduce((max, inv) => {
+        const date = new Date(inv.invoice_date);
+        return date > max ? date : max;
+      }, new Date(0));
+      return formatDateForDisplay(latest);
+    },
+  },
+  mounted() {
+    const isHide = localStorage.getItem('hideAmount');
+    if (isHide !== null) {
+      this.hideAmount = isHide === 'true';
+    }
+  },
 }
 </script>
 
 <style scoped>
-
+/* Add global dashboard styles here if needed */
 .card{
   height:100%;
 }
@@ -470,7 +222,6 @@ export default {
 .card-body{
   padding:0.75rem !important;
 }
-
 .icon-shape {
   display: flex;
   align-items: center;
@@ -499,123 +250,5 @@ export default {
 }
 .bg-gradient-orange {
   background: linear-gradient(87deg, #fb6340 0, #fbb140 100%);
-}
-.welcome-header {
-  color: var(--primary-color);
-}
-
-.welcome-header h4 {
-  font-size: clamp(1.25rem, 4vw, 1.75rem);
-  margin: 0;
-}
-
-.unpaid-invoices-card {
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-}
-
-.unpaid-invoices-list {
-  max-height: 300px;
-  overflow-y: auto;
-  padding: 0;
-}
-
-.invoice-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.invoice-item {
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
-}
-
-.invoice-item.bg-light {
-  background-color: #f8f9fa;
-}
-
-.invoice-item:hover {
-  background-color: #f1f3f5;
-}
-
-.badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-.paid-button {
-  color:white;
-  background-color:  #0366d6 !important;
-  border-color: #0366d6 !important;
-  min-width: 70px;
-  min-height: 36px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  border-radius: 6px;
-  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-}
-
-.paid-button:hover,
-.paid-button:focus {
-  transform: scale(1.05);
-  opacity: 0.9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: #0366d6 !important; /* Darker teal for hover/focus */
-  border-color: #0366d6 !important;
-}
-
-@media (max-width: 576px) {
-  .unpaid-invoices-list {
-    padding: 0 0.5rem;
-  }
-
-  .invoice-item {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .paid-button {
-    min-width: 60px;
-    min-height: 32px;
-    padding: 0.2rem 0.4rem;
-    font-size: 0.75rem;
-  }
-}
-/* Flexbox styling for last-invoice */
-.last-invoice {
-    display: flex;
-    flex-wrap: wrap; /* Allows wrapping when space is tight */
-    align-items: baseline; /* Aligns text vertically */
-}
-
-/* On small screens, allow p to wrap naturally */
-@media (max-width: 576px) {
-  .last-invoice p {
-    flex-basis: 100%; /* Forces p to take full width, moving to next line */
-    margin: 0; /* Remove default margin for tighter layout */
-  }
-}
-
-/* Fallback: Absolute positioning with spacer */
-.card-stats .card-body.position-relative {
-  position: relative;
-}
-.last-invoice.absolute-bottom {
-  position: absolute;
-  bottom: 1rem; /* Align with padding */
-  left: 1.25rem;
-  right: 1.25rem;
-}
-.last-invoice-spacer {
-  height: 1.5rem; /* Reserve space for absolute-positioned last-invoice */
-}
-.eyes{
-  cursor: pointer;
-}
-
-.text-muted{
-  font-weight: 500;
 }
 </style>

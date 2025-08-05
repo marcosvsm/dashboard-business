@@ -12,7 +12,8 @@ import companies from "./modules/companies-module"
 import invoices from "./modules/invoices-module"
 import customers from "./modules/customers-module"
 import alerts from "./modules/alerts-module"
-import paymentMethods from "./modules/paymentMethods-module";
+import paymentMethods from "./modules/paymentMethods-module"
+import waitlists from "./modules/waitlists-module"
 
 Vue.use(Vuex);
 
@@ -29,6 +30,6 @@ export default new Vuex.Store({
         customers,
         alerts,
         paymentMethods,
-
+        waitlists,
     }
 });
