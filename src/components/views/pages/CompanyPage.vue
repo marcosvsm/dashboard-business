@@ -39,7 +39,6 @@ export default {
   computed:{
     currentPath(){
       const route = this.$route.path;
-      console.log(route);
       const actual = route.split('/company/');
       return actual.pop('');
     },

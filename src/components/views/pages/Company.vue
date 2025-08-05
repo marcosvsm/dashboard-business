@@ -64,10 +64,10 @@
                         </b-form-group>
                       </b-col>
                       <b-col md="8" offset-md="4">
-                        <b-button type="submit" variant="primary" class="mr-1 mt-5">
+                        <b-button type="submit" variant="primary" class="mr-1 mt-5" :disabled="submit">
                           {{ t('Save') }}
                         </b-button>
-                        <b-button @click="skipPaymentDetails" variant="secondary" class="mr-1 mt-5">
+                        <b-button @click="skipPaymentDetails" variant="secondary" class="mr-1 mt-5" :disabled="submit">
                           {{ t('Skip') }}
                         </b-button>
                       </b-col>
@@ -100,6 +100,7 @@ export default {
       companyCreated: false,
       companyData: null, // Temporary storage for company data
       t: null,
+      submit: false,
     }
   },
   created() {
@@ -120,6 +121,7 @@ export default {
       this.currentTab = 1;
     },
     collectPaymentDetails() {
+      this.submit = true
       // Collect payment details and save all data
       this.payment_details = {
         payid: this.payment_details.payid,
@@ -151,6 +153,7 @@ export default {
         this.$router.push({ name: 'companies' });
       } catch (e) {
         console.log('Response data:', e.response.data);
+        this.submit = false
         let message = 'Something went wrong! Try again later or contact the support.'
         if (e.response.data.errors[0].detail === 'Your email address is not verified.') {
           message = "Your email address is not verified. Please verify your email.";
@@ -188,6 +191,7 @@ export default {
         await this.$store.dispatch('companies/add', data);
         this.$router.push({ name: 'companies' });
       } catch (e) {
+        this.submit = false
         let message = 'Something went wrong! Try again later or contact the support.'
         if (e.response.data.errors[0].detail === 'Your email address is not verified.') {
           message = "Your email address is not verified. Please verify your email.";
@@ -205,6 +209,7 @@ export default {
       }
     },
     async skipPaymentDetails() {
+      this.submit = true
       // Skip payment details and save company data only
       this.saveCompany();
     },

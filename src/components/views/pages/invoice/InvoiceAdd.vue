@@ -33,7 +33,7 @@
                 :disabled="!invoiceData.customer.id || isSuggesting"
                 @click="suggestInvoice"
               >
-                {{ isSuggesting ? 'Suggesting...' : 'Suggest Invoice' }}
+                {{ isSuggesting ? 'Thinking...' : 'AIra’s Invoice Suggestions' }}
               </b-button>
             </b-card-body>
 
