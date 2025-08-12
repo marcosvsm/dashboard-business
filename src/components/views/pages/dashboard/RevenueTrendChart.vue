@@ -5,14 +5,14 @@
     :chart-options="revenueChartOptions"
     :chart-height="350"
     :color="'#2dce89'"
-    :chart-title="t('Revenue Trend')"
+    :chart-title="t('Revenue')"
   >
     <template #header>
       <div class="chart-card-header">
          <b-row>
         <b-col cols="9" class="d-flex align-items-center">
           <h5 class="card-title text-uppercase text-muted mb-0" style="color: #0366d6 !important">
-            {{ t(timePeriod+' Revenue Trend') }}
+            {{ t(timePeriod+' Revenue') }}
           </h5>
         </b-col>
         <b-col cols="3" class="d-flex justify-content-end">
@@ -23,14 +23,14 @@
             </template>
             <b-dropdown-item @click="$emit('set-time-period', 'monthly')">{{ t('Monthly') }}</b-dropdown-item>
             <b-dropdown-item @click="$emit('set-time-period', 'quarterly')">{{ t('Quarterly') }}</b-dropdown-item>
-            <b-dropdown-item @click="$emit('set-time-period', 'yearly')">{{ t('Yearly') }}</b-dropdown-item>
+            <b-dropdown-item @click="$emit('set-time-period', 'annual')">{{ t('Annual') }}</b-dropdown-item>
           </b-dropdown>
         </b-col>
       </b-row>
       </div>
     </template>
     <template #subtitle>
-      <p class="text-sm text-muted">{{timePeriod === 'monthly' ? t('Paid invoices over the last 12 months') : timePeriod === 'quarterly' ? t('Invoices paid by quarter') : timePeriod === 'yearly' ? t('Invoices paid in the last 3 years') : '' }}</p>
+      <p class="text-sm text-muted">{{timePeriod === 'monthly' ? t('Paid invoices over the last 12 months') : timePeriod === 'quarterly' ? t('Invoices paid by quarter') : timePeriod === 'annual' ? t('Invoices paid in the last 3 financial years') : '' }}</p>
     </template>
     <template #footer-title>
       <div class="chart-card-footer">
@@ -46,6 +46,10 @@
     <template #footer-right>
       <span>
         Q = {{t('Quarter')}}
+        </span>
+        |
+        <span>
+        FY = {{t('Financial Year')}}
         </span>
     </template>
   </chart-card>
@@ -133,12 +137,17 @@ export default {
           }
           this.period = 'quarter'
           break;
-        case 'yearly':
-          for (let i = 0; i < 3; i++) {
-            periods.unshift(current.startOf('year'));
+        case 'annual':
+          // Australian financial year: July 1 to June 30
+          // If current date is before July, use previous year as start of current FY
+          if (current.month() < 6) { // Months are 0-based, 6 = July
             current = current.subtract(1, 'year');
           }
-          this.period = 'year'
+          for (let i = 0; i < 3; i++) {
+            periods.unshift(current.set('month', 6).startOf('month'));
+            current = current.subtract(1, 'year');
+          }
+          this.period = 'financial year'
           break;
         default: // monthly
           for (let i = 0; i < 12; i++) {
@@ -153,8 +162,11 @@ export default {
       switch (this.timePeriod) {
         case 'quarterly':
           return `Q${period.quarter()} ${period.year()}`;
-        case 'yearly':
-          return period.year().toString();
+        case 'annual':
+          // Format as FY YYYY-YY (e.g., FY 2024-25)
+          const startYear = period.year();
+          const endYear = (startYear + 1) % 100; // Last two digits of next year
+          return `FY ${startYear}-${endYear.toString().padStart(2, '0')}`;
         default:
           return period.format('MMM YYYY');
       }
@@ -166,14 +178,15 @@ export default {
       if (this.timePeriod === 'quarterly') {
         end = period.endOf('quarter');
         unit = 'quarter';
-      } else if (this.timePeriod === 'yearly') {
-        end = period.endOf('year');
+      } else if (this.timePeriod === 'annual') {
+        //Financial year ends on June 30
+        end = period.set('month', 5).endOf('month'); //June30
         unit = 'year';
       } else {
         end = period.endOf('month');
         unit = 'month';
       }
-      const nextStart = period.add(1, unit).startOf(unit);
+      const nextStart = this.timePeriod === 'annual' ? period.add(1, unit).set('month', 6).startOf('month') : period.add(1, unit).startOf(unit);
       return this.invoices.reduce((sum, inv) => {
         const invDate = dayjs(inv.invoice_date);
         if (inv.status === 1 && (invDate.isAfter(start) || invDate.isSame(start)) && invDate.isBefore(nextStart)) {

@@ -318,15 +318,15 @@
     "last month": "mes pasado",
     "last quarter": "último trimestre",
     "last year": "año pasado",
-    "yearly Revenue Trend": "Tendencia de ingresos anual",
-    "monthly Revenue Trend": "Tendencia de ingresos mensual",
-    "quarterly Revenue Trend": "Tendencia de ingresos trimestral",
+    "annual Revenue": "Ingresos anual",
+    "monthly Revenue": "Ingresos mensual",
+    "quarterly Revenue": "Ingresos trimestral",
     "Revenue": "Ingresos",
     "increase": "aumento",
     "decrease": "disminución",
     "Monthly": "Mensual",
     "Quarterly": "Trimestral",
-    "Yearly": "Anual",
+    "Annual": "Anual",
     "Customers": "Clientes",
     "Tax Summary": "Resumen de Impuestos",
     "Unlock Tax Insights": "Desbloquea Insights Fiscales",
@@ -359,5 +359,7 @@
     "Reminder sent for invoice #{name}": "Recordatorio enviado para la factura #{name}",
     "Failed to send reminder. Please try again.": "Falló al enviar recordatorio. Por favor, intenta de nuevo.",
     "Unknown": "Desconocido",
-    "Quarter": "Trimestre"
+    "Quarter": "Trimestre",
+    "Invoices paid in the last 3 financial years": "Facturas pagadas en los últimos 3 Ingresos del Año Fiscal",
+    "Financial Year": "Año Fiscal"
   }

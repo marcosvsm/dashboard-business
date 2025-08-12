@@ -62,9 +62,9 @@ export default {
         context.commit("isAuthenticated", {
           isAuthenticated: vueAuth.isAuthenticated()
         });
-        // Clear user data on logout
-        context.commit('users/SET_RESOURCE', null, { root: true });
-        localStorage.removeItem('userRoles'); // Clear roles on logout
+         // Clear user data on logout
+         context.commit('users/SET_RESOURCE', null, { root: true });
+         localStorage.removeItem('userRoles'); // Clear roles on logout
         router.push({name: "Login"});
       });
     },

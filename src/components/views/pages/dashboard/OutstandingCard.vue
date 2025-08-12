@@ -15,7 +15,7 @@
         </b-col>
       </b-row>
       <div class="d-flex justify-content-between mt-2">
-          <span class="font-weight-bold"> {{ t('Overdue') }} ({{ getOverdueCount}} {{t('Invoices')}})</span>
+          <span class="font-weight-bold"> {{ t('Overdue') }} ({{ getOverdueCount === 1 ? getOverdueCount +' '+t('Invoice') : getOverdueCount +' '+ t('Invoices')}})</span>
           <span>{{ currencyFormatter.format(getOverdueAmount) }}</span>
         </div>
         <b-progress :value="getOverdueAmount" :max="getPendingAmount" variant="danger" class="mt-1" />

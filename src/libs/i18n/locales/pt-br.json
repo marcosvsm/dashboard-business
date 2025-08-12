@@ -338,15 +338,15 @@
   "last month": "mês passado",
   "last quarter": "último trimestre",
   "last year": "ano passado",
-  "yearly Revenue Trend": "Tendência de receita anual",
-  "monthly Revenue Trend": "Tendência de receita mensal",
-  "quarterly Revenue Trend": "Tendência de receita trimestral",
+  "annual Revenue": "Receita anual",
+  "monthly Revenue": "Receita mensal",
+  "quarterly Revenue": "Receita trimestral",
   "Revenue": "Receita",
   "increase": "crescimento",
   "decrease": "queda",
   "Monthly": "Mensal",
   "Quarterly": "Trimenstral",
-  "Yearly": "Anual",
+  "Annual": "Anual",
   "Customers": "Clientes",
   "Recent Activity": "Atividade Recente",
   "Latest Invoice Updates": "Atualizações de Faturas Recentes",
@@ -379,5 +379,7 @@
   "Reminder sent for invoice #{name}": "Lembrete enviado para a fatura #{name}",
   "Failed to send reminder. Please try again.": "Falha ao enviar lembrete. Por favor, tente novamente.",
   "Unknown": "Desconhecido",
-  "Quarter": "Trimestre"
+  "Quarter": "Trimestre",
+  "Invoices paid in the last 3 financial years": "Faturas pagas nos últimos 3 anos fiscais",
+  "Financial Year": "Ano Fiscal"
 }

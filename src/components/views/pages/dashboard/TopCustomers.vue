@@ -4,6 +4,7 @@
       <h5 class="card-title text-uppercase text-muted mb-3" style="color:#0366d6 !important">
         Top {{ t('Customers') }}
       </h5>
+      <template>
       <div v-for="(customer, index) in topCustomers" :key="index" class="mb-2">
         <div class="d-flex justify-content-between">
           <span class="font-weight-bold">{{ customer.name.substring(0,25) }}</span>
@@ -11,6 +12,14 @@
         </div>
         <b-progress :value="customer.total" :max="maxCustomerTotal" variant="primary" class="mt-1" />
       </div>
+      </template>
+      <template v-if="!topCustomers.length">
+        <div class="text-center my-2 no-options-message">
+          <base-feather-icon icon="AlertCircleIcon" size="16" />
+          <p>{{ t('No Clients could be found') }}</p>
+          <router-link :to="{ name: 'add-invoice'}">{{ t("Create Invoice") }}</router-link>
+        </div>
+      </template>
     </b-card-body>
   </b-card>
 </template>
