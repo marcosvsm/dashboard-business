@@ -32,6 +32,7 @@ import TaxCalculator from '@/components/views/pages/tax/TaxCalculator.vue'
 import UserProfile from '@/components/views/pages/user/Profile.vue'
 
 import Faq from '@/components/views/pages/menu/Faq.vue'
+import Help from '@/components/views/pages/menu/Help.vue'
 
 import GoogleCallback from '@/components/views/pages/GoogleCallback.vue'
 
@@ -176,6 +177,15 @@ let faqPage = {
   },
 }
 
+let helpPage = {
+  path: '/help',
+  name: 'help',
+  component: Help,
+  meta: {
+    middleware:auth,
+  },
+}
+
 let confirmRegisterPage = {
   path: '/confirm-registration',
   name: 'confirmRegister',
@@ -259,6 +269,7 @@ const routes = [
     forgotPasswordPage,
     passwordResetPage,
     faqPage,
+    helpPage,
     confirmRegisterPage,
     taxPage,
     googleCallbackPage,

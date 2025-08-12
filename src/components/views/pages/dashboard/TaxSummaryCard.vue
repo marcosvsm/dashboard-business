@@ -85,13 +85,6 @@ export default {
         this.waitlist = data.find(list => list.name === "Tax Summary")
     } catch (error) {
       console.error('Error fetching user or waitlist:', error);
-      this.$toast.error('Failed to load waitlist status. Please try again.', {
-        position: 'top-right',
-        icon: false,
-        closeButton: false,
-        hideProgressBar: true,
-        timeout: 3000,
-      });
     } finally {
       this.isLoadingUser = false;
     }

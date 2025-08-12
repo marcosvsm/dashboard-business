@@ -6,7 +6,7 @@
           <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
             {{ t('Recent Activity') }}
           </h5>
-          <span class="h2 font-weight-bold mb-0">{{ t('Latest Invoice Updates') }}</span>
+          <span class="h4 font-weight-bold mb-0">{{ t('Latest Invoice Updates') }}</span>
         </b-col>
       </b-row>
       <p class="mt-2 mb-0 text-sm text-muted">
