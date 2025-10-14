@@ -48,6 +48,7 @@ const actions = {
     return service.getMe()
       .then((user) => {
         commit('SET_RESOURCE', user);
+        return user; 
       });
   },
 

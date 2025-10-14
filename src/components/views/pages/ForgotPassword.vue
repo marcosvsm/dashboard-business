@@ -67,7 +67,7 @@ export default {
   methods:{
     async resetPassword(){
       try{
-        await this.$store.dispatch("forgotPassword", this.email)
+        await this.$store.dispatch("auth/forgotPassword", this.email)
         alert('Password reset link has been sent to your email.');
       } catch (e){
           this.clearError()
@@ -76,9 +76,12 @@ export default {
           } else  if (e.response && e.response.status === 422) {
           this.genericError = e.response.data.errors[0].detail;
           } else {
-            this.$notify({
-              message:'Something went wrong!',
-              type: 'danger',
+            this.$toast.error('Something went wrong!', {
+              position: 'top-right',
+              icon: false,
+              closeButton: false,
+              hideProgressBar: true,
+              timeout: 3000,
             });
           }
         }

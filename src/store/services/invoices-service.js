@@ -24,6 +24,7 @@ function list(include = []) {
 
 function get(id, include = []) {
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
@@ -42,6 +43,7 @@ function get(id, include = []) {
 
 function add(payload) {
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
@@ -61,6 +63,7 @@ function update(invoice) {
   });
 
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
@@ -75,6 +78,7 @@ function update(invoice) {
 
 function destroy(id) {
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
@@ -86,6 +90,7 @@ function destroy(id) {
 
 function suggest(params) {
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',

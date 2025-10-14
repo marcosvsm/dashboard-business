@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-
+import store from '@/store';
 Vue.use(VueRouter);
 
 //router setup
@@ -31,21 +31,21 @@ function nextFactory(context, middleware, index){
 
     return (...parameters) => {
         // Run the dafult Vue Router 'next()' callback first.
-        context.next(...parameters);
+        if (parameters.length > 0) {
+            return context.next(...parameters);
+        }
         // Then run the subsequent Middleware with a new
         // 'nextMiddleware() callback.
         const nextMiddleware = nextFactory(context, middleware, index + 1);
-        subsequentMiddleware({...context, next: nextMiddleware});
+        return subsequentMiddleware({...context, next: nextMiddleware});
     };
 }
 
 router.beforeEach((to, from, next) => {
-
     if(to.meta.middleware){
         const middleware = Array.isArray(to.meta.middleware) ? to.meta.middleware : [to.meta.middleware];
         const context = {from, next, to, router};
         const nextMiddleware = nextFactory(context, middleware, 1);
-
         return middleware[0]({...context, next: nextMiddleware});
     }
     return next();

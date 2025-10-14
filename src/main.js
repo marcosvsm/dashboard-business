@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import App from './App.vue'
+import Root from './Root.vue'
 //import VueRouter from 'vue-router'
 //import VueNotify from 'vue-notifyjs'
 import Toast from 'vue-toastification'
@@ -28,18 +28,19 @@ Vue.use(Toast, {
 //Vue.use(VueRouter);
 
 // import core styles
-require('@/scss/core.scss')
+import'@/scss/core.scss'
 
 // import assets styles
-require('@/assets/scss/style.scss')
-
-
+import '@/assets/scss/style.scss'
 //Vue.config.productionTip = false
 
-new Vue({
-  el: '#app',
-  render: h => h(App),
-  router: router,
-  store: store,
-  i18n,
-})
+// Wait until router resolves initial route (async components etc.)
+(async () => {
+
+  new Vue({
+    router,
+    store,
+    i18n,
+    render: h => h(Root),
+  }).$mount('#app');
+})();

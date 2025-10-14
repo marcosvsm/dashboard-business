@@ -1,22 +1,26 @@
 <template>
-  <div>Processing Google Sign-In...</div>
+  <div class="p-6 text-center">Finishing Google sign-in…</div>
 </template>
 
 <script>
 export default {
-  mounted() {
-    const token = this.$route.query.token;
-    if (token) {
-      // Store the token (e.g., in localStorage or Vuex)
-      localStorage.setItem('vue-authenticate.vueauth_access_token', token);
-      // Optionally update authentication state in Vuex
-      this.$store.commit('isAuthenticated', { isAuthenticated: true });
-      // Redirect to the dashboard
-      this.$router.push('/dashboard/overview');
-    } else {
-      // Handle missing token error
-      console.error('No token received');
-      this.$router.push('/login');
+  name: 'GoogleCallback',
+  data: () => ({ once: false }),
+  async mounted() {
+    if (this.once) return; this.once = true;
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const code  = q.get('code');
+      const state = q.get('state');
+      if (!code) throw new Error('Missing code');
+
+      await this.$store.dispatch('auth/handleGoogleCallback', { code, state });
+
+      // Clean URL to avoid re-processing on reload
+      window.history.replaceState({}, document.title, this.$route.path);
+    } catch (e) {
+      console.error(e);
+      this.$router.replace({ name: 'login' }).catch(() => {});
     }
   },
 };

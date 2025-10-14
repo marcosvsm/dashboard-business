@@ -24,6 +24,7 @@ function list(params) {
 
 function get(id) {
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
@@ -40,6 +41,7 @@ function get(id) {
 
 function getMe() {
   const options = {
+    withCredentials: true,
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
@@ -48,12 +50,13 @@ function getMe() {
 
   return axios.get(`${url}/me?include=role`, options) // Assume /me endpoint exists and returns user with roles
     .then(response => {
-      let user = jsona.deserialize(response.data);
+      const data = response.data;
+      const user = jsona.deserialize(data);
       delete user.links;
-      // Extract roles from included (assuming single role for simplicity; adjust for multiple)
-      user.roles = response.data.included
-        .filter(item => item.type === 'roles')
-        .map(role => role.attributes.slug); // Extract role names
+      const included = Array.isArray(data.included) ? data.included : [];
+      user.roles = included
+        .filter((x) => x.type === 'roles')
+        .map((r) => r.attributes.slug);
       return user;
     });
 }

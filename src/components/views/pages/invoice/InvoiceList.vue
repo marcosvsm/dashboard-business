@@ -58,7 +58,7 @@
                         </b-card-text>
                       </b-col>  
                       </b-row>
-                      <b-card-footer>
+                      <b-card-footer class="pt-1">
                         <small class="d-flex justify-content-end">
                           <span class="mr-1">{{t('Actions')}}</span>
                           <span
@@ -191,7 +191,7 @@ export default {
         await this.$store.dispatch('invoices/list', ['customer']);
         this.invoices = this.$store.getters["invoices/list"] 
       } catch (error) {
-        this.$toast.error(this.t('Failed to load customers. Please try again.'), {
+        this.$toast.error('Failed to load customers. Please try again.', {
           position: 'top-right',
           icon: false,
           closeButton: false,
