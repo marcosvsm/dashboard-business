@@ -136,32 +136,24 @@ export default {
         }
 
         const user = {
-          data: {
-            type: "token",
-            attributes: {
-            email: this.email,
-            password: this.password,
-            password_confirmation: this.password_confirmation,
-            name: this.username
-            }
-          }
-        }
-        const requestOptions = {
-            headers: {
-                'Accept': 'application/vnd.api+json',
-                'Content-Type': 'application/vnd.api+json',
-            }
-        }
+                name: this.username,
+                email: this.email,
+                password: this.password,
+                password_confirmation: this.password_confirmation
+        };
         try{
-            await this.$store.dispatch("register", {user, requestOptions})
-            alert(response.data.message);
+            await this.$store.dispatch("auth/register", user)
+            this.$router.push({ name: 'confirmRegister' });
         } catch (e){
             if (e.response && e.response.status === 422) {
                 this.genericError = e.response.data.errors[0].detail
             } else {
-                this.$notify({
-                message:'Invalid credentials!',
-                type: 'danger',
+                this.$toast.error('Invalid credentials!', {
+                position: 'top-right',
+                icon: false,
+                closeButton: false,
+                hideProgressBar: true,
+                timeout: 3000,
                 });
             }
     

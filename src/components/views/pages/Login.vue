@@ -130,13 +130,20 @@ export default {
           }
         }
       }
+      const email = this.email
+      const password = this.password
       try{
-        await this.$store.dispatch("login", {user})
+        const ok = await this.$store.dispatch("auth/login", {email,password})
+        if (ok) {
+        // use ?redirect=/some/path if present, else dashboard
+        const redirect = this.$route.query.redirect;
+        this.$router.replace(redirect ? { path: redirect } : { name: 'dashboard-overview' });
+      }
       } catch (e){
           this.clearError()
           if (e.response.status === 422) {
             this.genericError = "Invalid credentials"
-          } else if (e.response.status === 400 || e.response.status === 500){
+          } else if (e.response.status === 400 || e.response.status === 500 || e.response.status === 401){
             this.genericError = "Invalid credentials"
           } else if (e.response.status === 401 && e.response.data.errors[0].detail === 'You need to verify your email address before logging in.'){
             this.genericError = "You need to verify your email address before logging in."
@@ -146,12 +153,17 @@ export default {
     clearError(){
        this.genericError = ''
     },
-    signInWithGoogle(){
-      this.loading = true;
-      // Sanitize redirect to prevent open redirect
-      const redirectUrl = 'https://app.simplifybusiness.com.au/api/v1/auth/google';
-      window.location.href = redirectUrl;
-
+    async signInWithGoogle(){
+      try {
+        this.loading = true;
+        await this.$store.dispatch("auth/authenticateGoogle");
+        // Sanitize redirect to prevent open redirect
+      //  const redirectUrl = 'http://localhost:3000/api/v1/auth/google';
+      //  window.location.href = redirectUrl;
+      } catch (error) {
+        this.loading = false;
+        console.error("Google login initiation failed:", error);
+      }
     },
   }, 
 }

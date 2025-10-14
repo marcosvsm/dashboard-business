@@ -1,11 +1,11 @@
-import axios from '@/axios';
+import api from '@/axios';
 import Jsona from 'jsona';
 
 const url = process.env.VUE_APP_API_BASE_URL;
 const jsona = new Jsona();
 
 function get() {
-  return axios.get(`${url}/me`)
+  return api.get(`${url}/me`, {withCredentials: true})
     .then(response => {
       return {
         list: jsona.deserialize(response.data),
@@ -28,7 +28,7 @@ function update(profile) {
     }
   };
 
-  return axios.patch(`${url}/me`, payload, options)
+  return api.patch(`${url}/me`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });

@@ -119,38 +119,28 @@ export default {
   components: {
     BaseFeatherIcon,
   },
-  data() {
-    return {
-      user: {
-        name: "",
-      },
-      isLoading: false,
-      //avatarText,
-    }
-  },
   computed:{
-    badgeVariant(){
-      if(!this.isLoading)
-        return 'light';
-      return this.user.name ? 'success' : 'danger';
+    user() {
+      const user =  this.$store.getters['auth/authUser'] ??
+        this.$store.getters['users/user']
+      return user || {name: ''};
     },
-  },
-  created(){
-    this.getMe();
+    isAuthenticated() {
+      return (
+        this.$store.getters['auth/isAuthenticated'] ??
+        this.$store.getters.isAuthenticated ??
+        false
+      );
+    },
+    badgeVariant() {
+      // show neutral before/when not authed; success once we have a name
+      return this.isAuthenticated && this.user?.name ? 'success' : 'light';
+    },
   },
   methods: {
-    async getMe(){
-      await this.$store.dispatch("profile/me")
-      this.user = await this.$store.getters["profile/me"]
-      this.isLoading = true;
-    },
-    logout() {
-      this.$store.dispatch("logout");
-      // Remove userData from localStorage
-      // ? You just removed token from localStorage. If you like, you can also make API call to backend to blacklist used token
-    //  localStorage.removeItem(useJwt.jwtConfig.storageTokenKeyName)
-    //  localStorage.removeItem(useJwt.jwtConfig.storageRefreshTokenKeyName)
-
+    async logout() {
+      await this.$store.dispatch("auth/logout");
+      this.$router.push({ path: "/login" });
     },
   },
 }

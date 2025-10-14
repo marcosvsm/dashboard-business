@@ -119,15 +119,13 @@ export default {
     async resetPassword(){
     const email = this.$route.query.email;
     const token = this.$route.query.token;
-    const user = {
-        data: {
+    const data = {
           attributes:{
             email: email,
             token: token,
             password: this.password,
             password_confirmation: this.password_confirmation,
           }
-        }
       }
       const requestOptions = {
         headers: {
@@ -136,7 +134,7 @@ export default {
         }
       }
       try{
-        await this.$store.dispatch("resetPassword", {user, requestOptions})
+        await this.$store.dispatch("auth/resetPassword", {data, requestOptions})
         this.$router.push("login");
       } catch (e){
           this.clearError()
