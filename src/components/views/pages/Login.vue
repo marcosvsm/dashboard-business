@@ -42,7 +42,9 @@
                               variant="primary" 
                               size="sm"
                               type="submit"
+                              :disabled="loadingSignIn"
                             >
+                            <span v-if="loadingSignIn" class="spinner-border spinner-border-sm"></span>
                               Sign in
                             </b-button>
                         </div>
@@ -100,7 +102,6 @@
 import formMixin from "@/mixins/form-mixin"
 import ValidationError from "@/components/uiComponents/ValidationError.vue"
 import { $themeConfig } from '@/themeConfig'
-import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 
 export default {
   mixins: [formMixin],
@@ -115,7 +116,7 @@ export default {
       appLogoImage,
       genericError: '',
       loading: false,
-
+      loadingSignIn: false,
     }
   },
   methods:{
@@ -133,6 +134,7 @@ export default {
       const email = this.email
       const password = this.password
       try{
+        this.loadingSignIn = true
         const ok = await this.$store.dispatch("auth/login", {email,password})
         if (ok) {
         // use ?redirect=/some/path if present, else dashboard
@@ -148,7 +150,10 @@ export default {
           } else if (e.response.status === 401 && e.response.data.errors[0].detail === 'You need to verify your email address before logging in.'){
             this.genericError = "You need to verify your email address before logging in."
           }
-        }
+      } finally{
+        this.loadingSignIn = false
+      }
+
     },
     clearError(){
        this.genericError = ''

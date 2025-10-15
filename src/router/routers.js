@@ -25,6 +25,7 @@ import Help from '@/components/views/pages/menu/Help.vue';
 import GoogleCallback from '@/components/views/pages/GoogleCallback.vue';
 import ClientList from '@/components/views/pages/client/ClientList.vue';
 import Client from '@/components/views/pages/client/Client.vue';
+import VerifyEmailGate from '@/components/views/pages/VerifyEmailGate.vue'
 
 const routes = [
     {
@@ -57,9 +58,16 @@ const routes = [
     },
     {
         path: '/email/verify',
-        name: 'Verification',
-        component: EmailVerification,
+        name: 'verifyEmailGate',
+        component: VerifyEmailGate,
         meta: { layout: 'full', middleware: guest },
+    },
+    {
+        path: '/email/verify/error',
+        name: 'verification',
+        component: EmailVerification,
+        meta: { layout: 'full', middleware: guest,},
+        props: true, 
     },
     {
         path: '/invoice/free',
@@ -133,7 +141,7 @@ const routes = [
         path: '/confirm-registration',
         name: 'confirmRegister',
         component: ConfirmRegister,
-        meta: { layout: 'full', middleware: guest },
+        meta: { layout: 'full', middleware: guest,}
     },
     {
         path: '/dashboard/overview',

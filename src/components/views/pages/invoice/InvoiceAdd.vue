@@ -90,7 +90,7 @@
             variant="outline-primary"
             block
             @click="saveInvoice()"
-            :disabled="isSubmitting"
+            :disabled="isSubmitting || !isDirty"
           >
             {{ t('Save') }}
           </b-button>
@@ -341,29 +341,30 @@ export default {
             }))
           }
         }
-      try{
-        await this.$store.dispatch('invoices/add',data);
-        this.$toast.success(`Invoice saved: ${this.invoiceData.number}`,
+        try{
+          await this.$store.dispatch('invoices/add',data);
+          this.takeSnapshot();
+          this.$toast.success(`Invoice saved: ${this.invoiceData.number}`,
+              {
+              position: "top-right",
+              icon: CheckCircleIcon,
+              closeButton: false,
+              hideProgressBar: true,
+              timeout: 2000
+              })
+        } catch(e){
+          this.$toast.error('Something went wrong! Try again later or contact the support.',
             {
-            position: "top-right",
-            icon: CheckCircleIcon,
-            closeButton: false,
-            hideProgressBar: true,
-            timeout: 2000
+              position: "top-right",
+              icon: AlertCircleIcon,
+              closeButton: false,
+              hideProgressBar: true,
+              timeout: 3000
             })
-      } catch(e){
-        this.$toast.error('Something went wrong! Try again later or contact the support.',
-          {
-            position: "top-right",
-            icon: AlertCircleIcon,
-            closeButton: false,
-            hideProgressBar: true,
-            timeout: 3000
-          })
-        
-      }
+        } finally {
+          this.isSubmitting = false
+        }
       } else {
-        console.log('Validation failed:', this.formErrors)
         this.$nextTick(() => {
           this.$toast.error('Please correct the errors in the form before saving the invoice.',
           {
@@ -374,8 +375,8 @@ export default {
             timeout: 3000
           })
         })
-      }
       this.isSubmitting = false
+      }
     },
     formatPrice(value) {
       // Ensure the value is a number and format it to two decimal places
@@ -509,6 +510,26 @@ export default {
         proxy.$set(invoiceData.value.company, 'paymentDetail', payment);
     }
 
+    //Dirty state Tracking
+    const isDirty = ref(true) // new invoice can be saved
+    const lastSavedSnapshotStr = ref(null) // store as a string for fast compare
+    const stringify = (obj) => JSON.stringify(obj)
+    const takeSnapshot = () => {
+      stringify(invoiceData.value)
+      isDirty.value = false
+    }
+
+    watch(
+      invoiceData,
+      (val) => {
+        if (lastSavedSnapshotStr.value === null){
+          isDirty.value = true
+        } else {
+          isDirty.value = stringify(val) !== lastSavedSnapshotStr.value
+        }
+      },
+      { deep: true, immediate: true}
+    )
     
     return {
       invoiceData,
@@ -529,6 +550,8 @@ export default {
       isSubmitting,
       isSuggesting, // Expose to template
       formErrors,
+      isDirty,
+      takeSnapshot,
     }
   },
 }

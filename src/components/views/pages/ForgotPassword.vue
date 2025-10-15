@@ -22,20 +22,18 @@
                             </b-input-group-prepend>
                                 <b-input type="email" v-model="email" placeholder="Email" required></b-input>
                         </b-input-group>
-                        <validation-error :errors="apiValidationErrors.email" />
                         <div class="d-flex" style="justify-content: space-between!important;">
                             <span></span>
                             <a href="/login"><small>Sign in</small></a>
-                        </div>
-                        <div v-if="genericError" class="text-danger text-center mt-2">
-                            {{ genericError }}
                         </div>
                         <div class="text-center mt-3">
                             <b-button 
                               variant="primary" 
                               size="sm"
                               type="submit"
+                              :disabled="loading"
                             >
+                            <span v-if="loading" class="spinner-border spinner-border-sm"></span>
                               Reset Password
                             </b-button>
                         </div>
@@ -50,7 +48,7 @@
 import formMixin from "@/mixins/form-mixin"
 import ValidationError from "@/components/uiComponents/ValidationError.vue"
 import { $themeConfig } from '@/themeConfig'
-
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 export default {
   mixins: [formMixin],
   components:{
@@ -61,35 +59,35 @@ export default {
     return {
       email: '',
       appLogoImage,
-      genericError: '',
+      loading: false
     }
   },
   methods:{
     async resetPassword(){
       try{
-        await this.$store.dispatch("auth/forgotPassword", this.email)
-        alert('Password reset link has been sent to your email.');
+        this.loading = true;
+        await this.$store.dispatch("auth/forgotPassword", this.email);
+        this.$toast.success(`Password reset link has been sent to your email.`,
+          {
+          position: "top-right",
+          icon: CheckCircleIcon,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 2000
+        });
       } catch (e){
-          this.clearError()
-          if (e.response.status === 422) {
-            this.setApiValidation(e.response.data.errors);
-          } else  if (e.response && e.response.status === 422) {
-          this.genericError = e.response.data.errors[0].detail;
-          } else {
-            this.$toast.error('Something went wrong!', {
-              position: 'top-right',
-              icon: false,
-              closeButton: false,
-              hideProgressBar: true,
-              timeout: 3000,
-            });
-          }
-        }
+        this.$toast.error('Something went wrong!', {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
+      }finally{
+        this.loading = false;
+        this.email = '';
+      }
     },
-    clearError(){
-       this.resetApiValidation()
-       this.genericError = ''
-    }
   }, 
 }
 </script>

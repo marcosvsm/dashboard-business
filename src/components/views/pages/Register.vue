@@ -64,7 +64,15 @@
                         <div v-if="genericError" class="alert alert-danger mt-2">{{ genericError }}</div>
 
                         <div class="text-center mt-2">
-                            <button class="btn btn-sm btn-primary" type="submit" :disabled="!isFormValid">Sign up</button>
+                            <button
+                                class="btn btn-sm btn-primary"
+                                type="submit"
+                                :disabled="loading || !isFormValid"
+                                >
+                                <span v-if="loading" class="spinner-border spinner-border-sm"></span>
+                                <span v-else>Sign up</span>
+                                <span v-if="loading">Signing up</span>
+                            </button>
                         </div>
                         <p class="card-text text-center mt-2"><span>Already have an account? </span><a href="/login" class="" target="_self"><span> Sign in instead</span></a></p>
                     </b-form-group>
@@ -92,12 +100,13 @@ export default {
             password_confirmation: '',
             username: '',
             appLogoImage,
-            apiValidationErros: {
+            apiValidationErrors: {
                 password: [],
                 password_confirmation: [],
             },
             genericError: '',
             passwordMismatch: false,
+            loading: false,
         }
     },
     computed: {
@@ -131,7 +140,7 @@ export default {
       async register(){
         this.validatePassword();
 
-        if(this.passwordMismatch) {
+        if(this.passwordMismatch || this.loading) {
             return;
         }
 
@@ -141,10 +150,16 @@ export default {
                 password: this.password,
                 password_confirmation: this.password_confirmation
         };
+        this.loading = true;
+        this.genericError = '';
+        this.apiValidationErrors = { password: [], password_confirmation: [] };
         try{
-            await this.$store.dispatch("auth/register", user)
-            this.$router.push({ name: 'confirmRegister' });
+            await this.$store.dispatch("auth/register", user);
+             // Clear inputs so the button becomes disabled again
+            this.resetForm();
+            await this.$router.push({ name: 'confirmRegister' });
         } catch (e){
+            this.loading = false;
             if (e.response && e.response.status === 422) {
                 this.genericError = e.response.data.errors[0].detail
             } else {
@@ -157,7 +172,20 @@ export default {
                 });
             }
     
+        } finally {
+            // If we didn’t navigate (i.e., there was an error), re-enable the form
+            this.loading = false;
         }
+      },
+       resetForm(){
+        this.username = '';
+        this.email = '';
+        this.password = '';
+        this.password_confirmation = '';
+        this.passwordMismatch = false;
+        this.genericError = '';
+        this.apiValidationErrors = { password: [], password_confirmation: [] };
+        // any other local flags you want to reset can go here
       },
       validatePassword(){
         if(this.password_confirmation)

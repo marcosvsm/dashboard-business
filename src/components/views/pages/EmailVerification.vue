@@ -12,8 +12,8 @@
                   alt="logo"
                 />
                 </span>
-                <div class="confirm-register">
-                    <h1>{{ message }}</h1>
+                <div v-if="hasError" class="confirm-register">
+                    <h1>{{ errorMessage }}</h1>
                     <p>
                     The verification link is invalid or something went wrong. Please try again in a few minutes if persists, contact the support.
                     </p>
@@ -25,40 +25,18 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { $themeConfig } from '@/themeConfig'
 
 export default {
+  props: { errorMessage: { type: String, default: '' } },
   data() {
     const { appLogoImage } = $themeConfig.app
     return {
-      message: '',
       appLogoImage
     };
   },
-   async created() {
-     
-     const randomKey = Object.keys(this.$route.query).find(key => key.match(/^\d+p\d+\..+/));
-      
-        const parts = randomKey.split('p001.');
-        const userId = parts[0];
-        const hash = parts[1];
-      
-    const expires = this.$route.query.expires;
-    const signature = this.$route.query.signature;
-    await axios.get(`${process.env.VUE_APP_API_BASE_URL}/email/verify/${userId}/${hash}`, {
-      params: {
-        expires,
-        signature
-      }
-    })
-      .then(response => {
-        this.$router.push({ name: 'Login'});
-      })
-      .catch(error => {
-        console.error(error);
-        this.message = 'Email verification failed.';
-      });
+  computed: {
+    hasError() { return !!this.errorMessage }
   }
 };
 </script>
