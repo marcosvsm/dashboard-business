@@ -152,7 +152,6 @@ export default {
         await this.$store.dispatch('companies/add', data);
         this.$router.push({ name: 'companies' });
       } catch (e) {
-        console.log('Response data:', e.response.data);
         this.submit = false
         let message = 'Something went wrong! Try again later or contact the support.'
         if (e.response.data.errors[0].detail === 'Your email address is not verified.') {
@@ -214,7 +213,7 @@ export default {
       this.saveCompany();
     },
     async getId() {
-      const user = await this.$store.getters["profile/me"]
+      const user = await this.$store.getters["users/user"]
       return user.id;
     },
   }
