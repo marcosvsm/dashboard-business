@@ -193,7 +193,7 @@ export default {
             timeout: 3000
           });
         } else {
-          const user = store.getters["profile/me"];
+          const user = store.getters["users/user"];
           const data = {
             data: {
               type: "customers",
