@@ -22,19 +22,23 @@ export default {
           title: 'Dashboard',
           route: 'dashboard-overview',
           icon: 'HomeIcon',
+          tourId: 'nav-dashboard',
         },
         {
           title: 'My Business',
           icon: 'BriefcaseIcon',
+          tourId: 'nav-my-business',
           children: [
             {
             title: 'Business',
+            tourId: 'nav-business',
             route: {
               name: 'companies'
             }
             },
             {
               title: 'Client',
+              tourId: 'nav-clients',
               route: {
                 name: 'client-list'
               },
@@ -44,15 +48,18 @@ export default {
         {
           title: 'Finance',
           icon: 'FileTextIcon',
+          tourId: 'nav-finance',
           children: [
             {
               title: 'Invoice',
+              tourId: 'nav-invoice',
               route: {
                 name: 'add-invoice'
               }
             },
             {
               title: 'Tax Calculator',
+              tourId: 'nav-tax',
               route:{
                 name: 'tax-calculator'
               },

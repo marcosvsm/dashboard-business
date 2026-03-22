@@ -14,7 +14,7 @@ import customers from "./modules/customers-module"
 import alerts from "./modules/alerts-module"
 import paymentMethods from "./modules/paymentMethods-module"
 import waitlists from "./modules/waitlists-module"
-//import tutorial from "./modules/tutorial-module";
+import tutorial from "./modules/tutorial-module";
 
 Vue.use(Vuex);
 
@@ -32,5 +32,6 @@ export default new Vuex.Store({
         alerts,
         paymentMethods,
         waitlists,
+        tutorial,
     }
 });

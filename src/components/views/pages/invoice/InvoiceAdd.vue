@@ -391,7 +391,7 @@ export default {
         this.invoiceData.number = data.number;
         this.invoiceData.date = data.invoice_date;
         this.invoiceData.dueDate = data.due_date;
-        this.invoiceData.amount = data.amount;
+        this.invoiceData.amount = data.amount.toFixed(2);
         this.invoiceData.status = data.status;
         // Replace items with API data
         this.invoiceData.items = data.items.map(item => {
@@ -402,8 +402,8 @@ export default {
             return {
                 name: item.name,
                 quantity: String(item.quantity),
-                price: String(item.price),
-                amount: String(item.amount),
+                price: item.price.toFixed(2),
+                amount: item.amount.toFixed(2),
                 description: item.description,
             };
         });

@@ -519,23 +519,19 @@ export default {
     const popoverVisible = ref([]);
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
-    const datePickerConfig  = {
+        const datePickerConfig  = {
       dateFormat: 'd/m/Y',
       defaultDate: null,
       allowInput: true,
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
-       // flatpickrRef.value[index].push(instance);
-       // Don't auto-select today's date
-      // instance.clear();
       },
       onChange(dates, dateStr, instance) {
-        //const index = flatpickrRef.value.indexOf(instance);
         const index = instance.element.dataset.index;
-        // If the new date is different from the previous one, update and call handleDateChange
-        if (selectedDates.value[index]) {
-            handleDateChange(index, dates);  // Call only if the date is truly changed
+        // Call handleDateChange if a date is selected
+        if (dates && dates.length > 0) {
+            handleDateChange(index, dates);
         }
       },
     };
@@ -556,22 +552,31 @@ export default {
       });
     }
 
-    const handleDateChange = (index,dates) => {
-      if(dates && dates.length > 0){
-        if(invoiceData.value.items[index].name){
+        const handleDateChange = (index, dates) => {
+      if (dates && dates.length > 0) {
+        const formattedDate = formatDateForDisplay(dates[0]); // Use first date from array
+        
+        if (invoiceData.value.items[index].name) {
           const itemName = invoiceData.value.items[index].name;
           const lastLetter = itemName.charAt(itemName.length - 1); 
-          if(lastLetter === ' ')
-            invoiceData.value.items[index].name += formatDateForDisplay(dates);
-          else
-            invoiceData.value.items[index].name += ' '+formatDateForDisplay(dates);
-        }else {
-          invoiceData.value.items[index].name += formatDateForDisplay(dates)
+          if (lastLetter === ' ') {
+            invoiceData.value.items[index].name += formattedDate;
+          } else {
+            invoiceData.value.items[index].name += ' ' + formattedDate;
+          }
+        } else {
+          invoiceData.value.items[index].name = formattedDate;
         }
-        selectedDates.value[index] = '';
-        popoverVisible.value[index] = false
-      }
         
+        // Clear the selected date and close popover
+        selectedDates.value[index] = null;
+        popoverVisible.value[index] = false;
+        
+        // Close the flatpickr instance
+        if (flatpickrRef.value[index]) {
+          flatpickrRef.value[index].close();
+        }
+      }
     }
     return {
         itemFormBlankItem,

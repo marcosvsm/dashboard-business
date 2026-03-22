@@ -15,23 +15,23 @@ function get() {
 }
 
 function update(profile) {
-
+  // Accept { id, language } and force correct type
   const payload = jsona.serialize({
-    stuff: profile,
+    stuff: {
+      id: profile.id,
+      type: 'users',        // ← critical!
+      language: profile.language
+    },
     includeNames: []
-  });
+  })
 
-  const options = {
+  return api.patch(`${url}/me`, payload, {
     headers: {
       'Accept': 'application/vnd.api+json',
       'Content-Type': 'application/vnd.api+json',
     }
-  };
-
-  return api.patch(`${url}/me`, payload, options)
-    .then(response => {
-      return jsona.deserialize(response.data);
-    });
+  })
+  .then(response => jsona.deserialize(response.data))
 }
 
 export default {

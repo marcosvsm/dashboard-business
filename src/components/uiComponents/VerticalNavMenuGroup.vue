@@ -7,6 +7,7 @@
       'disabled': item.disabled,
       'vertical-group-active': isActive,
     }"
+    :data-tour-target="item.tourId || null"
   >
     <b-link
       class="d-flex align-items-center"

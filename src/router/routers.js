@@ -12,7 +12,7 @@ import NotFound from '@/components/views/pages/NotFound.vue';
 import CompanyPage from '@/components/views/pages/CompanyPage.vue';
 import InvoicePage from '@/components/views/pages/InvoicePage.vue';
 import Overview from '@/components/views/pages/dashboard/overview/Overview.vue';
-import InvoiceAdd from '@/components/views/pages/invoice/InvoiceAdd.vue';
+import InvoiceForm from '@/components/views/pages/invoice/InvoiceForm.vue';
 import InvoiceList from '@/components/views/pages/invoice/InvoiceList.vue';
 import InvoiceFree from '@/components/views/pages/invoice/InvoiceAdd.vue';
 import InvoiceOverview from '@/components/views/pages/invoice/InvoiceOverview.vue';
@@ -31,6 +31,7 @@ const routes = [
     {
         path: '/',
         redirect: '/dashboard/overview',
+        name: 'dashboard'
     },
     {
         path: '/login',
@@ -83,7 +84,7 @@ const routes = [
             {
                 path: 'create',
                 name: 'add-invoice',
-                component: InvoiceAdd,
+                component: InvoiceForm,
                 meta: { middleware: auth },
             },
             {

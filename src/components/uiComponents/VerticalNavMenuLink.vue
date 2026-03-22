@@ -16,6 +16,7 @@
       'active': isActive,
       'disabled': item.disabled
     }"
+    :data-tour-target="item.tourId || null"
   >
     <b-link
       v-bind="linkProps"

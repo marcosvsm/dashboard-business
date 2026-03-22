@@ -82,7 +82,8 @@
         <div class="text-center my-2 no-options-message">
           <base-feather-icon icon="AlertCircleIcon" size="16" />
           <p>{{ t('No Clients could be found') }}</p>
-          <router-link :to="{ name: 'add-customer'}">{{ t("Create Client") }}</router-link>
+          <b-link v-b-toggle.sidebar-invoice-add-new-customer>{{ t("Create Client") }}</b-link>
+          
         </div>
       </template>
     </div>    
@@ -94,7 +95,7 @@
 </template>
 
 <script>
-import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
+import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
 import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'

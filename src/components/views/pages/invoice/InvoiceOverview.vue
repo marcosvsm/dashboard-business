@@ -50,7 +50,6 @@
             variant="outline-primary"
             block
             @click="saveInvoice()"
-            disabled
           >
             {{ t('Save Changes') }}
           </b-button>
@@ -201,6 +200,12 @@ export default {
       const errors = {}
       let isValid = true
 
+            // Validate customer
+      if (!this.invoiceData.customer || !this.invoiceData.customer.id) {
+        errors.customer = 'Customer is required'
+        isValid = false
+      }
+
       // Validate company
       if (!this.invoiceData.company || !this.invoiceData.company.id) {
         errors.company = 'Company is required'
@@ -253,58 +258,84 @@ export default {
 
       return isValid
     },
-    async saveInvoice() {
-       // Run validation synchronously first
+        async saveInvoice() {
       const isValid = this.validateForm()
-      if(isValid){
-        const data = { 
-          data: {
-            type: "invoices",
-            id: this.invoiceData.id,
-            attributes: {
-              name: this.invoiceData.number,
-              invoice_date: this.invoiceData.date,
-              due_date: this.invoiceData.dueDate,
-              amount: this.invoiceData.amount,
-              ref: this.invoiceData.number,
-              company_id: this.invoiceData.company?.id,
-              customer_id: this.invoiceData.customer?.id,
-              items: this.invoiceData.items,
-              note: this.invoiceData.note
-            },
-            relationships: {
-              company: {
-                data: this.invoiceData.company ? { type: "companies", id: this.invoiceData.company.id } : null
-              },
-            },
-          }
-        }
-        try {
-          await this.$store.dispatch('invoices/update', data)
-          await this.$store.dispatch('alerts/showNotification', {
-            message: "Invoice updated successfully",
-            type: "success"
-          })
-        } catch (e) {
-          console.log('Response data:', e.response?.data)
-          await this.$store.dispatch('alerts/showNotification', {
-            message: "Something went wrong! Try again later or contact support.",
-            type: "error"
-          })
-        }
-      } else {
-        console.log('Validation failed:', this.formErrors)
-        this.$nextTick(() => {
-          this.$toast.error('Please correct the errors in the form before saving the invoice.',
-          {
-            position: "top-right",
-            icon: false,
-            closeButton: false,
-            hideProgressBar: true,
-            timeout: 3000
-          })
+      if (!isValid) {
+        this.showValidationError()
+        return
+      }
+
+      try {
+        const data = this.buildRequestData()
+        await this.$store.dispatch('invoices/update', data)
+        
+        this.$toast.success(`Invoice updated: ${this.invoiceData.number}`, {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 2000
+        })
+      } catch (e) {
+        console.error('Update error:', e)
+        this.$toast.error('Something went wrong! Try again later.', {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000
         })
       }
+    },
+    
+    buildRequestData() {
+      const data = {
+        data: {
+          type: "invoices",
+          id: this.invoiceData.id,
+          attributes: {
+            name: this.invoiceData.number,
+            invoice_date: this.invoiceData.date,
+            due_date: this.invoiceData.dueDate,
+            amount: this.invoiceData.amount,
+            ref: this.invoiceData.number,
+            note: this.invoiceData.note,
+            items: this.invoiceData.items.map(item => ({
+              id: item.id || undefined,
+              description: item.description,
+              quantity: item.quantity,
+              price: item.price,
+              amount: item.amount,
+              name: item.name
+            }))
+          },
+          relationships: {
+            company: {
+              data: this.invoiceData.company ? { 
+                type: "companies", 
+                id: this.invoiceData.company.id 
+              } : null
+            },
+            customer: {
+              data: this.invoiceData.customer ? { 
+                type: "customers", 
+                id: this.invoiceData.customer.id 
+              } : null
+            },
+          },
+        }
+      }
+      
+      return data
+    },
+    
+    showValidationError() {
+      this.$nextTick(() => {
+        this.$toast.error('Please correct the errors in the form before saving the invoice.', {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000
+        })
+      })
     },
     formatPrice(value) {
       return Number(value).toFixed(2)
