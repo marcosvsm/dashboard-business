@@ -52,16 +52,22 @@ export default {
     async updateProfile() {
       try {
         await this.$store.dispatch("profile/update", this.user);
-        await this.$store.dispatch('alerts/showNotification', {
-                message: 'Profile updated successfully.',
-                type: 'success'
-        });
+        await this.$toast.success('Profile updated successfully.', {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 2000
+        })
         await this.$store.getters["profile/me"];
       } catch (e) {
-        await this.$store.dispatch('alerts/showNotification', {
-                message: 'Oops, something went wrong!',
-                type: 'error'
-        });
+        await this.$toast.error('Oops, something went wrong!',
+          {
+            position: "top-right",
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000
+          });
         this.setApiValidation(e.response.data.errors);
       }
     },

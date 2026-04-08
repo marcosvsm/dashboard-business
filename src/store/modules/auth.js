@@ -34,7 +34,7 @@ export default {
                     context.commit('setAuthUser', user);
                     context.commit('setAuthenticated', true);
                     localStorage.setItem('auth_hint', '1');     // 👈 set hint
-                    if (!context.getters.hydrated) 
+                    if (!context.getters.hydrated)
                       context.commit('setHydrated', true);
                     return true;
                 }
@@ -54,7 +54,7 @@ export default {
                 context.commit('setAuthenticated', false);
                 context.commit('setAuthUser', null);
                 return { success: false };
-            } 
+            }
         },
         async logout(context) {
             try {

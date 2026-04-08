@@ -31,7 +31,7 @@ function get(id) {
     }
   };
 
-  return axios.get(`${url}/users/${id}?include=roles`, options)
+  return axios.get(`${url}/users/${id}?include=role,preferences`, options)
     .then(response => {
       let user = jsona.deserialize(response.data);
       delete user.links;
@@ -48,7 +48,7 @@ function getMe() {
     }
   };
 
-  return axios.get(`${url}/me?include=role`, options) // Assume /me endpoint exists and returns user with roles
+  return axios.get(`${url}/me?include=role,preferences`, options) // Assume /me endpoint exists and returns user with roles
     .then(response => {
       const data = response.data;
       const user = jsona.deserialize(data);

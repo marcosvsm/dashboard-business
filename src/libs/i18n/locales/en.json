@@ -175,5 +175,49 @@
   "Layout Boxed": "Layout Boxed",
   "Without Menu": "Without Menu",
   "Layout Empty": "Layout Empty",
-  "Layout Blank": "Layout Blank"
+  "Layout Blank": "Layout Blank",
+  "tutorial": {
+    "welcome": {
+      "title": "Welcome to Simplify!",
+      "description": "Let's take a quick tour to get you familiar with the main features of the platform."
+    },
+    "language": {
+      "title": "Choose Your Language",
+      "description": "Click here to open the language selector and choose your preferred language."
+    },
+    "languageModal": {
+      "title": "Select Your Language",
+      "description": "Pick your preferred language from the list below. The tour will continue automatically after you choose."
+    },
+    "languageUpdated": {
+      "title": "Great choice!",
+      "description": "Your language has been updated. Let's continue the tour."
+    },
+    "myBusiness": {
+      "title": "My Business",
+      "description": "All your company info lives here. Expand this menu whenever you need to manage business data."
+    },
+    "business": {
+      "title": "Manage Your Company",
+      "description": "Open the Business section to add or edit your company details."
+    },
+    "clients": {
+      "title": "Customers",
+      "description": "Keep your customer list up to date so invoices are ready to send."
+    },
+    "finance": {
+      "title": "Finance Tools",
+      "description": "Everything related to invoices and taxes is organized here."
+    },
+    "invoice": {
+      "title": "Create Invoices",
+      "description": "Jump straight into creating an invoice from this shortcut."
+    },
+    "closePrompt": {
+      "title": "Leave the tour?",
+      "description": "You can always restart the tour from the settings. Would you like to stop seeing it?",
+      "dontShow": "Don't show again",
+      "resumeLater": "Maybe later"
+    }
+  }
 }

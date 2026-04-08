@@ -435,6 +435,76 @@
   "You have already saved this invoice. Would you like to": "Você já salvou esta fatura. Gostaria de",
   "Save changes to the current invoice": "Salvar alterações na fatura atual",
   "Create a new invoice with these changes": "Criar uma nova fatura com essas alterações",
-  "Welcome to Simplify!": "Bem-vindo à Simplify!",
-  "Let's take a quick tour to get you familiar with the main features of the platform.": "Vamos fazer um tour rápido para familiarizá-lo com os principais recursos da plataforma."
+  "tutorial": 
+  { 
+    "welcome": {
+      "title": "Bem-vindo à Simplify!", 
+      "description": "Vamos fazer um tour rápido para familiarizá-lo com os principais recursos da plataforma." 
+    }, 
+    "language": {
+      "title": "Escolha Seu Idioma", 
+      "description": "Clique aqui para abrir o seletor de idioma e escolha seu idioma preferido." 
+    }, 
+    "languageModal": { 
+      "title": "Selecione Seu Idioma", 
+      "description": "Escolha seu idioma preferido na lista abaixo. O tour continuará automaticamente após sua escolha." 
+    }, 
+    "languageUpdated": { 
+      "title": "Ótima escolha!", 
+      "description": "Seu idioma foi atualizado. Vamos continuar o tour." 
+    }, 
+    "myBusiness": { 
+      "title": "Meu Negócio", 
+      "description": "Todas as informações da sua empresa estão aqui. Expanda este menu sempre que precisar gerenciar dados comerciais." 
+    }, 
+    "business": { 
+      "title": "Gerenciar Sua Empresa", 
+      "description": "Abra a seção Negócio para adicionar ou editar os detalhes da sua empresa." 
+    }, 
+    "clients": { 
+      "title": "Clientes", 
+      "description": "Mantenha sua lista de clientes atualizada para que as faturas estejam prontas para envio." 
+    }, 
+    "finance": { 
+      "title": "Ferramentas Financeiras", 
+      "description": "Tudo relacionado a faturas e impostos está organizado aqui." 
+    }, 
+    "invoice": {
+      "title": "Criar Faturas",
+      "description": "Vá direto para criar uma fatura a partir deste atalho."
+    },
+    "closePrompt": {
+      "title": "Sair do tour?",
+      "description": "Você pode reiniciar o tour pelas configurações. Deseja parar de vê-lo?",
+      "dontShow": "Não mostrar novamente",
+      "resumeLater": "Talvez mais tarde"
+    }
+  },
+  "Save reusable products/services to your catalog": "Salve produtos/serviços reutilizáveis em seu catálogo",
+  "New: Product/Service Catalog": "Novo: Catálogo de Produtos/Serviços",
+  "Build a library of your most-used services and goods. When creating an invoice, select any saved product and the name, description, and price fill automatically.": "Construa uma biblioteca dos seus serviços e produtos mais usados. Ao criar uma fatura, selecione qualquer produto salvo e o nome, descrição e preço serão preenchidos automaticamente.",
+  "Upgrade your plan to unlock this feature.": "Faça upgrade do seu plano para desbloquear este recurso.",
+  "See Plans": "Ver Planos",
+  "Not Now": "Agora não",
+  "Type or search products/services": "Digite ou pesquise produtos/serviços",
+  "Save to product catalog": "Salvar no catálogo de produtos",
+  "Already in catalog": "Já no catálogo",
+  "Product saved!": "Produto salvo!",
+  "Failed to save product. Please try again.": "Falha ao salvar o produto. Por favor, tente novamente.",
+  "Save items to catalog for quick reuse": "Salve itens no catálogo para reutilização rápida",
+  "to catalog": "no catálogo",
+  "No saved products/services yet. Type to enter an item.": "Ainda não há produtos/serviços salvos. Digite para inserir um item.",
+  "No matching products/services.": "Produto/Serviço não encontrado.",
+  "Copy Link": "Copiar Link",
+  "Send Email": "Enviar Email",
+  "Copy Message": "Copiar Mensagem",
+  "Open Email": "Abrir Email",
+  "Copied to clipboard!": "Copiado para a área de transferência!",
+  "Failed to copy. Please try again.": "Falha ao copiar. Por favor, tente novamente.",
+  "To": "Para",
+  "Subject": "Assunto",
+  "Message": "Mensagem",
+  "No email address found for this customer. Please enter one below.": "Nenhum endereço de email encontrado para este cliente. Por favor, insira um abaixo.",
+  "Generating…": "Gerando…",
+  "Link Copied!": "Link Copiado!"
 }

@@ -58,6 +58,8 @@
 
 <script>
 import driverObj from '@/utils/tour'
+import profileService from '@/store/services/profile-service'
+
 export default {
   data() {
     return {
@@ -82,12 +84,10 @@ export default {
     };
   },
 
-  mounted() {
+  async mounted() {
+    const user =  await this.$store.getters['auth/authUser'] ?? this.$store.getters['users/user']
     // Restore saved language preference
-    const savedLocale = localStorage.getItem('selectedLocale');
-    if (savedLocale) {
-      this.$i18n.locale = savedLocale;
-    }
+    this.$i18n.locale = user.preferences?.language || 'en';
   },
 
   computed: {
@@ -107,14 +107,13 @@ export default {
     changeLocale(locale) {
       this.$i18n.locale = locale;
       localStorage.setItem('selectedLocale', locale);
-      // Optional: close modal after selection
       this.showLanguageModal = false;
-      
+
+      profileService.updatePreferences({ language: locale })
+
       // If tour is active → tell the tour we selected a language
       if (driverObj && driverObj.hasNextStep?.()) {
-        setTimeout(() => {
-          driverObj.moveNext()
-        }, 500) 
+        setTimeout(() => driverObj.moveNext(), 500)
       }
     },
 

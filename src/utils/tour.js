@@ -3,9 +3,46 @@ import { driver } from 'driver.js'
 import 'driver.js/dist/driver.css'
 import '@/assets/css/tour.css'
 import confetti from 'canvas-confetti'
+import i18n from '@/libs/i18n'
 
 let finishCallback = null
+let closeCallback = null
+let langClickHandler = null
+let mobileMenuOpenedByTour = false
 
+const NAV_STEP_SELECTORS = [
+  '[data-tour-target="nav-my-business"]',
+  '[data-tour-target="nav-business"]',
+  '[data-tour-target="nav-clients"]',
+  '[data-tour-target="nav-finance"]',
+  '[data-tour-target="nav-invoice"]',
+]
+
+const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 1200
+
+const isMenuOpen = () => {
+  const layout = document.querySelector('.vertical-layout')
+  return layout ? layout.classList.contains('menu-open') : true
+}
+
+const openMobileMenu = () => {
+  if (!isMobile() || isMenuOpen()) return
+  const toggler = document.querySelector('.d-xl-none .nav-link')
+  if (toggler) {
+    toggler.click()
+    mobileMenuOpenedByTour = true
+  }
+}
+
+const closeMobileMenu = () => {
+  if (!mobileMenuOpenedByTour) return
+  const layout = document.querySelector('.vertical-layout')
+  if (layout && layout.classList.contains('menu-open')) {
+    const toggler = document.querySelector('.d-xl-none .nav-link')
+    if (toggler) toggler.click()
+  }
+  mobileMenuOpenedByTour = false
+}
 const clickElement = target => {
   if (!target) return
   target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
@@ -91,16 +128,28 @@ const driverObj = driver({
   prevBtnText: '← Back',
   closeBtnText: '✕',
   onDestroyStarted: () => {
-    if (!driverObj.hasNextStep()) {
+    const completed = !driverObj.hasNextStep()
+    closeMobileMenu()
+    if (completed) {
       fireConfetti()
-      if (typeof finishCallback === 'function') {
-        finishCallback()
-      }
+      if (typeof finishCallback === 'function') finishCallback()
+    } else {
+      if (typeof closeCallback === 'function') closeCallback()
     }
     finishCallback = null
+    closeCallback = null
+    driverObj.destroy()
   },
   onHighlightStarted: (element, step) => {
     if (typeof document === 'undefined') return
+
+    // On mobile, open the side menu before highlighting any nav item
+    const isNavStep = step?.element && NAV_STEP_SELECTORS.some(sel => step.element === sel)
+    if (isNavStep && isMobile() && !isMenuOpen()) {
+      openMobileMenu()
+      // Wait for the slide-in transition (300ms) before driver.js positions the spotlight
+      setTimeout(() => driverObj.refresh(), 350)
+    }
 
     const target = step?.element ? ensureElementVisible(step.element) : element
     if (target) {
@@ -109,7 +158,14 @@ const driverObj = driver({
 
     if (step?.element === '#nav-link-language') {  // First language step
       document.body.classList.add('tour-language-active');
-
+const langBtn = document.querySelector('#nav-link-language')
+      if (langBtn) {
+        langClickHandler = () => {
+          langClickHandler = null
+          setTimeout(() => driverObj.moveNext(), 300)
+        }
+        langBtn.addEventListener('click', langClickHandler, { once: true })
+      }
      /* watchDropdownMenu((menuEl) => {
         document.body.classList.add('tour-language-open');
         ensureElementVisible(menuEl, 180);
@@ -121,23 +177,18 @@ const driverObj = driver({
       });*/
     }
 
-   // For the second step (menu):
-    /*if (step?.element === '#language-modal') {
-      const menuEl = document.querySelector('#language-modal');
+    // Step 2: language modal – advance automatically when user picks a language
+    if (step?.element === '#language-modal') {
+      const menuEl = document.querySelector('#language-modal')
       if (menuEl) {
-        menuEl.classList.add('driver-active-element');
-
         const handleSelection = () => {
-          document.body.classList.remove('tour-language-open');
-          menuEl.classList.remove('driver-active-element');
-          setTimeout(() => driverObj.moveNext(), 600);
-        };
-
+          setTimeout(() => driverObj.moveNext(), 400)
+        }
         menuEl.querySelectorAll('[data-locale]').forEach(opt => {
-          opt.addEventListener('click', handleSelection, { once: true });
-        });
+          opt.addEventListener('click', handleSelection, { once: true })
+        })
       }
-    }*/
+    }
 
     // Run custom per-step hook if defined
     if (step?.onHighlightStarted) {
@@ -145,8 +196,23 @@ const driverObj = driver({
     }
   },
   onDeselected: (element, step) => {
+    if (langClickHandler) {
+      const langBtn = document.querySelector('#nav-link-language')
+      if (langBtn) langBtn.removeEventListener('click', langClickHandler)
+      langClickHandler = null
+    }
     // Cleanup language tour classes
     document.body.classList.remove('tour-language-active', 'tour-language-open')
+
+    // Close the mobile menu if the tour opened it and we're leaving the last nav step
+    const wasNavStep = step?.element && NAV_STEP_SELECTORS.some(sel => step.element === sel)
+    if (wasNavStep) {
+      const steps = driverObj.getConfig().steps || []
+      const nextIndex = (driverObj.getActiveIndex() ?? -1) + 1
+      const nextStep = steps[nextIndex] ?? null
+      const nextIsNavStep = nextStep?.element && NAV_STEP_SELECTORS.some(sel => nextStep.element === sel)
+      if (!nextIsNavStep) closeMobileMenu()
+    }
 
     if (step?.onDeselected) {
       step.onDeselected(element, step)
@@ -154,10 +220,22 @@ const driverObj = driver({
   },
 })
 
-export const runSpotlightTour = (steps, { startAt = 0, onFinish } = {}) => {
+export const runSpotlightTour = (steps, { startAt = 0, onFinish, onClose } = {}) => {
   finishCallback = typeof onFinish === 'function' ? onFinish : null
+  closeCallback = typeof onClose === 'function' ? onClose : null
+  const translatedSteps = steps.map(step => ({
+    ...step,
+    popover: step.popover
+      ? {
+          ...step.popover,
+          title: step.popover.title ? i18n.t(step.popover.title) : '',
+          description: step.popover.description ? i18n.t(step.popover.description) : '',
+        }
+      : undefined,
+  }))
 
-  driverObj.setSteps(steps)
+  driverObj.setSteps(translatedSteps)
+
 
   const safeIndex = Number.isInteger(startAt) ? Math.max(0, startAt) : 0
   driverObj.drive(safeIndex)
@@ -165,6 +243,7 @@ export const runSpotlightTour = (steps, { startAt = 0, onFinish } = {}) => {
 
 export const stopSpotlightTour = () => {
   finishCallback = null
+  closeCallback = null
   driverObj.destroy()
 }
 

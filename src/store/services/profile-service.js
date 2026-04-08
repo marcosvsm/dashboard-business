@@ -20,7 +20,7 @@ function update(profile) {
     stuff: {
       id: profile.id,
       type: 'users',        // ← critical!
-      language: profile.language
+      name: profile.name
     },
     includeNames: []
   })
@@ -34,7 +34,30 @@ function update(profile) {
   .then(response => jsona.deserialize(response.data))
 }
 
+function getPreferences() {
+  return api.get(`${url}/me/preferences`)
+    .then(response => response.data?.data?.attributes ?? {})
+}
+
+function updatePreferences(attrs = {}) {
+  const attributes = {}
+  if (attrs.language          !== undefined) attributes.language          = attrs.language
+  if (attrs.tutorialCompleted !== undefined) attributes.tutorialCompleted = attrs.tutorialCompleted
+  if (attrs.tutorialOptedOut  !== undefined) attributes.tutorialOptedOut  = attrs.tutorialOptedOut
+
+  return api.patch(`${url}/me/preferences`, {
+    data: { type: 'user-preferences', attributes },
+  }, {
+    headers: {
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json',
+    },
+  }).catch(err => console.warn('[preferences] failed to sync:', err))
+}
+
 export default {
   get,
-  update
+  update,
+  getPreferences,
+  updatePreferences,
 };

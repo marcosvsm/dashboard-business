@@ -178,5 +178,43 @@
   "Layout Boxed": "Disposition encadrée",
   "Without Menu": "Sans menu",
   "Layout Empty": "Disposition vide",
-  "Layout Blank": "Mise en page vierge"
+  "Layout Blank": "Mise en page vierge",
+  "tutorial": {
+    "welcome": {
+      "title": "Bienvenue dans Simplify!",
+      "description": "Faisons un tour rapide pour vous familiariser avec les principales fonctionnalités de la plateforme."
+    },
+    "language": {
+      "title": "Choisissez Votre Langue",
+      "description": "Cliquez ici pour ouvrir le sélecteur de langue et choisir votre langue préférée."
+    },
+    "languageModal": {
+      "title": "Sélectionnez Votre Langue",
+      "description": "Choisissez votre langue préférée dans la liste ci-dessous. La visite continuera automatiquement après votre sélection."
+    },
+    "languageUpdated": {
+      "title": "Excellent choix!",
+      "description": "Votre langue a été mise à jour. Continuons la visite."
+    },
+    "myBusiness": {
+      "title": "Mon Entreprise",
+      "description": "Toutes les informations de votre entreprise se trouvent ici. Développez ce menu chaque fois que vous avez besoin de gérer les données commerciales."
+    },
+    "business": {
+      "title": "Gérez Votre Entreprise",
+      "description": "Ouvrez la section Entreprise pour ajouter ou modifier les détails de votre entreprise."
+    },
+    "clients": {
+      "title": "Clients",
+      "description": "Tenez à jour votre liste de clients pour que les factures soient prêtes à être envoyées."
+    },
+    "finance": {
+      "title": "Outils Financiers",
+      "description": "Tout ce qui concerne les factures et les impôts est organisé ici."
+    },
+    "invoice": {
+      "title": "Créer des Factures",
+      "description": "Créez directement une facture à partir de ce raccourci."
+    }
+  }
 }

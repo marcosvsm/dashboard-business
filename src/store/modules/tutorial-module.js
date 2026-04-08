@@ -1,4 +1,5 @@
 import { runSpotlightTour } from '@/utils/tour'
+import profileService from '@/store/services/profile-service'
 const STORAGE_KEYS = {
   completed: 'tutorial_completed_v1',
   optOut: 'tutorial_opted_out_v1',
@@ -8,8 +9,8 @@ const INTRO_STEPS = []
 const SPOTLIGHT_STEPS = [
   {
     popover: {
-      title: 'Welcome to Simplify!',
-      description: 'Let\'s take a quick tour to get you familiar with the main features of the platform.',
+      title: 'tutorial.welcome.title',
+      description: 'tutorial.welcome.description',
       side: 'bottom',
       align: 'start',
     },
@@ -17,76 +18,76 @@ const SPOTLIGHT_STEPS = [
   {
     element: '#nav-link-language',
     popover: {
-      title: 'Choose Your Language',
-      description: 'Click here to open the language selector and choose your preferred language.',
+      title: 'tutorial.language.title',
+      description: 'tutorial.language.description',
       side: 'bottom',
       align: 'start',
+      showButton: ['previous','close'],
     },
-    showButton: ['close'],
   },
-  // Step 2: Highlight the menu (will be activated when open)
+  // Step 2: Highlight the menu – user must pick a language, no nav buttons
   {
     element: '#language-modal',
     popover: {
-      title: 'Select Your Language',
-      description: 'Pick your preferred language from the list below. The tour will continue automatically after you choose.',
-      side: 'bottom',
+      title: 'tutorial.languageModal.title',
+      description: 'tutorial.languageModal.description',
       align: 'start',
+      showButtons: ['previous','close'],
     },
   },
+  // Step 3: Confirmation – no back button, user can only go forward
   {
     popover: {                       // no element – floating instruction
-      title: 'Great choice!',
-      description: 'Your language has been updated. Let’s continue the tour.',
+      title: 'tutorial.languageUpdated.title',
+      description: 'tutorial.languageUpdated.description',
       side: 'bottom',
       align: 'center',
+      showButtons: ['next', 'close'],
     },
-  // Optional: stagePadding: 0, popoverClass: 'floating-success'
   },
   {
     element: '[data-tour-target="nav-my-business"]',
     popover: {
-      title: 'My Business',
-      description: 'All your company info lives here. Expand this menu whenever you need to manage business data.',
+      title: 'tutorial.myBusiness.title',
+      description: 'tutorial.myBusiness.description',
       side: 'right',
     },
   },
   {
     element: '[data-tour-target="nav-business"]',
     popover: {
-      title: 'Manage Your Company',
-      description: 'Open the Business section to add or edit your company details.',
+      title: 'tutorial.business.title',
+      description: 'tutorial.business.description',
       side: 'right',
     },
   },
   {
     element: '[data-tour-target="nav-clients"]',
     popover: {
-      title: 'Customers',
-      description: 'Keep your customer list up to date so invoices are ready to send.',
+      title: 'tutorial.clients.title',
+      description: 'tutorial.clients.description',
       side: 'right',
     },
   },
   {
     element: '[data-tour-target="nav-finance"]',
     popover: {
-      title: 'Finance Tools',
-      description: 'Everything related to invoices and taxes is organized here.',
+      title: 'tutorial.finance.title',
+      description: 'tutorial.finance.description',
       side: 'right',
     },
   },
   {
     element: '[data-tour-target="nav-invoice"]',
     popover: {
-      title: 'Create Invoices',
-      description: 'Jump straight into creating an invoice from this shortcut.',
+      title: 'tutorial.invoice.title',
+      description: 'tutorial.invoice.description',
       side: 'right',
     },
   },
 ]
 const hasBrowser = typeof window !== 'undefined'
 const storage = hasBrowser ? window.localStorage : null
-const getStoredBoolean = key => storage?.getItem(key) === 'true'
 const getStoredNumber = key => {
   if (!storage) return 0
   const raw = storage.getItem(key)
@@ -107,8 +108,9 @@ const clampStep = (state, value) => {
 const state = () => ({
   currentStepIndex: 0,
   tutorialVisible: false,
-  tutorialCompleted: getStoredBoolean(STORAGE_KEYS.completed),
-  tutorialOptedOut: getStoredBoolean(STORAGE_KEYS.optOut),
+  tourClosedPromptVisible: false,
+  tutorialCompleted: false,   // DB is source of truth — never read from localStorage on init
+  tutorialOptedOut: false,    // DB is source of truth — never read from localStorage on init
   pendingStep: getStoredNumber(STORAGE_KEYS.pending),
   introSteps: cloneSteps(INTRO_STEPS),
   spotlightSteps: cloneSteps(SPOTLIGHT_STEPS),
@@ -121,7 +123,9 @@ const mutations = {
     state.currentStepIndex = clampStep(state, index)
   },
   SET_PENDING_STEP(state, step) {
-    const safeValue = clampStep(state, step)
+    let safeValue = clampStep(state, step)
+    if (safeValue === 2)
+      safeValue = 1
     state.pendingStep = safeValue
     if (storage) storage.setItem(STORAGE_KEYS.pending, safeValue.toString())
   },
@@ -130,6 +134,9 @@ const mutations = {
   },
   SET_OPTED_OUT(state, value) {
     state.tutorialOptedOut = value
+  },
+  SET_TOUR_CLOSED_PROMPT_VISIBLE(state, value) {
+    state.tourClosedPromptVisible = value
   },
   RESET_TUTORIAL_STATE(state) {
     state.currentStepIndex = 0
@@ -151,9 +158,45 @@ const getters = {
   tutorialOptedOut: state => state.tutorialOptedOut,
   isTutorialVisible: state => state.tutorialVisible,
   isTourActive: state => !state.tutorialCompleted && !state.tutorialOptedOut,
+  tourClosedPromptVisible: state => state.tourClosedPromptVisible,
 }
 const actions = {
+  // Called after login to sync DB preferences into local state
+  async loadPreferences({ commit, rootGetters }) {
+    try {
+      // Get user from your auth module (as you already do)
+      const user = rootGetters['auth/authUser'] || rootGetters['users/user']
+      const prefs = user?.preferences || {}
+
+      console.log('Tutorial - Loading preferences from auth/user:', prefs)
+      // === ONLY CARE ABOUT TUTORIAL STATUS ===
+      if (prefs.tutorialCompleted === true) {
+        commit('SET_COMPLETED', true)
+        storage?.setItem(STORAGE_KEYS.completed, 'true')
+        storage?.removeItem(STORAGE_KEYS.pending)
+      } 
+      else if (prefs.tutorialCompleted === false) {
+        commit('SET_COMPLETED', false)
+        storage?.removeItem(STORAGE_KEYS.completed)
+        storage?.removeItem(STORAGE_KEYS.pending)
+      }
+
+      if (prefs.tutorialOptedOut === true) {
+        commit('SET_OPTED_OUT', true)
+        storage?.setItem(STORAGE_KEYS.optOut, 'true')
+      } 
+      else if (prefs.tutorialOptedOut === false) {
+        commit('SET_OPTED_OUT', false)
+        storage?.removeItem(STORAGE_KEYS.optOut)
+      }
+
+    } catch (e) {
+      console.warn('Failed to load tutorial preferences', e)
+    }
+  },
+
   async startTour({ getters, dispatch, state, commit }) {
+    await dispatch('loadPreferences')
     if (!getters.isTourActive) return
     await dispatch('setTutorialBasedOnProgress')
     if (state.pendingStep >= state.introSteps.length) {
@@ -185,6 +228,7 @@ const actions = {
     runSpotlightTour(state.spotlightSteps, {
       startAt,
       onFinish: () => dispatch('completeTutorial'),
+      onClose: () => dispatch('closedTourEarly'),
     })
   },
   completeTutorial({ commit, state }) {
@@ -195,6 +239,10 @@ const actions = {
       storage.setItem(STORAGE_KEYS.completed, 'true')
       storage.removeItem(STORAGE_KEYS.pending)
     }
+    profileService.updatePreferences({ tutorialCompleted: true })
+  },
+  closedTourEarly({ commit }) {
+    commit('SET_TOUR_CLOSED_PROMPT_VISIBLE', true)
   },
   async setTutorialBasedOnProgress({ state, getters, commit, rootGetters }) {
     if (!getters.isTourActive) {
@@ -217,6 +265,7 @@ const actions = {
   },
   setOptedOut({ commit }, value) {
     commit('SET_OPTED_OUT', value)
+    commit('SET_TOUR_CLOSED_PROMPT_VISIBLE', false)
     if (storage) {
       if (value) {
         storage.setItem(STORAGE_KEYS.optOut, 'true')
@@ -226,6 +275,7 @@ const actions = {
     }
     if (value) {
       commit('SET_TUTORIAL_VISIBLE', false)
+      profileService.updatePreferences({ tutorialOptedOut: true })
     }
   },
   resetTutorial({ commit }) {

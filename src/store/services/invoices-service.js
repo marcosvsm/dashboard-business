@@ -102,11 +102,18 @@ function suggest(params) {
     });
 }
 
+function getSignedLink(uuid) {
+  return axios.get(`${url}/invoices/${uuid}/signed-link`, {
+    withCredentials: true,
+  }).then(response => response.data.data);
+}
+
 export default {
   list,
   get,
   add,
   update,
   destroy,
-  suggest
+  suggest,
+  getSignedLink,
 };

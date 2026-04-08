@@ -33,18 +33,46 @@
                 v-model="invoiceData.note" 
                 placeholder="Additional Details:"
               />
+              <div class="d-flex justify-content-end mt-1">
+                <span class="text-muted small">
+                  {{ invoiceData.note?.length || 0 }} / 1000
+                </span>
+              </div>
             </b-card-body>
           </b-card>
         </b-form>
       </b-col>
       <b-col cols="12" md="4" xl="3" class="invoice-actions mt-md-0 mt-2">
         <b-card>
-          <pdf 
-            :invoiceData="invoiceData" 
-            :paymentDetails="paymentDetails" 
-            :selectedPaymentMethod="selectedPaymentMethod" 
+          <pdf
+            :invoiceData="invoiceData"
+            :paymentDetails="paymentDetails"
+            :selectedPaymentMethod="selectedPaymentMethod"
             :validateForm="validateForm"
           />
+          <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+            variant="outline-primary"
+            block
+            class="mb-75"
+            :disabled="!invoiceData.id"
+            @click="showSendModal = true"
+          >
+            {{ t('Send Email') }}
+          </b-button>
+          <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+            variant="outline-primary"
+            block
+            class="mb-75"
+            :disabled="!invoiceData.id || shareLinkState === 'loading'"
+            @click="shareInvoice"
+          >
+            <b-spinner v-if="shareLinkState === 'loading'" small class="mr-50" />
+            <span v-if="shareLinkState === 'loading'">{{ t('Generating…') }}</span>
+            <span v-else-if="shareLinkState === 'copied'">&#10003; {{ t('Link Copied!') }}</span>
+            <span v-else>{{ t('Copy Link') }}</span>
+          </b-button>
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
             variant="outline-primary"
@@ -165,6 +193,11 @@
       </b-col>
     </b-row>
     <payment-method-sidebar v-if="invoiceData.company" :company="invoiceData.company" @payment-added="handlePaymentAdded" />
+    <send-invoice-modal
+      v-if="invoiceData.id"
+      :invoice="invoiceData"
+      :visible.sync="showSendModal"
+    />
   </section>
 </template>
 
@@ -179,6 +212,7 @@ import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
+import SendInvoiceModal from '@/components/uiComponents/SendInvoiceModal.vue'
 import { BSpinner, BAlert } from 'bootstrap-vue' // Add this import
 
 export default {
@@ -189,6 +223,7 @@ export default {
     InvoiceBody,
     Pdf,
     PaymentMethodSidebar,
+    SendInvoiceModal,
     BSpinner, // Register the spinner component
     BAlert, // Register BAlert
   },
@@ -300,11 +335,12 @@ export default {
             note: this.invoiceData.note,
             items: this.invoiceData.items.map(item => ({
               id: item.id || undefined,
+              name: item.name,
               description: item.description,
               quantity: item.quantity,
               price: item.price,
               amount: item.amount,
-              name: item.name
+              product_id: item.productId || null,
             }))
           },
           relationships: {
@@ -358,6 +394,45 @@ export default {
     const accountName = ref('')
     const loading = ref(true) // Add loading state
     const errors = ref(null) // Add error state
+    const showSendModal = ref(false)
+
+    // Share Invoice: 'idle' | 'loading' | 'copied'
+    const shareLinkState = ref('idle')
+
+    const shareInvoice = async () => {
+      if (shareLinkState.value !== 'idle') return
+      shareLinkState.value = 'loading'
+
+      try {
+        const data = await store.dispatch('invoices/getSignedLink', invoiceData.value.id)
+        const invoiceUrl = data.invoice_url
+
+        const ta = document.createElement('textarea')
+        ta.value = invoiceUrl
+        ta.setAttribute('readonly', '')
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(invoiceUrl).catch(() => {})
+        }
+
+        shareLinkState.value = 'copied'
+        setTimeout(() => { shareLinkState.value = 'idle' }, 3000)
+      } catch (e) {
+        shareLinkState.value = 'idle'
+        proxy.$toast.error('Could not generate link. Try again.', {
+          position: 'top-right',
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        })
+      }
+    }
 
     const getInvoice = async () => {
       try {
@@ -478,6 +553,9 @@ export default {
       loading, // Expose loading state
       errors, // Expose error state
       formErrors,
+      showSendModal,
+      shareLinkState,
+      shareInvoice,
     }
   },
 }

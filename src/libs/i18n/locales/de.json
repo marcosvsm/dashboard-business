@@ -179,5 +179,43 @@
   "Layout Boxed": "Layout Boxed",
   "Without Menu": "Ohne Menü",
   "Layout Empty": "Layout leer",
-  "Layout Blank": "Layout leer"
+  "Layout Blank": "Layout leer",
+  "tutorial": {
+    "welcome": {
+      "title": "Willkommen bei Simplify!",
+      "description": "Lassen Sie uns einen kurzen Rundgang machen, um Sie mit den Hauptfunktionen der Plattform vertraut zu machen."
+    },
+    "language": {
+      "title": "Wählen Sie Ihre Sprache",
+      "description": "Klicken Sie hier, um die Sprachauswahl zu öffnen und wählen Sie Ihre bevorzugte Sprache."
+    },
+    "languageModal": {
+      "title": "Wählen Sie Ihre Sprache",
+      "description": "Wählen Sie Ihre bevorzugte Sprache aus der Liste unten. Der Rundgang wird automatisch fortgesetzt, nachdem Sie ausgewählt haben."
+    },
+    "languageUpdated": {
+      "title": "Großartig!",
+      "description": "Ihre Sprache wurde aktualisiert. Lassen Sie uns den Rundgang fortsetzen."
+    },
+    "myBusiness": {
+      "title": "Mein Geschäft",
+      "description": "Alle Ihre Unternehmensinfos finden Sie hier. Erweitern Sie dieses Menü, wenn Sie Geschäftsdaten verwalten müssen."
+    },
+    "business": {
+      "title": "Verwalten Sie Ihr Unternehmen",
+      "description": "Öffnen Sie den Abschnitt Geschäft, um Ihre Unternehmensdetails hinzuzufügen oder zu bearbeiten."
+    },
+    "clients": {
+      "title": "Kunden",
+      "description": "Halten Sie Ihre Kundenliste aktuell, damit die Rechnungen zum Versand bereit sind."
+    },
+    "finance": {
+      "title": "Finanzwerkzeuge",
+      "description": "Alles, was mit Rechnungen und Steuern zu tun hat, ist hier organisiert."
+    },
+    "invoice": {
+      "title": "Rechnungen erstellen",
+      "description": "Erstellen Sie direkt von dieser Verknüpfung aus eine Rechnung."
+    }
+  }
 }

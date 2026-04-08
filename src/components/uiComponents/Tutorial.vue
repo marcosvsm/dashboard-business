@@ -1,5 +1,31 @@
 <template>
   <div>
+    <!-- Prompt shown when user closes the spotlight tour early -->
+    <b-modal
+      v-model="tourClosedPromptVisible"
+      size="sm"
+      centered
+      modal-class="tutorial-modal"
+      hide-header-close
+      no-close-on-backdrop
+      no-close-on-esc
+    >
+      <template #modal-title>
+        {{ t('tutorial.closePrompt.title') }}
+      </template>
+      <p class="text-center py-2">{{ t('tutorial.closePrompt.description') }}</p>
+      <template #modal-footer>
+        <div class="w-100 d-flex justify-content-between">
+          <b-button variant="outline-danger" size="sm" @click="optOutForever">
+            {{ t('tutorial.closePrompt.dontShow') }}
+          </b-button>
+          <b-button variant="primary" size="sm" @click="dismissPrompt">
+            {{ t('tutorial.closePrompt.resumeLater') }}
+          </b-button>
+        </div>
+      </template>
+    </b-modal>
+
     <b-modal
       v-model="isVisible"
       size="lg"
@@ -13,7 +39,7 @@
       <template #modal-title>
         <div class="d-flex align-items-center">
           <base-feather-icon icon="SparklesIcon" size="24" class="text-primary mr-2" />
-          {{ currentStep.title }}
+          {{ currentStepTitle ? t(currentStepTitle) : '' }}
         </div>
       </template>
 
@@ -30,21 +56,21 @@
           Step {{ currentStepIndex + 1 }} of {{ totalSteps }}
         </small>
 
-        <div class="mb-4" v-if="currentStep.icon">
-          <base-feather-icon :icon="currentStep.icon" size="64" class="text-primary" />
+        <div class="mb-4" v-if="safeCurrentStep.icon">
+          <base-feather-icon :icon="safeCurrentStep.icon" size="64" class="text-primary" />
         </div>
 
-        <h4 class="mb-3">{{ t(currentStep.title) }}</h4>
-        <div v-html="t(currentStep.description)" class="text-muted mb-4 lead"></div>
+        <h4 class="mb-3">{{ currentStepTitle ? t(currentStepTitle) : '' }}</h4>
+        <div v-html="currentStepDescription ? t(currentStepDescription) : ''" class="text-muted mb-4 lead"></div>
 
         <b-button
-          v-if="currentStep.actionButton"
+          v-if="safeCurrentStep.actionButton"
           variant="primary"
           size="lg"
           class="px-5"
-          @click="handleAction(currentStep.actionButton.action)"
+          @click="handleAction(safeCurrentStep.actionButton.action)"
         >
-          {{ currentStep.actionButton.text }}
+          {{ currentStepActionText ? t(currentStepActionText) : '' }}
         </b-button>
       </div>
 
@@ -97,9 +123,9 @@ export default {
   data() {
     return {
       showTutorial: false,
+      t: null,
     }
   },
-
   computed: {
     ...mapGetters('tutorial', [
       'currentStep',
@@ -107,20 +133,47 @@ export default {
       'totalSteps',
       'tutorialCompleted',
       'tutorialOptedOut',
-      'isTutorialVisible'
+      'isTutorialVisible',
     ]),
 
+    safeCurrentStep() {
+      return this.currentStep || {}
+    },
+
+    currentStepTitle() {
+      return this.safeCurrentStep.title || null
+    },
+
+    currentStepDescription() {
+      return this.safeCurrentStep.description || null
+    },
+
+    currentStepActionText() {
+      return this.safeCurrentStep.actionButton ? this.safeCurrentStep.actionButton.text : null
+    },
+
+    hasCurrentStep() {
+      return Boolean(this.currentStep)
+    },
+
+    tourClosedPromptVisible: {
+      get() { return this.$store.getters['tutorial/tourClosedPromptVisible'] },
+      set(value) { this.$store.commit('tutorial/SET_TOUR_CLOSED_PROMPT_VISIBLE', value) },
+    },
+
     isVisible: {
-      get() { return this.isTutorialVisible },
+      get() { return this.isTutorialVisible && this.hasCurrentStep },
       set(value) { this.$store.commit('tutorial/SET_TUTORIAL_VISIBLE', value) }
     },
 
     isLastStep() {
-      return this.currentStepIndex === this.totalSteps - 1
+      return this.totalSteps > 0 && this.currentStepIndex === this.totalSteps - 1
     },
 
     progressPercentage() {
-      return ((this.currentStepIndex + 1) / this.totalSteps) * 100
+      if (this.totalSteps <= 0) return 0
+      const safeIndex = Math.min(this.currentStepIndex, this.totalSteps - 1)
+      return ((safeIndex + 1) / this.totalSteps) * 100
     },
   },
 
@@ -145,15 +198,23 @@ export default {
       'setOptedOut',
     ]),
 
-    checkAndShowTutorial() {
+    async checkAndShowTutorial() {
       if (this.tutorialOptedOut) return
 
       // Always recalculate progress every time the app loads
       this.setTutorialBasedOnProgress()
-      this.showTutorial = true
+      // Only show if not completed
+      if (!this.tutorialCompleted) {
+        this.showTutorial = true
+      }
     },
 
     nextStep() {
+      if (!this.hasCurrentStep) {
+        this.showTutorial = false
+        return
+      }
+
       if (this.currentStepIndex < 2) { // Modal steps
         if (this.isLastStep) {
           this.completeTutorial()
@@ -180,6 +241,14 @@ export default {
     skipTutorialForever() {
       this.setOptedOut(true)
       this.showTutorial = false
+    },
+
+    optOutForever() {
+      this.setOptedOut(true)
+    },
+
+    dismissPrompt() {
+      this.$store.commit('tutorial/SET_TOUR_CLOSED_PROMPT_VISIBLE', false)
     },
 
     handleAction(action) {
