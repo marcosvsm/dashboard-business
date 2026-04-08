@@ -56,12 +56,9 @@ function add(payload) {
     });
 }
 
-function update(invoice) {
-  const payload = jsona.serialize({
-    stuff: invoice,
-    includeNames: []
-  });
-
+function update(payload) {
+  const invoiceId = payload.data.id;
+  
   const options = {
     withCredentials: true,
     headers: {
@@ -70,7 +67,7 @@ function update(invoice) {
     }
   };
 
-  return axios.patch(`${url}/invoices/${invoice.id}`, payload, options)
+  return axios.patch(`${url}/invoices/${invoiceId}`, payload, options)
     .then(response => {
       return jsona.deserialize(response.data);
     });
@@ -105,11 +102,18 @@ function suggest(params) {
     });
 }
 
+function getSignedLink(uuid) {
+  return axios.get(`${url}/invoices/${uuid}/signed-link`, {
+    withCredentials: true,
+  }).then(response => response.data.data);
+}
+
 export default {
   list,
   get,
   add,
   update,
   destroy,
-  suggest
+  suggest,
+  getSignedLink,
 };

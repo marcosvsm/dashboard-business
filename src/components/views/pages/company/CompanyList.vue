@@ -244,6 +244,7 @@ export default {
     async handleCompanyDelete(companyId) {
       try {
         await this.$store.dispatch('companies/destroy', companyId);
+        console.log('teste')
         this.companies = this.companies.filter(company => company.id !== companyId);
          this.$toast.success("Business deleted",
         {

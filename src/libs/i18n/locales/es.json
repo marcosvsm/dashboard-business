@@ -162,6 +162,7 @@
     "Name": "Nombre",
     "Phone": "Teléfono",
     "Create": "Crear",
+    "Create New": "Crear Nuevo",
     "Bill To": "Facturar a",
     "Pay To": "Pagar a",
     "Date": "Fecha",
@@ -171,6 +172,11 @@
     "Amount": "Total",
     "Note": "Nota",
     "Save": "Guardar",
+    "Save Invoice": "Guardar Factura",
+    "Saving...": "Guardando...",
+    "Save Changes": "Guardar Cambios",
+    "Update Invoice": "Actualizar Factura",
+    "Update Existing": "Actualizar Existente",
     "Qty": "Cant.",
     "Description": "Descripción",
     "Pending": "Pendiente",
@@ -405,5 +411,73 @@
     "You can add PayID or bank transfer as payment methods in the Invoice Settings. PayID details can be saved for reuse, while bank transfer details must be entered each time. Clients will see these options when paying.": "Puedes añadir PayID o transferencia bancaria como métodos de pago en la Configuración de Facturas. Los datos de PayID se pueden guardar para reutilizarlos, mientras que los de transferencia bancaria deben introducirse cada vez. Los clientes verán estas opciones al pagar.",
     "How do I export my invoice data?": "¿Cómo exporto los datos de mis facturas?",
     "In the Invoices section, select an invoice and click \"Download\" to export it as a PDF. Invoices are exported individually, not as a bundle.": "En la sección Facturas, selecciona una factura y haz clic en \"Descargar\" para exportarla como PDF. Las facturas se exportan individualmente, no en lote.",
-    "Support request submitted! Our team will get back to you soon.": "¡Solicitud de soporte enviada! Nuestro equipo se pondrá en contacto contigo pronto."
+    "Support request submitted! Our team will get back to you soon.": "¡Solicitud de soporte enviada! Nuestro equipo se pondrá en contacto contigo pronto.",
+    "You have already saved this invoice. Would you like to": "Ya has guardado esta factura. ¿Te gustaría",
+    "Save changes to the current invoice": "Guardar cambios en la factura actual",
+    "Create a new invoice with these changes": "Crear una nueva factura con estos cambios",
+    "tutorial": {
+      "welcome": {
+        "title": "¡Bienvenido a Simplify!",
+        "description": "Hagamos un recorrido rápido para familiarizarte con las características principales de la plataforma."
+      },
+      "language": {
+        "title": "Elige Tu Idioma",
+        "description": "Haz clic aquí para abrir el selector de idioma y elige tu idioma preferido."
+      },
+      "languageModal": {
+        "title": "Selecciona Tu Idioma",
+        "description": "Elige tu idioma preferido de la lista a continuación. El recorrido continuará automáticamente después de que elijas."
+      },
+      "languageUpdated": {
+        "title": "¡Gran elección!",
+        "description": "Tu idioma ha sido actualizado. Continuemos con el recorrido."
+      },
+      "myBusiness": {
+        "title": "Mi Negocio",
+        "description": "Toda la información de tu empresa se encuentra aquí. Expande este menú siempre que necesites administrar datos comerciales."
+      },
+      "business": {
+        "title": "Administra Tu Empresa",
+        "description": "Abre la sección Negocio para añadir o editar los detalles de tu empresa."
+      },
+      "clients": {
+        "title": "Clientes",
+        "description": "Mantén tu lista de clientes actualizada para que las facturas estén listas para enviar."
+      },
+      "finance": {
+        "title": "Herramientas Financieras",
+        "description": "Todo lo relacionado con facturas e impuestos está organizado aquí."
+      },
+      "invoice": {
+        "title": "Crear Facturas",
+        "description": "Ve directamente a crear una factura desde este atajo."
+      }
+    },
+    "Save reusable products/services to your catalog": "Guarda productos/servicios reutilizables en tu catálogo",
+    "New: Product/Service Catalog": "Nuevo: Catálogo de Productos/Servicios",
+    "Build a library of your most-used services and goods. When creating an invoice, select any saved product and the name, description, and price fill automatically.": "Construye una biblioteca de tus servicios y productos más utilizados. Al crear una factura, selecciona cualquier producto guardado y el nombre, descripción y precio se completarán automáticamente.",
+    "Upgrade your plan to unlock this feature.": "Actualiza tu plan para desbloquear esta función.",
+    "See Plans": "Ver Planes",
+    "Not Now": "Ahora no",
+    "Type or search products/services": "Escribe o busca productos/servicios",
+    "Save to product catalog": "Guardar en el catálogo de productos",
+    "Already in catalog": "Ya está en el catálogo",
+    "Product saved!": "¡Producto guardado!",
+    "Failed to save product. Please try again.": "Error al guardar el producto. Por favor, inténtalo de nuevo.",
+    "Save items to catalog for quick reuse": "Guarda artículos en el catálogo para reutilización rápida",
+    "to catalog": "al catálogo",
+    "No saved products/services yet. Type to enter an item.": "Aún no hay productos/servicios guardados. Escribe para ingresar un artículo.",
+    "No matching products/services.": "Producto/Servicio no encontrado.",
+    "Copy Link": "Copiar Enlace",
+    "Send Email": "Enviar Correo",
+    "Copy Message": "Copiar Mensaje",
+    "Open Email": "Abrir Correo",
+    "Copied to clipboard!": "¡Copiado al portapapeles!",
+    "Failed to copy. Please try again.": "Error al copiar. Por favor, inténtalo de nuevo.",
+    "To": "Para",
+    "Subject": "Asunto",
+    "Message": "Mensaje",
+    "No email address found for this customer. Please enter one below.": "No se encontró dirección de correo para este cliente. Por favor, ingresa una a continuación.",
+    "Generating…": "Generando…",
+    "Link Copied!": "¡Enlace Copiado!"
 }

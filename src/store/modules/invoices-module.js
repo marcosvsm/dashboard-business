@@ -55,6 +55,10 @@ const actions = {
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
   },
 
+  getSignedLink({commit}, uuid) {
+    return service.getSignedLink(uuid);
+  },
+
 };
 
 const getters = {

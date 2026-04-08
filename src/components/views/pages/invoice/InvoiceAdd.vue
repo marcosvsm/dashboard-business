@@ -50,12 +50,18 @@
               <span 
                 class="font-weight-bold"
               >
-                {{ t('Note') }}   
+                {{ t('Note') }}
               </span>
               <b-form-textarea 
                 v-model="invoiceData.note" 
                 placeholder="Additional Details:"
+                maxlength="1000"
               />
+              <div class="d-flex justify-content-end mt-1">
+                <span class="text-muted small">
+                  {{ invoiceData.note?.length || 0 }} / 1000
+                </span>
+              </div>
             </b-card-body>
           </b-card>
         </b-form>
@@ -313,7 +319,6 @@ export default {
               due_date: this.invoiceData.dueDate,
               amount: this.invoiceData.amount,
               ref: this.invoiceData.number,
-              item: this.invoiceData.items
             },
             relationships:{
               company: {
@@ -329,15 +334,13 @@ export default {
                 }
               },
             },
-            included: this.invoiceData.items.map((item, index) => ({
-              type: "invoiceItems",
-              attributes: {
-                description: item.description,
-                quantity: item.quantity,
-                price: item.price,
-                amount: item.amount,
-                // Other item fields
-              },
+            item: this.invoiceData.items.map(item => ({
+              name: item.name,
+              description: item.description,
+              quantity: item.quantity,
+              price: item.price,
+              amount: item.amount,
+              product_id: item.productId || null,
             }))
           }
         }
@@ -391,7 +394,7 @@ export default {
         this.invoiceData.number = data.number;
         this.invoiceData.date = data.invoice_date;
         this.invoiceData.dueDate = data.due_date;
-        this.invoiceData.amount = data.amount;
+        this.invoiceData.amount = data.amount.toFixed(2);
         this.invoiceData.status = data.status;
         // Replace items with API data
         this.invoiceData.items = data.items.map(item => {
@@ -402,8 +405,8 @@ export default {
             return {
                 name: item.name,
                 quantity: String(item.quantity),
-                price: String(item.price),
-                amount: String(item.amount),
+                price: item.price.toFixed(2),
+                amount: item.amount.toFixed(2),
                 description: item.description,
             };
         });

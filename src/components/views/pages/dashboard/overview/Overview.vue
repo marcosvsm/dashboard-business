@@ -1,6 +1,19 @@
 <template>
-  <div v-if="!isLoadingInvoices">
-    <b-row>
+  <div>    
+    <!-- Welcome Message for New Users -->
+    <b-alert v-if="showWelcome" variant="info" dismissible @dismissed="hideWelcome" class="mb-3">
+      <h5 class="alert-heading">
+        <base-feather-icon icon="InfoIcon" size="18" class="mr-1" />
+        {{ t('Welcome to Simplify!') }}
+      </h5>
+      <p class="mb-2">{{ t('Get started by creating your business profile and adding customers.') }}</p>
+      <b-button size="sm" variant="outline-info" @click="startTutorial">
+        {{ t('Take Tutorial') }}
+      </b-button>
+    </b-alert>
+    
+    <div v-if="!isLoadingInvoices">
+      <b-row>
       <b-col class="mb-2" md="4" sm="6" xs="12">
         <invoices-card
           :invoices="invoices"
@@ -83,8 +96,11 @@
           :hide-amount="hideAmount"
           :format-date-for-display="formatDateForDisplay"
         />
-      </b-col>
+            </b-col>
     </b-row>
+    </div>
+    <!-- Tutorial Component -->
+    <tutorial @open-language-selector="openLanguageSelector" />
   </div>
 </template>
 
@@ -102,9 +118,10 @@ import OutstandingInvoicesList from '@/components/views/pages/dashboard/Outstand
 import TopCustomers from '@/components/views/pages/dashboard/TopCustomers.vue';
 import RecentActivityCard from '@/components/views/pages/dashboard/RecentActivityCard.vue';
 import TaxSummaryCard from '@/components/views/pages/dashboard/TaxSummaryCard.vue';
+import Tutorial from '@/components/uiComponents/Tutorial.vue';
 
 export default {
-  components: {
+    components: {
     BaseFeatherIcon,
     InvoicesCard,
     IncomeCard,
@@ -114,8 +131,9 @@ export default {
     TopCustomers,
     RecentActivityCard,
     TaxSummaryCard,
+    Tutorial,
   },
-  data() {
+    data() {
     return {
       invoices: [],
       isLoadingInvoices: false,
@@ -124,6 +142,7 @@ export default {
       formatDateForInvoiceDisplay,
       hideAmount: true,
       timePeriod: 'monthly',
+      showWelcome: false,
       currencyFormatter: new Intl.NumberFormat('en-AU', {
         style: 'currency',
         currency: 'AUD',
@@ -131,10 +150,11 @@ export default {
       }),
     }
   },
-  created() {
+    created() {
     const { t } = useI18nUtils();
     this.t = t;
     this.fetchInvoices('first');
+    this.checkWelcomeStatus();
   },
   computed: {
     unpaidInvoices() {
@@ -189,6 +209,20 @@ export default {
     setTimePeriod(period) {
       this.timePeriod = period;
     },
+    checkWelcomeStatus() {
+      const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
+      const hasCompanies = this.$store.getters['companies/list']?.length > 0;
+      this.showWelcome = !hasSeenTutorial && !hasCompanies;
+    },
+    async startTutorial() {
+      await this.$store.dispatch('tutorial/resetTutorial');
+      this.$store.dispatch('tutorial/startTour');
+      this.showWelcome = false;
+    },
+    hideWelcome() {
+      this.showWelcome = false;
+      localStorage.setItem('welcomeMessageSeen', 'true');
+    },
     getLastInvoice() {
       if (!this.invoices.length) return 'N/A';
       const latest = this.invoices.reduce((max, inv) => {
@@ -197,12 +231,22 @@ export default {
       }, new Date(0));
       return formatDateForDisplay(latest);
     },
+    openLanguageSelector() {
+      // Open your language dropdown
+      const btn = document.querySelector('.dropdown-language .dropdown-toggle')
+      if (btn) btn.click()
+    },
   },
   mounted() {
     const isHide = localStorage.getItem('hideAmount');
     if (isHide !== null) {
       this.hideAmount = isHide === 'true';
     }
+    this.$nextTick(() => {
+      if (this.$store.getters['tutorial/isTourActive']) {
+        this.$store.dispatch('tutorial/startTour')
+      }
+    })
   },
 }
 </script>

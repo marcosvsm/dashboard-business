@@ -60,29 +60,24 @@ export default {
   },
   data() {
     return {
-      waitlist: [],
+      waitlist: null,
       isLoadingUser: false,
     };
   },
   computed: {
-    ...mapGetters('profile', ['me']),
+    ...mapGetters('users', ['user']),
+    ...mapGetters('waitlists', ['list']),
     isUserLoaded() {
-      return !!this.me && !this.isLoadingUser;
+      return !!this.user && !this.isLoadingUser;
     },
     isOnWaitlist() {
-      if(this.waitlist)
-        return true
-      return false;
+      return this.list.some(waitlist => waitlist.name === 'Tax Summary');
     },
   },
   async created() {
     try {
       this.isLoadingUser = true;
-      // Fetch user if not available in getter
-      const user = this.$store.getters["profile/me"];
         await this.$store.dispatch('waitlists/list');
-        const data = this.$store.getters['waitlists/list'] || [];
-        this.waitlist = data.find(list => list.name === "Tax Summary")
     } catch (error) {
       console.error('Error fetching user or waitlist:', error);
     } finally {
@@ -105,14 +100,14 @@ export default {
               user: {
                 data: {
                   type: 'users',
-                  id: this.me.id,
+                  id: this.user.id,
                 },
               },
             },
           },
         };
         await this.$store.dispatch('waitlists/add', data);
-        this.waitlist = this.$store.getters['waitlists/get'] || [];
+        await this.$store.dispatch('waitlists/list');
         this.$toast.success(
           'Thank you for joining the waitlist! We’ll notify you when Tax Summary is ready.',
           {

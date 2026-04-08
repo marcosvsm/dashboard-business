@@ -33,24 +33,51 @@
                 v-model="invoiceData.note" 
                 placeholder="Additional Details:"
               />
+              <div class="d-flex justify-content-end mt-1">
+                <span class="text-muted small">
+                  {{ invoiceData.note?.length || 0 }} / 1000
+                </span>
+              </div>
             </b-card-body>
           </b-card>
         </b-form>
       </b-col>
       <b-col cols="12" md="4" xl="3" class="invoice-actions mt-md-0 mt-2">
         <b-card>
-          <pdf 
-            :invoiceData="invoiceData" 
-            :paymentDetails="paymentDetails" 
-            :selectedPaymentMethod="selectedPaymentMethod" 
+          <pdf
+            :invoiceData="invoiceData"
+            :paymentDetails="paymentDetails"
+            :selectedPaymentMethod="selectedPaymentMethod"
             :validateForm="validateForm"
           />
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
             variant="outline-primary"
             block
+            class="mb-75"
+            :disabled="!invoiceData.id"
+            @click="showSendModal = true"
+          >
+            {{ t('Send Email') }}
+          </b-button>
+          <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+            variant="outline-primary"
+            block
+            class="mb-75"
+            :disabled="!invoiceData.id || shareLinkState === 'loading'"
+            @click="shareInvoice"
+          >
+            <b-spinner v-if="shareLinkState === 'loading'" small class="mr-50" />
+            <span v-if="shareLinkState === 'loading'">{{ t('Generating…') }}</span>
+            <span v-else-if="shareLinkState === 'copied'">&#10003; {{ t('Link Copied!') }}</span>
+            <span v-else>{{ t('Copy Link') }}</span>
+          </b-button>
+          <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+            variant="outline-primary"
+            block
             @click="saveInvoice()"
-            disabled
           >
             {{ t('Save Changes') }}
           </b-button>
@@ -166,6 +193,11 @@
       </b-col>
     </b-row>
     <payment-method-sidebar v-if="invoiceData.company" :company="invoiceData.company" @payment-added="handlePaymentAdded" />
+    <send-invoice-modal
+      v-if="invoiceData.id"
+      :invoice="invoiceData"
+      :visible.sync="showSendModal"
+    />
   </section>
 </template>
 
@@ -180,6 +212,7 @@ import InvoiceBody from '@/components/uiComponents/InvoiceBody.vue'
 import Pdf from '@/components/uiComponents/Pdf.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
+import SendInvoiceModal from '@/components/uiComponents/SendInvoiceModal.vue'
 import { BSpinner, BAlert } from 'bootstrap-vue' // Add this import
 
 export default {
@@ -190,6 +223,7 @@ export default {
     InvoiceBody,
     Pdf,
     PaymentMethodSidebar,
+    SendInvoiceModal,
     BSpinner, // Register the spinner component
     BAlert, // Register BAlert
   },
@@ -200,6 +234,12 @@ export default {
     validateForm() {
       const errors = {}
       let isValid = true
+
+            // Validate customer
+      if (!this.invoiceData.customer || !this.invoiceData.customer.id) {
+        errors.customer = 'Customer is required'
+        isValid = false
+      }
 
       // Validate company
       if (!this.invoiceData.company || !this.invoiceData.company.id) {
@@ -253,58 +293,85 @@ export default {
 
       return isValid
     },
-    async saveInvoice() {
-       // Run validation synchronously first
+        async saveInvoice() {
       const isValid = this.validateForm()
-      if(isValid){
-        const data = { 
-          data: {
-            type: "invoices",
-            id: this.invoiceData.id,
-            attributes: {
-              name: this.invoiceData.number,
-              invoice_date: this.invoiceData.date,
-              due_date: this.invoiceData.dueDate,
-              amount: this.invoiceData.amount,
-              ref: this.invoiceData.number,
-              company_id: this.invoiceData.company?.id,
-              customer_id: this.invoiceData.customer?.id,
-              items: this.invoiceData.items,
-              note: this.invoiceData.note
-            },
-            relationships: {
-              company: {
-                data: this.invoiceData.company ? { type: "companies", id: this.invoiceData.company.id } : null
-              },
-            },
-          }
-        }
-        try {
-          await this.$store.dispatch('invoices/update', data)
-          await this.$store.dispatch('alerts/showNotification', {
-            message: "Invoice updated successfully",
-            type: "success"
-          })
-        } catch (e) {
-          console.log('Response data:', e.response?.data)
-          await this.$store.dispatch('alerts/showNotification', {
-            message: "Something went wrong! Try again later or contact support.",
-            type: "error"
-          })
-        }
-      } else {
-        console.log('Validation failed:', this.formErrors)
-        this.$nextTick(() => {
-          this.$toast.error('Please correct the errors in the form before saving the invoice.',
-          {
-            position: "top-right",
-            icon: false,
-            closeButton: false,
-            hideProgressBar: true,
-            timeout: 3000
-          })
+      if (!isValid) {
+        this.showValidationError()
+        return
+      }
+
+      try {
+        const data = this.buildRequestData()
+        await this.$store.dispatch('invoices/update', data)
+        
+        this.$toast.success(`Invoice updated: ${this.invoiceData.number}`, {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 2000
+        })
+      } catch (e) {
+        console.error('Update error:', e)
+        this.$toast.error('Something went wrong! Try again later.', {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000
         })
       }
+    },
+    
+    buildRequestData() {
+      const data = {
+        data: {
+          type: "invoices",
+          id: this.invoiceData.id,
+          attributes: {
+            name: this.invoiceData.number,
+            invoice_date: this.invoiceData.date,
+            due_date: this.invoiceData.dueDate,
+            amount: this.invoiceData.amount,
+            ref: this.invoiceData.number,
+            note: this.invoiceData.note,
+            items: this.invoiceData.items.map(item => ({
+              id: item.id || undefined,
+              name: item.name,
+              description: item.description,
+              quantity: item.quantity,
+              price: item.price,
+              amount: item.amount,
+              product_id: item.productId || null,
+            }))
+          },
+          relationships: {
+            company: {
+              data: this.invoiceData.company ? { 
+                type: "companies", 
+                id: this.invoiceData.company.id 
+              } : null
+            },
+            customer: {
+              data: this.invoiceData.customer ? { 
+                type: "customers", 
+                id: this.invoiceData.customer.id 
+              } : null
+            },
+          },
+        }
+      }
+      
+      return data
+    },
+    
+    showValidationError() {
+      this.$nextTick(() => {
+        this.$toast.error('Please correct the errors in the form before saving the invoice.', {
+          position: "top-right",
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000
+        })
+      })
     },
     formatPrice(value) {
       return Number(value).toFixed(2)
@@ -327,6 +394,45 @@ export default {
     const accountName = ref('')
     const loading = ref(true) // Add loading state
     const errors = ref(null) // Add error state
+    const showSendModal = ref(false)
+
+    // Share Invoice: 'idle' | 'loading' | 'copied'
+    const shareLinkState = ref('idle')
+
+    const shareInvoice = async () => {
+      if (shareLinkState.value !== 'idle') return
+      shareLinkState.value = 'loading'
+
+      try {
+        const data = await store.dispatch('invoices/getSignedLink', invoiceData.value.id)
+        const invoiceUrl = data.invoice_url
+
+        const ta = document.createElement('textarea')
+        ta.value = invoiceUrl
+        ta.setAttribute('readonly', '')
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;'
+        document.body.appendChild(ta)
+        ta.focus()
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(invoiceUrl).catch(() => {})
+        }
+
+        shareLinkState.value = 'copied'
+        setTimeout(() => { shareLinkState.value = 'idle' }, 3000)
+      } catch (e) {
+        shareLinkState.value = 'idle'
+        proxy.$toast.error('Could not generate link. Try again.', {
+          position: 'top-right',
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        })
+      }
+    }
 
     const getInvoice = async () => {
       try {
@@ -447,6 +553,9 @@ export default {
       loading, // Expose loading state
       errors, // Expose error state
       formErrors,
+      showSendModal,
+      shareLinkState,
+      shareInvoice,
     }
   },
 }

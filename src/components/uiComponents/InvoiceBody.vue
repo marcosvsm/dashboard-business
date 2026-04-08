@@ -193,13 +193,12 @@
                 >
                     <label class="d-inline d-lg-none">#{{index+1}} {{t('Description')}}</label>
                     <div class="d-flex align-items-top">
-                      <b-form-input
-                      v-model="item.name"
-                      :dir="$store.state.appConfig.isRTL ? 'rtl' : 'ltr'"
-                      label="name"
-                      :clearable="false"
-                      class="mb-2 item-selector-title"
-                      maxlength="50"
+                      <product-item-selector
+                        :item="item"
+                        :can-save-to-catalog="canSaveToCatalog"
+                        :company-id="invoiceData.company ? invoiceData.company.id : null"
+                        class="flex-grow-1"
+                        @recalculate="setAmount"
                       />
                        <b-popover
                         :ref="'popover-' + index"
@@ -285,7 +284,6 @@
                     v-model="item.description"
                     class="mb-2 mb-lg-0"
                     maxlength="90"
-                    maxrows='3'
                     />
                 </b-col>
                 </b-row>
@@ -352,8 +350,9 @@ import vSelect from 'vue-select'
 import Ripple from 'vue-ripple-directive'
 import VBToggle from 'bootstrap-vue'
 import { heightTransition } from '@/mixins/ui/transition'
-import { toRefs, ref, nextTick} from 'vue'
+import { toRefs, ref, nextTick, computed, getCurrentInstance } from 'vue'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
+import ProductItemSelector from '@/components/uiComponents/ProductItemSelector.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import FlatPickr from 'vue-flatpickr-component'
 import {formatDateForDisplay} from '@/libs/dateUtils'
@@ -363,6 +362,7 @@ export default {
     BaseFeatherIcon,
     vSelect,
     InvoiceSidebarAddNewCustomer,
+    ProductItemSelector,
     FlatPickr,
   },
   props:{
@@ -492,6 +492,7 @@ export default {
     },
   },
   setup(props){
+    const { proxy } = getCurrentInstance()
     const customerSelect = ref(null)
     const {formErrors} = toRefs(props)
     const itemFormBlankItem = {
@@ -512,6 +513,12 @@ export default {
     const selectedCompany = ref([])
     const { t } = useI18nUtils()
 
+    const canSaveToCatalog = computed(() => {
+      const slug = proxy.$store.getters['users/user']?.role?.slug
+      const paidSlugs = ['grow','pro', 'business', 'enterprise']
+      return paidSlugs.includes(slug)
+    })
+
     const closeSelectDropdown = () => {
       // Optionally handle closing logic here if needed
       customerSelect.value.$refs.search.blur()
@@ -519,23 +526,19 @@ export default {
     const popoverVisible = ref([]);
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
-    const datePickerConfig  = {
+        const datePickerConfig  = {
       dateFormat: 'd/m/Y',
       defaultDate: null,
       allowInput: true,
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
-       // flatpickrRef.value[index].push(instance);
-       // Don't auto-select today's date
-      // instance.clear();
       },
       onChange(dates, dateStr, instance) {
-        //const index = flatpickrRef.value.indexOf(instance);
         const index = instance.element.dataset.index;
-        // If the new date is different from the previous one, update and call handleDateChange
-        if (selectedDates.value[index]) {
-            handleDateChange(index, dates);  // Call only if the date is truly changed
+        // Call handleDateChange if a date is selected
+        if (dates && dates.length > 0) {
+            handleDateChange(index, dates);
         }
       },
     };
@@ -556,22 +559,31 @@ export default {
       });
     }
 
-    const handleDateChange = (index,dates) => {
-      if(dates && dates.length > 0){
-        if(invoiceData.value.items[index].name){
+        const handleDateChange = (index, dates) => {
+      if (dates && dates.length > 0) {
+        const formattedDate = formatDateForDisplay(dates[0]); // Use first date from array
+        
+        if (invoiceData.value.items[index].name) {
           const itemName = invoiceData.value.items[index].name;
           const lastLetter = itemName.charAt(itemName.length - 1); 
-          if(lastLetter === ' ')
-            invoiceData.value.items[index].name += formatDateForDisplay(dates);
-          else
-            invoiceData.value.items[index].name += ' '+formatDateForDisplay(dates);
-        }else {
-          invoiceData.value.items[index].name += formatDateForDisplay(dates)
+          if (lastLetter === ' ') {
+            invoiceData.value.items[index].name += formattedDate;
+          } else {
+            invoiceData.value.items[index].name += ' ' + formattedDate;
+          }
+        } else {
+          invoiceData.value.items[index].name = formattedDate;
         }
-        selectedDates.value[index] = '';
-        popoverVisible.value[index] = false
-      }
         
+        // Clear the selected date and close popover
+        selectedDates.value[index] = null;
+        popoverVisible.value[index] = false;
+        
+        // Close the flatpickr instance
+        if (flatpickrRef.value[index]) {
+          flatpickrRef.value[index].close();
+        }
+      }
     }
     return {
         itemFormBlankItem,
@@ -587,6 +599,7 @@ export default {
         selectedDates,
         popoverVisible,
         formErrors,
+        canSaveToCatalog,
     }
   },
 }
