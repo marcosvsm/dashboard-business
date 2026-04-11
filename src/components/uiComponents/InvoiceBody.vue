@@ -157,8 +157,8 @@
                     cols="12"
                     lg="5"
                 >
-                    #{{index+1}} {{t('Description')}}
-                    
+                    #{{index+1}} {{t('Item')}}
+
                 </b-col>
                 <b-col
                     cols="12"
@@ -191,8 +191,8 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">#{{index+1}} {{t('Description')}}</label>
-                    <div class="d-flex align-items-top">
+                    <label class="d-inline d-lg-none">#{{index+1}} {{t('Item')}}</label>
+                    <div class="d-flex align-items-center">
                       <product-item-selector
                         :item="item"
                         :can-save-to-catalog="canSaveToCatalog"
@@ -200,34 +200,26 @@
                         class="flex-grow-1"
                         @recalculate="setAmount"
                       />
-                       <b-popover
-                        :ref="'popover-' + index"
-                        placement="bottom"
-                        :target="`calendarIcon-${index}`"
-                        :show.sync="popoverVisible[index]"
-                        style="width: 100%;max-width: none !important;"
+                      <flat-pickr
+                        v-model="selectedDates[index]"
+                        :config="datePickerConfig"
+                        :data-index="index"
+                        class="invisible"
+                      />
+                      <b-button
+                        variant="flat-secondary"
+                        class="btn-icon ml-50 p-50"
+                        :id="`calendarIcon-${index}`"
+                        @click="openPopover(index)"
+                        v-b-tooltip.hover
+                        :title="t('Add date')"
                       >
                         <base-feather-icon
-                          size="24"
+                          size="18"
                           icon="CalendarIcon"
-                          style="margin-right: 5px;"
+                          class="text-muted"
                         />
-                        <flat-pickr
-                          v-model="selectedDates[index]"
-                          :config="datePickerConfig"
-                          placeholder="DATE"
-                          :data-index="index"
-                          class="form-control invoice-edit-input cursor-pointer col-xs-12 flat-pickr-input"
-                        />
-                      </b-popover>
-                       
-                      <base-feather-icon
-                        :id="`calendarIcon-${index}`"
-                        size="24"
-                        icon="MoreVerticalIcon"
-                        class="cursor-pointer"
-                        @click="openPopover(index)"
-                      />
+                      </b-button>
                     </div>
                 </b-col>
                 <b-col
@@ -253,14 +245,19 @@
                     lg="3"
                 >
                     <label class="d-inline d-lg-none">{{t("Price")}}</label>
-                    <b-form-input
-                    v-model="item.price"
-                    type="number"
-                    class="mb-2"
-                    placeholder="0.00"
-                    @keyup="setAmount"
-                    :class="{ 'is-invalid': formErrors[`price-${index}`] }"
-                    />
+                    <b-input-group prepend="$" class="mb-2" :class="{ 'is-invalid': formErrors[`price-${index}`] }">
+                      <b-form-input
+                        v-model="item.price"
+                        type="text"
+                        inputmode="decimal"
+                        placeholder="0.00"
+                        @keydown="blockInvalidPriceKey($event, index)"
+                        @paste="sanitizePricePaste($event, index)"
+                        @input="setAmount"
+                        @blur="formatItemPrice(index)"
+                        :class="{ 'is-invalid': formErrors[`price-${index}`] }"
+                      />
+                    </b-input-group>
                     <!-- Error message -->
                     <b-form-invalid-feedback>
                       {{ formErrors[`price-${index}`] }}
@@ -279,7 +276,7 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">{{t("Note")}}</label>
+                    <label class="d-inline d-lg-none">{{t("Description")}}</label>
                     <b-form-textarea
                     v-model="item.description"
                     class="mb-2 mb-lg-0"
@@ -429,8 +426,36 @@ export default {
         this.invoiceData.amount = this.formatPrice(amount)
     },
     formatPrice(value) {
-      // Ensure the value is a number and format it to two decimal places
       return Number(value).toFixed(2);
+    },
+    formatItemPrice(index) {
+      const raw = this.invoiceData.items[index].price
+      if (raw !== '' && !isNaN(raw)) {
+        this.invoiceData.items[index].price = this.formatPrice(raw)
+        this.setAmount()
+      }
+    },
+    blockInvalidPriceKey(event, index) {
+      const allowed = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
+      if (allowed.includes(event.key)) return
+      if (event.ctrlKey || event.metaKey) return
+      if (!/^[0-9.]$/.test(event.key)) {
+        event.preventDefault()
+        return
+      }
+      // Block a second dot
+      if (event.key === '.' && String(this.invoiceData.items[index].price).includes('.')) {
+        event.preventDefault()
+      }
+    },
+    sanitizePricePaste(event, index) {
+      event.preventDefault()
+      const pasted = (event.clipboardData || window.clipboardData).getData('text')
+      let clean = pasted.replace(/[^0-9.]/g, '')
+      const parts = clean.split('.')
+      if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('')
+      this.invoiceData.items[index].price = clean
+      this.setAmount()
     },
   },
    watch: {
@@ -534,26 +559,17 @@ export default {
         const index = instance.element.dataset.index;
         flatpickrRef.value[index] = instance; // Store instance by item index
       },
-      onChange(dates, dateStr, instance) {
+      onClose(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
-        // Call handleDateChange if a date is selected
         if (dates && dates.length > 0) {
-            handleDateChange(index, dates);
+          handleDateChange(index, dates);
         }
       },
     };
 
     const openPopover = (index) => {
-       // Close any currently open popover
-      popoverVisible.value.forEach((visible, i) => {
-        if (visible && i !== index) {
-          popoverVisible.value[i] = false;
-        }
-      });
-        // Ensure the flatpickr instance is available before trying to open it
       nextTick(() => {
-        //popoverVisible.value[index] = true;
-       if (flatpickrRef.value[index]) {
+        if (flatpickrRef.value[index]) {
           flatpickrRef.value[index].open();
         }
       });
@@ -563,26 +579,20 @@ export default {
       if (dates && dates.length > 0) {
         const formattedDate = formatDateForDisplay(dates[0]); // Use first date from array
         
-        if (invoiceData.value.items[index].name) {
-          const itemName = invoiceData.value.items[index].name;
-          const lastLetter = itemName.charAt(itemName.length - 1); 
-          if (lastLetter === ' ') {
-            invoiceData.value.items[index].name += formattedDate;
-          } else {
-            invoiceData.value.items[index].name += ' ' + formattedDate;
-          }
+        if (invoiceData.value.items[index].description) {
+          const desc = invoiceData.value.items[index].description;
+          const lastChar = desc.charAt(desc.length - 1);
+          invoiceData.value.items[index].description += lastChar === ' ' ? formattedDate : ' ' + formattedDate;
         } else {
-          invoiceData.value.items[index].name = formattedDate;
+          invoiceData.value.items[index].description = formattedDate;
         }
         
-        // Clear the selected date and close popover
+        // Clear selection silently (no hooks) — avoids re-triggering onClose
+        if (flatpickrRef.value[index]) {
+          flatpickrRef.value[index].setDate(null, false);
+        }
         selectedDates.value[index] = null;
         popoverVisible.value[index] = false;
-        
-        // Close the flatpickr instance
-        if (flatpickrRef.value[index]) {
-          flatpickrRef.value[index].close();
-        }
       }
     }
     return {
@@ -597,7 +607,6 @@ export default {
         openPopover,
         handleDateChange,
         selectedDates,
-        popoverVisible,
         formErrors,
         canSaveToCatalog,
     }

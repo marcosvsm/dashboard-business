@@ -38,18 +38,17 @@
       />
       <span>Profile</span>
     </b-dropdown-item>
-<!--    <b-dropdown-item
-      :to="{ name: '' }"
+    <b-dropdown-item
+      :to="{ name: 'pricing' }"
       link-class="d-flex align-items-center"
     >
       <base-feather-icon
         size="16"
-        icon="MailIcon"
+        icon="CreditCardIcon"
         class="mr-50"
       />
-      <span>Inbox</span>
+      <span>Plans</span>
     </b-dropdown-item>
--->
     <b-dropdown-divider />
 <!--
     <b-dropdown-item

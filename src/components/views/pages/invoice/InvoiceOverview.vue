@@ -77,11 +77,37 @@
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
             variant="outline-primary"
             block
+            :disabled="!hasInvoiceChanges"
             @click="saveInvoice()"
           >
             {{ t('Save Changes') }}
           </b-button>
         </b-card>
+        <div
+          v-if="manualShareCopyVisible"
+          class="mt-2 p-2 border rounded bg-light"
+        >
+          <div class="small text-muted mb-1">
+            {{ t('Copy this link manually if automatic copy is blocked.') }}
+          </div>
+
+          <div class="d-flex align-items-center">
+            <b-form-input
+              ref="manualShareCopyRef"
+              :value="manualShareCopyText"
+              readonly
+              class="mr-1"
+            />
+
+            <b-button
+              size="sm"
+              variant="primary"
+              @click="selectManualLink"
+            >
+              {{ t('Select') }}
+            </b-button>
+          </div>
+        </div>
         <!-- ... rest of the sidebar ... -->
          <div 
           class="mt-2"
@@ -202,7 +228,7 @@
 </template>
 
 <script>
-import { ref, getCurrentInstance, watch } from 'vue'
+import { ref, getCurrentInstance, watch, computed } from 'vue'
 import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import vSelect from 'vue-select'
@@ -294,6 +320,10 @@ export default {
       return isValid
     },
         async saveInvoice() {
+      if(!this.hasInvoiceChanges){
+        return
+      }
+      
       const isValid = this.validateForm()
       if (!isValid) {
         this.showValidationError()
@@ -303,7 +333,7 @@ export default {
       try {
         const data = this.buildRequestData()
         await this.$store.dispatch('invoices/update', data)
-        
+        this.originalInvoiceSnapshot = this.normalizeInvoiceForComparison(this.invoiceData)
         this.$toast.success(`Invoice updated: ${this.invoiceData.number}`, {
           position: "top-right",
           closeButton: false,
@@ -395,43 +425,104 @@ export default {
     const loading = ref(true) // Add loading state
     const errors = ref(null) // Add error state
     const showSendModal = ref(false)
+    const originalInvoiceSnapshot = ref(null)
+    const manualShareCopyVisible = ref(false)
+    const manualShareCopyText = ref('')
+    const manualShareCopyRef = ref(null)
 
     // Share Invoice: 'idle' | 'loading' | 'copied'
     const shareLinkState = ref('idle')
 
     const shareInvoice = async () => {
-      if (shareLinkState.value !== 'idle') return
+      if (!invoiceData.value.id || shareLinkState.value === 'loading') return
+
       shareLinkState.value = 'loading'
 
       try {
         const data = await store.dispatch('invoices/getSignedLink', invoiceData.value.id)
-        const invoiceUrl = data.invoice_url
-
-        const ta = document.createElement('textarea')
-        ta.value = invoiceUrl
-        ta.setAttribute('readonly', '')
-        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;'
-        document.body.appendChild(ta)
-        ta.focus()
-        ta.select()
-        document.execCommand('copy')
-        document.body.removeChild(ta)
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText(invoiceUrl).catch(() => {})
+        const invoiceUrl = data?.invoice_url || ''
+        
+        if (!invoiceUrl){
+          throw new Error('Missing invoice URL')
         }
+        const canAutoCopy =
+          window.isSecureContext &&
+          navigator.clipboard &&
+          typeof navigator.clipboard.writeText === 'function'
+        if (canAutoCopy){
+          await navigator.clipboard.writeText(invoiceUrl)
+          share.shareLinkState.value = 'copied'
+          setTimeout(() => {
+            shareLinkState.value = idle
+          }, 3000)
 
-        shareLinkState.value = 'copied'
-        setTimeout(() => { shareLinkState.value = 'idle' }, 3000)
-      } catch (e) {
+          proxy.$toast.success('Link Copied!',{
+            position: 'top-right',
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 2000,
+          })
+          manualShareCopyVisible.value = false
+          manualShareCopyText.value = ''
+
+          return
+        }
+        // Clean fallback UI
+        manualShareCopyText.value = invoiceUrl
+        manualShareCopyVisible.value = true
         shareLinkState.value = 'idle'
-        proxy.$toast.error('Could not generate link. Try again.', {
+        const message = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+          ? t('Automatic copy blocked. Tap Select, then tap and hold to copy.')
+          : t('Automatic copy blocked. Use the Select button below.')
+
+        proxy.$toast.error(`message`, {
           position: 'top-right',
           closeButton: false,
           hideProgressBar: true,
           timeout: 3000,
         })
+      }catch (e){
+        shareLinkState.value = 'idle'
+
+        proxy.$toast.error('Could not copy link. Try again.', {
+          position: 'top-right',
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        })
+
+        console.error('shareInvoice failed:', e)
+      } 
+    }
+
+    const selectManualLink = () => {
+      const el = manualShareCopyRef.value
+      if (!el) return
+
+      const input = el.$el ? el.$el.querySelector('input') : el
+
+      if (input) {
+        input.focus()
+
+        if (typeof input.select === 'function') {
+          input.select()
+        }
+
+        if (typeof input.setSelectionRange === 'function') {
+          input.setSelectionRange(0, input.value.length)
+        }
       }
+
+      const message = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        ? t('Link selected. Tap and hold to copy.')
+        : t('Link selected. Use Ctrl+C or Cmd+C.')
+
+      proxy.$toast.info(`message`, {
+        position: 'top-right',
+        closeButton: false,
+        hideProgressBar: true,
+        timeout: 2500,
+      })
     }
 
     const getInvoice = async () => {
@@ -469,6 +560,7 @@ export default {
           accountName.value = noteLines[5] || ''
         }
         noteSwitch.value = !!invoiceData.value.note
+        originalInvoiceSnapshot.value = normalizeInvoiceForComparison(invoiceData.value)
 
       } catch (error) {
         if (error.response?.data?.errors[0]?.status === '403') {
@@ -535,6 +627,38 @@ export default {
 
     loadInitialData()
 
+    const normalizeInvoiceForComparison = invoice => {
+      if (!invoice) return null
+
+      return {
+        number: invoice.number || '',
+        date: invoice.date || '',
+        dueDate: invoice.dueDate || '',
+        amount: String(invoice.amount ?? ''),
+        note: invoice.note || '',
+        companyId: invoice.company?.id || null,
+        customerId: invoice.customer?.id || null,
+        items: (invoice.items || []).map(item => ({
+          id: item.id || null,
+          name: item.name || '',
+          description: item.description || '',
+          quantity: String(item.quantity ?? ''),
+          price: String(item.price ?? ''),
+          amount: String(item.amount ?? ''),
+          productId: item.productId || null,
+        })),
+      }
+    }
+
+    const hasInvoiceChanges = computed(() => {
+      if (!invoiceData.value?.id || !originalInvoiceSnapshot.value) return false
+
+      const current = normalizeInvoiceForComparison(invoiceData.value)
+      const original = originalInvoiceSnapshot.value
+
+      return JSON.stringify(current) !== JSON.stringify(original)
+    })
+
     return {
       invoiceData,
       customers,
@@ -556,6 +680,12 @@ export default {
       showSendModal,
       shareLinkState,
       shareInvoice,
+      originalInvoiceSnapshot,
+      normalizeInvoiceForComparison,
+      hasInvoiceChanges,
+      selectManualLink,
+      manualShareCopyText,
+      manualShareCopyVisible
     }
   },
 }

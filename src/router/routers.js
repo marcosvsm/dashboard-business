@@ -26,6 +26,7 @@ import GoogleCallback from '@/components/views/pages/GoogleCallback.vue';
 import ClientList from '@/components/views/pages/client/ClientList.vue';
 import Client from '@/components/views/pages/client/Client.vue';
 import VerifyEmailGate from '@/components/views/pages/VerifyEmailGate.vue'
+import Plans from '@/components/views/pages/Plans.vue'
 
 const routes = [
     {
@@ -172,6 +173,12 @@ const routes = [
         path: '/client/:id',
         name: 'client',
         component: Client,
+        meta: { middleware: auth },
+    },
+    {
+        path: '/plans',
+        name: 'pricing',
+        component: Plans,
         meta: { middleware: auth },
     },
     {
