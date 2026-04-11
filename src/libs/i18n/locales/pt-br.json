@@ -506,5 +506,9 @@
   "Message": "Mensagem",
   "No email address found for this customer. Please enter one below.": "Nenhum endereço de email encontrado para este cliente. Por favor, insira um abaixo.",
   "Generating…": "Gerando…",
-  "Link Copied!": "Link Copiado!"
+  "Link Copied!": "Link Copiado!",
+  "Nothing to copy": "Nada para copiar",
+  "Message copied": "Mensagem copiada",
+  "Automatic copy blocked. Use Ctrl+C or Cmd+C.": "Cópia automática bloqueada. Use Ctrl+C ou Cmd+C.",
+  "Press Ctrl+C (Windows) or Cmd+C (Mac) to copy the message.": "Pressione Ctrl+C (Windows) ou Cmd+C (Mac) para copiar a mensagem."
 }

@@ -73,14 +73,29 @@
         </div>
       </div>
 
+      <div v-if="manualCopyVisible" class="mt-3">
+        <b-alert variant="warning" show class="mb-2">
+          {{t('Press Ctrl+C (Windows) or Cmd+C (Mac) to copy the message.')}}
+        </b-alert>
+
+        <b-form-textarea
+          ref="manualCopyRef"
+          v-model="manualCopyText"
+          rows="10"
+          readonly
+          style="font-family: monospace; font-size: 13px;"
+        />
+      </div>
+
     </div>
   </b-modal>
 </template>
 
 <script>
-import { ref, watch } from 'vue'
+import { ref, watch, getCurrentInstance, nextTick } from 'vue'
 import store from '@/store'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
+import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons'
 
 export default {
   name: 'SendInvoiceModal',
@@ -100,11 +115,13 @@ export default {
 
   setup(props, { emit }) {
     const { t } = useI18nUtils()
-
+    const { proxy } = getCurrentInstance()
     const loading = ref(false)
     const loadError = ref(null)
     const copying = ref(false)
-
+    const manualCopyVisible = ref(false)
+    const manualCopyText = ref('')
+    const manualCopyRef = ref(null)
     const recipientEmail = ref('')
     const subject = ref('')
     const body = ref('')
@@ -235,36 +252,76 @@ export default {
 
       window.location.href = `mailto:${encodeURIComponent(recipientEmail.value)}?subject=${encodedSubject}&body=${encodedBody}`
     }
+    async function reliableCopyText(text) {
+      if (!text || !String(text).trim()) return false
 
-    function copyMessage() {
-      const fullText = `Subject: ${subject.value}\n\n${body.value}`
+      if (
+        !window.isSecureContext ||
+        !navigator.clipboard ||
+        typeof navigator.clipboard.writeText !== 'function'
+      ) {
+        return false
+      }
 
-      // execCommand fallback works on HTTP/localhost and all Vue 2 target browsers
-      const ta = document.createElement('textarea')
-      ta.value = fullText
-      ta.setAttribute('readonly', '')
-      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;'
-      document.body.appendChild(ta)
-      ta.focus()
-      ta.select()
-
-      let success = false
       try {
-        success = document.execCommand('copy')
-      } catch (e) {
-        success = false
+        await navigator.clipboard.writeText(text)
+        return true
+      } catch (err) {
+        return false
       }
-      document.body.removeChild(ta)
+    }
 
-      // Try modern API as well if available (HTTPS / secure context)
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(fullText).catch(() => {})
+    async function openManualCopy(text) {
+      manualCopyText.value = text
+      manualCopyVisible.value = true
+
+      await nextTick()
+
+      const el = manualCopyRef.value
+      if (el) {
+        el.focus()
+        el.select()
+        el.setSelectionRange(0, text.length)
+      }
+    }
+
+    async function copyMessage() {
+      if (copying.value) return
+
+      const fullText = String(body.value || '')
+
+      if (!fullText.trim()) {
+        proxy.$toast.error('Nothing to copy', {
+          position: 'top-right',
+          timeout: 2000,
+          hideProgressBar: true,
+        })
+        return
       }
 
-      if (success || (navigator.clipboard && window.isSecureContext)) {
-        copying.value = true
-        setTimeout(() => { copying.value = false }, 2000)
+      copying.value = true
+
+      const success = await reliableCopyText(fullText)
+
+      if (success) {
+        proxy.$toast.success('Message copied', {
+          position: 'top-right',
+          icon: CheckCircleIcon,
+          timeout: 2000,
+          hideProgressBar: true,
+        })
+      } else {
+        await openManualCopy(fullText)
+
+        proxy.$toast.error('Automatic copy blocked. Use Ctrl+C or Cmd+C.', {
+          position: 'top-right',
+          icon: AlertCircleIcon,
+          timeout: 2500,
+          hideProgressBar: true,
+        })
       }
+
+      copying.value = false
     }
 
     return {
@@ -277,6 +334,9 @@ export default {
       body,
       openEmail,
       copyMessage,
+      manualCopyRef,
+      manualCopyText,
+      manualCopyVisible
     }
   },
 }
