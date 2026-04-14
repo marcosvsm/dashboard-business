@@ -510,5 +510,6 @@
   "Nothing to copy": "Nada para copiar",
   "Message copied": "Mensagem copiada",
   "Automatic copy blocked. Use Ctrl+C or Cmd+C.": "Cópia automática bloqueada. Use Ctrl+C ou Cmd+C.",
-  "Press Ctrl+C (Windows) or Cmd+C (Mac) to copy the message.": "Pressione Ctrl+C (Windows) ou Cmd+C (Mac) para copiar a mensagem."
+  "Press Ctrl+C (Windows) or Cmd+C (Mac) to copy the message.": "Pressione Ctrl+C (Windows) ou Cmd+C (Mac) para copiar a mensagem.",
+  "Automatic copy blocked. Copy this link manually.": "Cópia automática bloqueada. Copie este link manualmente."
 }

@@ -8,8 +8,8 @@ import { getCurrentInstance } from 'vue'
  * @param {String} key i18n key to use for translation
  */
 export const t = key => {
-  const vm = getCurrentInstance().proxy
-  return vm.$t ? vm.$t(key) : key
+  const vm = getCurrentInstance()?.proxy
+  return vm?.$t ? vm.$t(key) : key
 }
 
 export const _ = null
