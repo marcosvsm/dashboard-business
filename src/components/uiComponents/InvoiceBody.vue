@@ -551,9 +551,11 @@ export default {
     const popoverVisible = ref([]);
     const flatpickrRef = ref({}); // Initialize as an array for multiple instances
     const selectedDates = ref([]); // Initialize as an array to hold dates for each item
-        const datePickerConfig  = {
+    const datePickerConfig  = {
       dateFormat: 'd/m/Y',
       defaultDate: null,
+      disableMobile: true,
+      clickOpens: false,
       allowInput: true,
       onReady(dates, dateStr, instance) {
         const index = instance.element.dataset.index;
@@ -570,7 +572,7 @@ export default {
     const openPopover = (index) => {
       nextTick(() => {
         if (flatpickrRef.value[index]) {
-          flatpickrRef.value[index].open();
+          flatpickrRef.value[index].open(undefined, document.getElementById(`calendarIcon-${index}`));
         }
       });
     }

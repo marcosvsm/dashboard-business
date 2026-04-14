@@ -672,11 +672,72 @@ export default {
     const showSendModal = ref(false)
 
     const shareLinkState = ref('idle')
+    let shareLinkResetTimeout = null
+
+    const setShareLinkState = (state) => {
+      shareLinkState.value = state
+
+      if (shareLinkResetTimeout) {
+        clearTimeout(shareLinkResetTimeout)
+        shareLinkResetTimeout = null
+      }
+
+      if (state === 'copied') {
+        shareLinkResetTimeout = setTimeout(() => {
+          shareLinkState.value = 'idle'
+          shareLinkResetTimeout = null
+        }, 3000)
+      }
+    }
+
+    const copyTextToClipboard = async (text) => {
+      if (
+        window.isSecureContext &&
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText === 'function'
+      ) {
+        try {
+          await navigator.clipboard.writeText(text)
+          return true
+        } catch (error) {
+          console.warn('navigator.clipboard.writeText failed:', error)
+        }
+      }
+
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.top = '0'
+      textarea.style.left = '0'
+      textarea.style.opacity = '0'
+      textarea.style.pointerEvents = 'none'
+
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+
+      if (typeof textarea.setSelectionRange === 'function') {
+        textarea.setSelectionRange(0, textarea.value.length)
+      }
+
+      let copied = false
+
+      try {
+        copied = document.execCommand('copy')
+      } catch (error) {
+        console.warn('document.execCommand("copy") failed:', error)
+      }
+
+      document.body.removeChild(textarea)
+
+      return copied
+    }
 
     const shareInvoice = async () => {
       if (!invoiceData.value.id || shareLinkState.value === 'loading') return
 
-      shareLinkState.value = 'loading'
+      setShareLinkState('loading')
 
       try {
         const data = await store.dispatch('invoices/getSignedLink', invoiceData.value.id)
@@ -685,16 +746,11 @@ export default {
         if (!invoiceUrl){
           throw new Error('Missing invoice URL')
         }
-        const canAutoCopy =
-          window.isSecureContext &&
-          navigator.clipboard &&
-          typeof navigator.clipboard.writeText === 'function'
-        if (canAutoCopy){
-          await navigator.clipboard.writeText(invoiceUrl)
-          share.shareLinkState.value = 'copied'
-          setTimeout(() => {
-            shareLinkState.value = idle
-          }, 3000)
+
+        const copied = await copyTextToClipboard(invoiceUrl)
+
+        if (copied) {
+          setShareLinkState('copied')
 
           proxy.$toast.success('Link Copied!',{
             position: 'top-right',
@@ -707,22 +763,23 @@ export default {
 
           return
         }
-        // Clean fallback UI
+
+        // Fallback UI for browsers that block programmatic copy after async work.
         manualShareCopyText.value = invoiceUrl
         manualShareCopyVisible.value = true
-        shareLinkState.value = 'idle'
+        setShareLinkState('idle')
         const message = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
           ? t('Automatic copy blocked. Tap Select, then tap and hold to copy.')
           : t('Automatic copy blocked. Use the Select button below.')
 
-        proxy.$toast.error(`message`, {
+        proxy.$toast.info(message, {
           position: 'top-right',
           closeButton: false,
           hideProgressBar: true,
           timeout: 3000,
         })
       }catch (e){
-        shareLinkState.value = 'idle'
+        setShareLinkState('idle')
 
         proxy.$toast.error('Could not copy link. Try again.', {
           position: 'top-right',
@@ -757,7 +814,7 @@ export default {
         ? t('Link selected. Tap and hold to copy.')
         : t('Link selected. Use Ctrl+C or Cmd+C.')
 
-      proxy.$toast.info(`message`, {
+      proxy.$toast.info(message, {
         position: 'top-right',
         closeButton: false,
         hideProgressBar: true,
