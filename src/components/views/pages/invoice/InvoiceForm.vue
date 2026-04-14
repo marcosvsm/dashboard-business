@@ -117,14 +117,6 @@
               readonly
               class="mr-1"
             />
-
-            <b-button
-              size="sm"
-              variant="primary"
-              @click="selectManualLink"
-            >
-              {{ t('Select') }}
-            </b-button>
           </div>
         </div>
 
@@ -769,8 +761,8 @@ export default {
         manualShareCopyVisible.value = true
         setShareLinkState('idle')
         const message = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-          ? t('Automatic copy blocked. Tap Select, then tap and hold to copy.')
-          : t('Automatic copy blocked. Use the Select button below.')
+          ? t('Automatic copy blocked. Tap and hold to copy.')
+          : t('Automatic copy blocked. Copy this link manually.')
 
         proxy.$toast.info(message, {
           position: 'top-right',
@@ -790,36 +782,6 @@ export default {
 
         console.error('shareInvoice failed:', e)
       } 
-    }
-
-    const selectManualLink = () => {
-      const el = manualShareCopyRef.value
-      if (!el) return
-
-      const input = el.$el ? el.$el.querySelector('input') : el
-
-      if (input) {
-        input.focus()
-
-        if (typeof input.select === 'function') {
-          input.select()
-        }
-
-        if (typeof input.setSelectionRange === 'function') {
-          input.setSelectionRange(0, input.value.length)
-        }
-      }
-
-      const message = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        ? t('Link selected. Tap and hold to copy.')
-        : t('Link selected. Use Ctrl+C or Cmd+C.')
-
-      proxy.$toast.info(message, {
-        position: 'top-right',
-        closeButton: false,
-        hideProgressBar: true,
-        timeout: 2500,
-      })
     }
 
     return {
@@ -847,7 +809,6 @@ export default {
       showSendModal,
       shareLinkState,
       shareInvoice,
-      selectManualLink,
       manualShareCopyText,
       manualShareCopyVisible
     }
