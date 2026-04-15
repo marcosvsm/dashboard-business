@@ -210,9 +210,20 @@ export default {
 
     // Fires when selection changes (product selected or cleared)
     onInput(selected) {
+      // User hit X to clear the field
+      if (!selected) {
+        this.item.name = null
+        this.item.productId = null
+        this.item.description = ''
+        this.item.price = ''
+        this.item.quantity = ''
+        this.localValue = null
+        this.$emit('recalculate')
+        return
+      }
       // Guard: vue-select can emit {} in some taggable edge cases (e.g. createOption
       // returning null). Without this guard, label resolution on {} triggers the warning.
-      if (!selected || typeof selected !== 'object' || !selected.name) {
+      if (typeof selected !== 'object' || !selected.name) {
         return
       }
 
@@ -237,6 +248,17 @@ export default {
     async saveToCatalog() {
       if (!this.item.name || this.isSaving || this.isExistingProduct) return
 
+      if (!this.item.price || isNaN(this.item.price) || parseFloat(this.item.price) <= 0) {
+        this.$toast.warning(this.t('Please enter a price before saving to the catalog.'), {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3500,
+        })
+        return
+      }
+
       this.isSaving = true
       try {
         const payload = {
@@ -253,22 +275,24 @@ export default {
           },
         }
         await this.$store.dispatch('products/add', payload)
-        this.$bvToast.toast(`"${this.item.name}" saved to your product catalog.`, {
-          title: 'Product Saved',
-          variant: 'success',
-          autoHideDelay: 3000,
-          solid: true,
+        this.$toast.success(`"${this.item.name}" ${this.t('saved to your product catalog.')}`, {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
         })
       } catch (err) {
         if (err?.response?.status === 403) {
           // Backend confirms this plan cannot save — show upgrade modal
           this.showUpgradeModal = true
         } else {
-          this.$bvToast.toast('Could not save product. Please try again.', {
-            title: 'Error',
-            variant: 'danger',
-            autoHideDelay: 3000,
-            solid: true,
+          this.$toast.error(this.t('Could not save product. Please try again.'), {
+            position: 'top-right',
+            icon: false,
+            closeButton: false,
+            hideProgressBar: true,
+            timeout: 3000,
           })
         }
       } finally {
