@@ -247,9 +247,24 @@ body.mobile-more-sheet-open {
 
 @media (max-width: 991.98px) {
   .vertical-layout.mobile-quick-nav-enabled {
+    --mobile-quick-nav-clearance: calc(8rem + constant(safe-area-inset-bottom));
+    --mobile-quick-nav-clearance: calc(8rem + env(safe-area-inset-bottom));
+
     .app-content {
-      padding-bottom: calc(6.75rem + constant(safe-area-inset-bottom));
-      padding-bottom: calc(6.75rem + env(safe-area-inset-bottom));
+      padding-bottom: calc(2rem + constant(safe-area-inset-bottom));
+      padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+    }
+
+    .content-wrapper {
+      padding-bottom: 0.5rem;
+    }
+
+    .content-body::after {
+      content: '';
+      display: block;
+      width: 100%;
+      height: var(--mobile-quick-nav-clearance);
+      pointer-events: none;
     }
   }
 
