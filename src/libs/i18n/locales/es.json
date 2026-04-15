@@ -483,5 +483,15 @@
     "Nothing to copy": "Nada para copiar",
     "Message copied": "Mensaje copiado",
     "Automatic copy blocked. Use Ctrl+C or Cmd+C.": "Copia automática bloqueada. Usa Ctrl+C o Cmd+C.",
-    "Press Ctrl+C (Windows) or Cmd+C (Mac) to copy the message.": "Presiona Ctrl+C (Windows) o Cmd+C (Mac) para copiar el mensaje."
+    "Press Ctrl+C (Windows) or Cmd+C (Mac) to copy the message.": "Presiona Ctrl+C (Windows) o Cmd+C (Mac) para copiar el mensaje.",
+    "Tax Calculator": "Calculadora de Impuestos",
+    "Review GST and tax estimate tools": "Revisa las herramientas de estimación de GST e impuestos",
+    "Manage your business details": "Administra los detalles de tu negocio",
+    "Manage your clients": "Administra tus clientes",
+    "Update your account and preferences": "Actualiza tu cuenta y preferencias",
+    "Find guides and support resources": "Encuentra guías y recursos de soporte",
+    "See common answers and tips": "Ver respuestas comunes y consejos",
+    "Contact our support team": "Contacta a nuestro equipo de soporte",
+    "End your current session securely": "Finaliza tu sesión actual de forma segura",
+    "New Invoice": "Nueva Factura"
 }

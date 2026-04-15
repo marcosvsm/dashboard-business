@@ -570,11 +570,11 @@ export default {
     };
 
     const openPopover = (index) => {
-      nextTick(() => {
-        if (flatpickrRef.value[index]) {
-          flatpickrRef.value[index].open(undefined, document.getElementById(`calendarIcon-${index}`));
-        }
-      });
+      // Must be synchronous — iOS Safari breaks .open() called inside async callbacks
+      // because it loses the user gesture context required to show UI overlays.
+      if (flatpickrRef.value[index]) {
+        flatpickrRef.value[index].open();
+      }
     }
 
         const handleDateChange = (index, dates) => {
