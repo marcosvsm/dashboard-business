@@ -206,7 +206,7 @@ export default {
 .mobile-quick-nav__label {
   display: block;
   max-width: 100%;
-  font-size: 0.68rem;
+  font-size: 0.9rem;
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: 0.01em;
@@ -279,7 +279,7 @@ export default {
   }
 
   .mobile-quick-nav__label {
-    font-size: 0.64rem;
+    font-size: 0.8125rem;
   }
 
   .mobile-quick-nav__item--cta .mobile-quick-nav__label {

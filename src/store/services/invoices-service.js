@@ -7,6 +7,11 @@ const jsona = new Jsona();
 
 function list(include = []) {
   const options = {
+    withCredentials: true,
+    headers: {
+      'Accept': 'application/vnd.api+json',
+      'Content-Type': 'application/vnd.api+json',
+    },
     params: include.length ? { include: include.join(',') } : {},
     paramsSerializer: function (params) {
       return qs.stringify(params, { encode: false });
@@ -58,7 +63,6 @@ function add(payload) {
 
 function update(payload) {
   const invoiceId = payload.data.id;
-  
   const options = {
     withCredentials: true,
     headers: {
@@ -102,18 +106,11 @@ function suggest(params) {
     });
 }
 
-function getSignedLink(uuid) {
-  return axios.get(`${url}/invoices/${uuid}/signed-link`, {
-    withCredentials: true,
-  }).then(response => response.data.data);
-}
-
 export default {
   list,
   get,
   add,
   update,
   destroy,
-  suggest,
-  getSignedLink,
+  suggest
 };

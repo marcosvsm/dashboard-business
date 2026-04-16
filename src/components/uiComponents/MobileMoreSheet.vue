@@ -24,10 +24,11 @@
         <div class="mobile-more-sheet__header">
           <div>
             <p class="mobile-more-sheet__eyebrow">
-              {{ t('Simplify Business') }}
+              <span class="brand-dot"></span>
+              SIMPLIFY BUSINESS
             </p>
             <h5 class="mobile-more-sheet__title">
-              {{ t('More') }}
+              {{ greetingText }}
             </h5>
           </div>
 
@@ -107,6 +108,28 @@ export default {
       default: () => [],
     },
   },
+  computed:{
+    user() {
+      const user =  this.$store.getters['auth/authUser'] ??
+        this.$store.getters['users/user']
+      return user || {name: ''};
+    },
+    greeting() {
+      const hour = new Date().getHours()
+
+      if (hour < 12) return this.t('Good morning')
+      if (hour < 18) return this.t('Good afternoon')
+      return this.t('Good evening')
+    },
+    firstName() {
+      return this.user.name ? this.user.name.split(' ')[0] : ''
+    },
+    greetingText() {
+      return this.firstName
+        ? `${this.greeting}, ${this.firstName}`
+        : this.greeting
+    }, 
+  },
   watch: {
     value(isOpen) {
       if (isOpen) {
@@ -184,13 +207,14 @@ export default {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .mobile-more-sheet__eyebrow {
   margin-bottom: 0.2rem;
   color: #64748b;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
+  opacity: 0.7;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -200,7 +224,7 @@ export default {
   margin-bottom: 0;
   color: #0f172a;
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .mobile-more-sheet__close {
@@ -298,5 +322,14 @@ export default {
 .mobile-more-sheet-panel-leave-to {
   opacity: 0;
   transform: translateY(2rem);
+}
+
+.brand-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: #2563eb; // your brand color
 }
 </style>

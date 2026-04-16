@@ -200,26 +200,6 @@
                         class="flex-grow-1"
                         @recalculate="setAmount"
                       />
-                      <flat-pickr
-                        v-model="selectedDates[index]"
-                        :config="datePickerConfig"
-                        :data-index="index"
-                        class="invisible"
-                      />
-                      <b-button
-                        variant="flat-secondary"
-                        class="btn-icon ml-50 p-50"
-                        :id="`calendarIcon-${index}`"
-                        @click="openPopover(index)"
-                        v-b-tooltip.hover
-                        :title="t('Add date')"
-                      >
-                        <base-feather-icon
-                          size="18"
-                          icon="CalendarIcon"
-                          class="text-muted"
-                        />
-                      </b-button>
                     </div>
                 </b-col>
                 <b-col
@@ -276,7 +256,27 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg-none">{{t("Description")}}</label>
+                    <label class="d-inline d-lg">{{t("Description")}}</label>
+                    <flat-pickr
+                        v-model="selectedDates[index]"
+                        :config="datePickerConfig"
+                        :data-index="index"
+                        class="invisible"
+                      />
+                      <b-button
+                        variant="flat-secondary"
+                        class="btn-icon ml-50 p-50"
+                        :id="`calendarIcon-${index}`"
+                        @click="openPopover(index)"
+                        v-b-tooltip.hover
+                        :title="t('Add date')"
+                      >
+                        <base-feather-icon
+                          size="18"
+                          icon="CalendarIcon"
+                          class="text-muted"
+                        />
+                      </b-button>
                     <b-form-textarea
                     v-model="item.description"
                     class="mb-2 mb-lg-0"
