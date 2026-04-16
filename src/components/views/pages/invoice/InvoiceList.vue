@@ -125,33 +125,18 @@
         </div>
       </template>
     </div>    
-    <b-modal ref="modal" id="modal-footer-sm">
-      <template #modal-footer="{ok, cancel}">
-        <b-button size='sm' variant="success" @click="handleInvoiceDelete(invoice.id,true)">OK</b-button>
-        <b-button size="sm" variant="danger" @click="cancel()">
-          {{ t('Cancel') }}
-        </b-button>
-      </template> 
-      <div>
-        <h3>{{ t('If you delete the invoice you will lose all data') }}</h3>
-      </div>
-    </b-modal>
     <invoice-edit-sidebar :invoice="invoice"/>
   </section>
 </template>
 
 <script>
-import ValidationError from "@/components/uiComponents/ValidationError"
-import BaseFeatherIcon from '../../../uiComponents/BaseFeatherIcon.vue'
+import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { formatDateForDisplay, dateNow } from '@/libs/dateUtils.js'
-import SubMenu from '@/components/uiComponents/SubMenu.vue'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 
 export default {
-    components:{
-        ValidationError,
-        BaseFeatherIcon,
-        SubMenu,
+  components: {
+    BaseFeatherIcon,
   },
   data(){
       return {
@@ -207,22 +192,35 @@ export default {
         await this.$store.dispatch('invoices/destroy',InvoiceId);
         this.invoices = this.invoices.filter(invoice => invoice.id !== InvoiceId);
       } catch(e){
-        await this.$store.dispatch('alerts/showNotification', {
-                message: 'Something went wrong! Try again later or contact the support.',
-                type: 'error'
-        }); // Log the response data for debugging
+        await this.$toast.error('Something went wrong! Try again later or contact the support.', {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
       }
     },
-    async updateInvoiceStatus(invoice, status){
-      try{
+    async updateInvoiceStatus(invoice, status) {
+      try {
+        const payload = {
+          data: {
+            type: 'invoices',
+            id: invoice.id,
+            attributes: { status },
+          },
+        };
+        await this.$store.dispatch('invoices/update', payload);
         invoice.status = status;
-        await this.$store.dispatch('invoices/update', invoice);
-      } catch (e){
-         await this.$store.dispatch('alerts/showNotification', {
-                message: 'Something went wrong! Try again later or contact the support.',
-                type: 'error'
-        }); // Log the response data for debugging
-      }   
+      } catch (e) {
+        await this.$toast.error('Something went wrong! Try again later or contact the support.', {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
+        });
+      }
     },
      showMsgBoxTwo(id) {
         this.boxTwo = ''

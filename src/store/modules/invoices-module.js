@@ -23,47 +23,42 @@ const mutations = {
 };
 
 const actions = {
-  list({commit, dispatch}, params = []) {
+  list({ commit }, params = []) {
     return service.list(params)
-      .then(({list, meta}) => {
+      .then(({ list, meta }) => {
         commit('SET_LIST', list);
         commit('SET_META', meta);
       });
   },
 
-  get({commit, dispatch}, { id, include = [] }) {
+  get({ commit }, { id, include = [] }) {
     return service.get(id, include)
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
   },
 
-  add({commit, dispatch}, params) {
+  add({ commit }, params) {
     return service.add(params)
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
   },
 
-  update({commit, dispatch}, params) {
+  update({ commit }, params) {
     return service.update(params)
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
   },
 
-  destroy({commit, dispatch}, params) {
+  destroy(_ctx, params) {
     return service.destroy(params);
   },
 
-  suggest({commit, dispatch}, params = []) {
+  suggest({ commit }, params = []) {
     return service.suggest(params)
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
   },
-
-  getSignedLink({commit}, uuid) {
-    return service.getSignedLink(uuid);
-  },
-
 };
 
 const getters = {
   list: state => state.list,
-  listTotal: state => state.meta.page.total,
+  listTotal: state => state.meta?.page?.total ?? 0,
   invoice: state => state.invoice,
   url: state => state.url
 };

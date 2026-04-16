@@ -192,13 +192,23 @@ export default {
     },
     async updateInvoiceStatus(invoice, status) {
       try {
+        const payload = {
+          data: {
+            type: 'invoices',
+            id: invoice.id,
+            attributes: { status },
+          },
+        };
+        await this.$store.dispatch('invoices/update', payload);
         invoice.status = status;
-        await this.$store.dispatch('invoices/update', invoice);
         this.fetchInvoices('update');
       } catch (e) {
-        await this.$store.dispatch('alerts/showNotification', {
-          message: 'Something went wrong! Try again later or contact the support.',
-          type: 'error'
+        await this.$toast.error('Something went wrong! Try again later or contact the support.', {
+          position: 'top-right',
+          icon: false,
+          closeButton: false,
+          hideProgressBar: true,
+          timeout: 3000,
         });
       }
     },
