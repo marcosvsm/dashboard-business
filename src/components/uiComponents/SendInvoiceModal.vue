@@ -67,9 +67,23 @@
             <b-spinner v-if="copying" small class="mr-1" />
             {{ copying ? t('Copied!') : t('Copy Message') }}
           </b-button>
-          <b-button variant="primary" @click="openEmail" :disabled="!recipientEmail">
-            {{ t('Open Email') }}
-          </b-button>
+          <b-dropdown
+            split
+            variant="primary"
+            :text="providerLabel"
+            :disabled="!recipientEmail"
+            right
+            @click="openEmail"
+          >
+            <b-dropdown-item
+              v-for="opt in providerOptions"
+              :key="opt.value"
+              :active="emailProvider === opt.value"
+              @click="selectProvider(opt.value)"
+            >
+              {{ opt.label }}
+            </b-dropdown-item>
+          </b-dropdown>
         </div>
       </div>
 
@@ -92,7 +106,7 @@
 </template>
 
 <script>
-import { ref, watch, getCurrentInstance, nextTick } from 'vue'
+import { ref, computed, watch, getCurrentInstance, nextTick } from 'vue'
 import store from '@/store'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons'
@@ -126,6 +140,36 @@ export default {
     const subject = ref('')
     const body = ref('')
 
+    const EMAIL_PROVIDER_STORAGE_KEY = 'send_invoice_email_provider'
+    const providerOptions = [
+      { value: 'default', label: t('Default Mail App') },
+      { value: 'gmail', label: 'Gmail' },
+      { value: 'outlook', label: 'Outlook' },
+      { value: 'yahoo', label: 'Yahoo Mail' },
+    ]
+
+    function readStoredProvider() {
+      try {
+        const stored = localStorage.getItem(EMAIL_PROVIDER_STORAGE_KEY)
+        if (stored && providerOptions.some(o => o.value === stored)) return stored
+      } catch (e) { /* localStorage unavailable */ }
+      return 'default'
+    }
+
+    const emailProvider = ref(readStoredProvider())
+
+    const providerLabel = computed(() => {
+      const opt = providerOptions.find(o => o.value === emailProvider.value)
+      return opt ? `${t('Open in')} ${opt.label}` : t('Open Email')
+    })
+
+    function selectProvider(value) {
+      emailProvider.value = value
+      try {
+        localStorage.setItem(EMAIL_PROVIDER_STORAGE_KEY, value)
+      } catch (e) { /* localStorage unavailable */ }
+    }
+
     // ----------------------------------------------------------------
     // Template helpers
     // ----------------------------------------------------------------
@@ -149,13 +193,38 @@ export default {
 
     function buildPaymentDetails(inv) {
       const pd = inv.company && inv.company.paymentDetail
-      if (pd && pd.payid) {
-        return `PayID: ${pd.payid}\nReference: ${inv.number || inv.ref || ''}`
+      if (!pd) {
+        // Legacy invoices that embedded the bank account inside the note.
+        if (inv.note && inv.note.includes('BSB')) return inv.note
+        return ''
       }
-      // Bank account details live in invoice.note when that method is selected
-      if (inv.note && inv.note.includes('BSB')) {
-        return inv.note
+
+      const ref = inv.number || inv.ref || ''
+      const lines = []
+
+      const showPayid = pd.show_payid !== false && pd.payid
+      if (showPayid) {
+        lines.push(`PayID: ${pd.payid}`)
+        lines.push(`Reference: ${ref}`)
       }
+
+      const showBank = pd.show_bank_details !== false
+        && pd.account_name && pd.bsb && pd.account_number
+      if (showBank) {
+        if (lines.length) lines.push('')
+        const digits = String(pd.bsb).replace(/\D/g, '')
+        const formattedBsb = digits.length === 6 ? `${digits.slice(0, 3)}-${digits.slice(3)}` : pd.bsb
+        lines.push('Bank Account:')
+        lines.push(pd.account_name)
+        lines.push(`BSB: ${formattedBsb}`)
+        lines.push(`Account: ${pd.account_number}`)
+        lines.push(`Reference: ${ref}`)
+      }
+
+      if (lines.length) return lines.join('\n')
+
+      // Final fallback for legacy notes
+      if (inv.note && inv.note.includes('BSB')) return inv.note
       return ''
     }
 
@@ -245,12 +314,30 @@ export default {
     function openEmail() {
       if (!recipientEmail.value) return
 
-      // mailto: has practical body limits (~2000 chars in most clients)
-      // We truncate gracefully rather than silently break
+      const to = recipientEmail.value
+      const encodedTo = encodeURIComponent(to)
       const encodedSubject = encodeURIComponent(subject.value)
-      const encodedBody = encodeURIComponent(body.value.slice(0, 1900))
 
-      window.location.href = `mailto:${encodeURIComponent(recipientEmail.value)}?subject=${encodedSubject}&body=${encodedBody}`
+      if (emailProvider.value === 'default') {
+        // mailto: has practical body limits (~2000 chars in most clients)
+        const encodedBody = encodeURIComponent(body.value.slice(0, 1900))
+        window.location.href = `mailto:${encodedTo}?subject=${encodedSubject}&body=${encodedBody}`
+        return
+      }
+
+      // Webmail clients accept longer bodies than mailto:
+      const encodedBody = encodeURIComponent(body.value)
+      let url = ''
+
+      if (emailProvider.value === 'gmail') {
+        url = `https://mail.google.com/mail/u/0/?view=cm&to=${encodedTo}&su=${encodedSubject}&body=${encodedBody}`
+      } else if (emailProvider.value === 'outlook') {
+        url = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodedTo}&subject=${encodedSubject}&body=${encodedBody}`
+      } else if (emailProvider.value === 'yahoo') {
+        url = `https://compose.mail.yahoo.com/?to=${encodedTo}&subject=${encodedSubject}&body=${encodedBody}`
+      }
+
+      if (url) window.open(url, '_blank', 'noopener,noreferrer')
     }
     async function reliableCopyText(text) {
       if (!text || !String(text).trim()) return false
@@ -336,7 +423,11 @@ export default {
       copyMessage,
       manualCopyRef,
       manualCopyText,
-      manualCopyVisible
+      manualCopyVisible,
+      emailProvider,
+      providerOptions,
+      providerLabel,
+      selectProvider,
     }
   },
 }

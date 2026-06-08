@@ -44,6 +44,7 @@ function updatePreferences(attrs = {}) {
   if (attrs.language          !== undefined) attributes.language          = attrs.language
   if (attrs.tutorialCompleted !== undefined) attributes.tutorialCompleted = attrs.tutorialCompleted
   if (attrs.tutorialOptedOut  !== undefined) attributes.tutorialOptedOut  = attrs.tutorialOptedOut
+  if (attrs.lastSeenRelease   !== undefined) attributes.lastSeenRelease   = attrs.lastSeenRelease
 
   return api.patch(`${url}/me/preferences`, {
     data: { type: 'user-preferences', attributes },

@@ -129,15 +129,16 @@ export default {
               throw err;
             }
           },
-        async forgotPassword(context, email) {
+        async forgotPassword(_context, email) {
+            // Never throw and never expose backend outcome — UI must render the
+            // same neutral message regardless of whether the email exists or
+            // delivery failed. Anything observable here is an enumeration leak.
             try {
-                const response = await api.post('/password-forgot', {
-                    data: { attributes: { email, redirect_url: process.env.VUE_APP_BASE_URL + '/password-forgot' } }
+                await api.post('/password-forgot', {
+                    data: { attributes: { email } },
                 });
-                return response.data;
             } catch (error) {
-                console.error('Forgot password failed:', error);
-                throw error;
+                console.error('Forgot password request failed:', error);
             }
         },
         async resetPassword(context, payload) {

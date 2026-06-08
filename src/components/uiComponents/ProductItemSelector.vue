@@ -328,4 +328,40 @@ export default {
 .product-item-selector {
   width: 100%;
 }
+
+/* Compact inline-input feel — match the qty/price input heights so the
+   product selector doesn't read as a tall textarea-style field. */
+::v-deep .v-select .vs__dropdown-toggle {
+  min-height: 38px;
+  padding: 4px 0;
+  background-color: #fff;
+}
+::v-deep .v-select .vs__selected-options {
+  padding: 0 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+::v-deep .v-select .vs__selected {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+::v-deep .v-select .vs__search,
+::v-deep .v-select .vs__search:focus {
+  margin: 0;
+  padding: 0 0 0 2px;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+::v-deep .v-select .vs__actions {
+  padding: 0 6px;
+}
+
+.dark-layout {
+  ::v-deep .v-select .vs__dropdown-toggle { background-color: transparent; }
+}
 </style>

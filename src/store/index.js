@@ -16,6 +16,7 @@ import paymentMethods from "./modules/paymentMethods-module"
 import waitlists from "./modules/waitlists-module"
 import tutorial from "./modules/tutorial-module";
 import products from "./modules/products-module";
+import tax from "./modules/tax-module";
 
 Vue.use(Vuex);
 
@@ -35,5 +36,6 @@ export default new Vuex.Store({
         waitlists,
         tutorial,
         products,
+        tax,
     }
 });

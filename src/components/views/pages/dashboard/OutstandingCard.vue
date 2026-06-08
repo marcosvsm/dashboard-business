@@ -6,7 +6,8 @@
           <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
             {{ t('Outstanding') }}
           </h5>
-          <span class="h2 font-weight-bold mb-0">{{ currencyFormatter.format(getPendingAmount) }}</span>
+          <span v-if="hideAmount" class="h2 font-weight-bold mb-0 tpc-hero-value--masked">••••••</span>
+          <span v-else class="h2 font-weight-bold mb-0">{{ currencyFormatter.format(pendingAmount) }}</span>
         </b-col>
         <b-col cols="auto">
           <div class="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
@@ -15,10 +16,11 @@
         </b-col>
       </b-row>
       <div class="d-flex justify-content-between mt-2">
-          <span class="font-weight-bold"> {{ t('Overdue') }} ({{ getOverdueCount === 1 ? getOverdueCount +' '+t('Invoice') : getOverdueCount +' '+ t('Invoices')}})</span>
-          <span>{{ currencyFormatter.format(getOverdueAmount) }}</span>
-        </div>
-        <b-progress :value="getOverdueAmount" :max="getPendingAmount" variant="danger" class="mt-1" />
+        <span> {{ t('Overdue') }} ({{hideAmount ? '••••••' : overdueCount === 1 ? overdueCount +' '+t('Invoice') : overdueCount +' '+ t('Invoices')}})</span>
+        <span v-if="hideAmount" class="tpc-hero-value--masked">••••••</span>
+        <span v-else class="overdue-amount">{{ currencyFormatter.format(overdueAmount) }}</span>
+      </div>
+      <b-progress :value="overdueAmount" :max="pendingAmount || 1" variant="danger" class="mt-1" />
     </b-card-body>
   </b-card>
 </template>
@@ -29,35 +31,26 @@ import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue';
 export default {
   components: { BaseFeatherIcon },
   props: {
-    invoices: { type: Array, required: true },
+    summary: { type: Object, required: true },
     t: { type: Function, required: true },
     currencyFormatter: { required: true },
+    hideAmount: {type: Boolean, rerquired: true },
   },
   computed: {
-    getPendingAmount() {
-      const total = this.invoices.reduce((sum, inv) => inv.status === 0 ? sum + parseFloat(inv.amount) : sum, 0);
-      return total;
+    pendingAmount() {
+      return this.summary?.pendingAmount || 0;
     },
-    getOverdueCount() {
-      const today = new Date();
-      return this.invoices.filter(inv => inv.status === 0 && new Date(inv.due_date) < today).length;
+    overdueCount() {
+      return this.summary?.overdueCount || 0;
     },
-    getOverdueAmount() {
-      const today = new Date();
-      return this.invoices.reduce((sum, inv) => {
-        if (inv.status === 0 && new Date(inv.due_date) < today) {
-          return sum + parseFloat(inv.amount);
-        }
-        return sum;
-      }, 0);
+    overdueAmount() {
+      return this.summary?.overdueAmount || 0;
     },
   },
 }
 </script>
 
 <style scoped>
-/* Styles specific to this card */
-/* Add global dashboard styles here if needed */
 .card{
   height:100%;
 }
@@ -77,21 +70,32 @@ export default {
   justify-content: center;
   width: 50px;
   height: 50px;
-  transition: width 0.2s ease, height 0.2s ease; /* Smooth resizing */
+  transition: width 0.2s ease, height 0.2s ease;
 }
-/* Reduce icon size and adjust layout on smaller screens */
 @media (max-width: 820px) {
   .icon-shape {
     width: 40px;
     height: 40px;
   }
   .icon-shape .feather {
-    width: 24px; /* Reduce icon size */
+    width: 24px;
     height: 24px;
   }
 }
 
 .bg-gradient-orange {
   background: linear-gradient(87deg, #fb6340 0, #fbb140 100%);
+}
+
+.tpc-hero-value--masked {
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+}
+.h2{
+  color:rgba(38, 43, 67, 0.9)!important;
+}
+.overdue-amount{
+  font-weight:500;
+  color:rgba(38, 43, 67, 0.9);
 }
 </style>

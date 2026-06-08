@@ -182,8 +182,29 @@ export default {
     },
   },
   methods: {
+    async confirmLogout() {
+      try {
+        return await this.$bvModal.msgBoxConfirm(
+          this.t('Are you sure you want to log out?'),
+          {
+            title: this.t('Confirm logout'),
+            okTitle: this.t('Logout'),
+            cancelTitle: this.t('Cancel'),
+            okVariant: 'danger',
+            cancelVariant: 'outline-secondary',
+            centered: true,
+            noCloseOnBackdrop: true,
+          }
+        )
+      } catch (error) {
+        return false
+      }
+    },
     async handleMobileMoreLogout() {
       this.closeMobileMoreSheet()
+      const confirmed = await this.confirmLogout()
+      if (!confirmed) return
+
       await this.$store.dispatch('auth/logout')
       this.$router.push({ name: 'login' }).catch(() => {})
     },

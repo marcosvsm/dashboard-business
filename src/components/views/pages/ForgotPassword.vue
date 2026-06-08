@@ -12,7 +12,7 @@
                   alt="logo"
                 />
                 </span>
-                <form @submit.prevent="resetPassword">
+                <form v-if="!submitted" @submit.prevent="resetPassword">
                     <h3>Reset Password</h3>
                     <p>Enter your email address and we'll send you a link to reset your password.</p>
                     <b-form-group label-align-sm="center">
@@ -20,18 +20,18 @@
                             <b-input-group-prepend is-text>
                                 <span><b-icon-envelope></b-icon-envelope></span>
                             </b-input-group-prepend>
-                                <b-input type="email" v-model="email" placeholder="Email" required></b-input>
+                                <b-input type="email" v-model="email" placeholder="Email" required :disabled="loading"></b-input>
                         </b-input-group>
                         <div class="d-flex" style="justify-content: space-between!important;">
                             <span></span>
                             <a href="/login"><small>Sign in</small></a>
                         </div>
                         <div class="text-center mt-3">
-                            <b-button 
-                              variant="primary" 
+                            <b-button
+                              variant="primary"
                               size="sm"
                               type="submit"
-                              :disabled="loading"
+                              :disabled="loading || !email"
                             >
                             <span v-if="loading" class="spinner-border spinner-border-sm"></span>
                               Reset Password
@@ -39,6 +39,11 @@
                         </div>
                     </b-form-group>
                 </form>
+                <div v-else class="text-center">
+                    <h3>Check your inbox</h3>
+                    <p>If an account exists for that email address, we've sent a password reset link. The link is valid for a limited time.</p>
+                    <a href="/login"><small>Back to sign in</small></a>
+                </div>
             </div>
         </div> 
    </div>
@@ -48,47 +53,35 @@
 import formMixin from "@/mixins/form-mixin"
 import ValidationError from "@/components/uiComponents/ValidationError.vue"
 import { $themeConfig } from '@/themeConfig'
-import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
+
 export default {
   mixins: [formMixin],
-  components:{
-      ValidationError,
+  components: {
+    ValidationError,
   },
-  data(){
+  data() {
     const { appLogoImage } = $themeConfig.app
     return {
       email: '',
       appLogoImage,
-      loading: false
+      loading: false,
+      submitted: false,
     }
   },
-  methods:{
-    async resetPassword(){
-      try{
-        this.loading = true;
-        await this.$store.dispatch("auth/forgotPassword", this.email);
-        this.$toast.success(`Password reset link has been sent to your email.`,
-          {
-          position: "top-right",
-          icon: CheckCircleIcon,
-          closeButton: false,
-          hideProgressBar: true,
-          timeout: 2000
-        });
-      } catch (e){
-        this.$toast.error('Something went wrong!', {
-          position: 'top-right',
-          icon: false,
-          closeButton: false,
-          hideProgressBar: true,
-          timeout: 3000,
-        });
-      }finally{
-        this.loading = false;
-        this.email = '';
+  methods: {
+    async resetPassword() {
+      // Always render the same neutral confirmation regardless of outcome.
+      // Distinguishing success vs. failure in the UI re-introduces the
+      // enumeration leak that the backend now hides.
+      this.loading = true
+      try {
+        await this.$store.dispatch('auth/forgotPassword', this.email)
+      } finally {
+        this.loading = false
+        this.submitted = true
       }
     },
-  }, 
+  },
 }
 </script>
 <style scoped>

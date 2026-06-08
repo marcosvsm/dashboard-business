@@ -1,11 +1,9 @@
 const MOBILE_DOCK_BREAKPOINT = 991
-const MOBILE_DOCK_SCROLL_THRESHOLD = 80
 const MOBILE_HEADER_TOP_THRESHOLD = 40
 const MOBILE_HEADER_SCROLL_TOLERANCE = 12
 
 export {
   MOBILE_DOCK_BREAKPOINT,
-  MOBILE_DOCK_SCROLL_THRESHOLD,
   MOBILE_HEADER_TOP_THRESHOLD,
   MOBILE_HEADER_SCROLL_TOLERANCE,
 }
@@ -13,8 +11,7 @@ export {
 export default {
   data() {
     return {
-      mobileDockScrollY: 0,
-      mobileDockLastScrollY: 0,
+      mobileHeaderLastScrollY: 0,
       isMobileMoreSheetOpen: false,
       isHeaderVisible: true,
     }
@@ -36,23 +33,23 @@ export default {
       return this.isMobileDockViewport && this.isProtectedLayoutRoute
     },
     isMobileDockVisible() {
-      return this.canRenderMobileDock && this.mobileDockScrollY > MOBILE_DOCK_SCROLL_THRESHOLD
+      return this.canRenderMobileDock
     },
     isCompactMobileHeader() {
-      return this.canRenderMobileDock && (this.isMobileDockVisible || this.isMobileMoreSheetOpen)
+      return false
     },
   },
   watch: {
     $route() {
       this.closeMobileMoreSheet()
-      this.syncMobileDockState()
+      this.syncMobileHeaderState()
     },
     canRenderMobileDock(value) {
       if (!value) {
         this.closeMobileMoreSheet()
         this.isHeaderVisible = true
       }
-      this.syncMobileDockState()
+      this.syncMobileHeaderState()
     },
     isMobileMoreSheetOpen: {
       immediate: true,
@@ -66,32 +63,31 @@ export default {
   mounted() {
     if (typeof window === 'undefined') return
 
-    this.syncMobileDockState()
-    window.addEventListener('scroll', this.handleMobileDockScroll, { passive: true })
+    this.syncMobileHeaderState()
+    window.addEventListener('scroll', this.handleMobileHeaderScroll, { passive: true })
   },
   beforeDestroy() {
     if (typeof window !== 'undefined') {
-      window.removeEventListener('scroll', this.handleMobileDockScroll)
+      window.removeEventListener('scroll', this.handleMobileHeaderScroll)
     }
     if (typeof document !== 'undefined') {
       document.body.classList.remove('mobile-more-sheet-open')
     }
   },
   methods: {
-    handleMobileDockScroll() {
+    handleMobileHeaderScroll() {
       const currentScrollY = window.pageYOffset
         || document.documentElement.scrollTop
         || document.body.scrollTop
         || 0
 
       if (!this.canRenderMobileDock) {
-        this.mobileDockScrollY = 0
-        this.mobileDockLastScrollY = currentScrollY
+        this.mobileHeaderLastScrollY = currentScrollY
         this.isHeaderVisible = true
         return
       }
 
-      const scrollDelta = currentScrollY - this.mobileDockLastScrollY
+      const scrollDelta = currentScrollY - this.mobileHeaderLastScrollY
 
       if (currentScrollY <= MOBILE_HEADER_TOP_THRESHOLD) {
         this.isHeaderVisible = true
@@ -101,11 +97,10 @@ export default {
         this.isHeaderVisible = true
       }
 
-      this.mobileDockScrollY = currentScrollY
-      this.mobileDockLastScrollY = currentScrollY
+      this.mobileHeaderLastScrollY = currentScrollY
     },
-    syncMobileDockState() {
-      this.handleMobileDockScroll()
+    syncMobileHeaderState() {
+      this.handleMobileHeaderScroll()
     },
     openMobileMoreSheet() {
       if (!this.canRenderMobileDock) return
