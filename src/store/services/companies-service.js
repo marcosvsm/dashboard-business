@@ -80,10 +80,22 @@ function destroy(id) {
   return axios.delete(`/companies/${id}`, options);
 }
 
+/**
+ * Perform a stateless ABN lookup via the backend (Phase 2 endpoint).
+ * Returns normalized payload — no persistence happens server-side.
+ * Throws on validation/checksum/network/ABR failures; callers should map
+ * the response's `error` field to a user-friendly message.
+ */
+function lookupAbn(abn) {
+  return axios.post('/abn-lookup', { abn })
+    .then(response => response.data);
+}
+
 export default {
   list,
   get,
   add,
   update,
-  destroy
+  destroy,
+  lookupAbn,
 };

@@ -77,8 +77,18 @@
 
         <!-- Action Buttons -->
         <b-card>
+        <!-- Button: Print -->
+          <b-button
+            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
+            variant="primary"
+            block
+            @click="saveInvoice()"
+            :disabled="isSubmitting || !isDirty"
+          >
+            {{ t('Save') }}
+          </b-button>
           <!-- Button: DOwnload -->
-          <pdf :invoiceData="invoiceData" :paymentDetails="paymentDetails" :selectedPaymentMethod="selectedPaymentMethod" :validateForm="validateForm" />
+          <pdf :invoiceData="invoiceData" :paymentDetails="paymentDetails" :selectedPaymentMethods="effectivePaymentMethods" :validateForm="validateForm" />
         <!--  
           <b-button
             v-ripple.400="'rgba(113, 102, 240, 0.15)'"
@@ -90,16 +100,7 @@
           </b-button>
           -->
 
-          <!-- Button: Print -->
-          <b-button
-            v-ripple.400="'rgba(113, 102, 240, 0.15)'"
-            variant="outline-primary"
-            block
-            @click="saveInvoice()"
-            :disabled="isSubmitting || !isDirty"
-          >
-            {{ t('Save') }}
-          </b-button>
+          
         </b-card>
 
         <div 
@@ -181,32 +182,42 @@
             </div>
           </div>
           <div v-if="selectedPaymentMethod === 'Bank Account' && paymentDetails" class="mb-2">
-            <label for="bankName">{{ t('Bank Name') }}</label>
-            <b-input 
-              id="bankName" 
-              v-model="bankName" 
-              type="text" 
-            />
-            <label for="bsb">BSB</label>
-            <b-input
-              id="bsb" 
-              type="text" 
-              placeholder="000-000"
-              v-model="bsb" 
-            />
-            <label for="account">{{ t('Account') }}</label>
-            <b-input
-              id="account" 
-              type="text" 
-              placeholder="0000 0000"
-              v-model="account"
-            />
-            <label for="accountName">{{ t('Account Name') }}</label>
-            <b-input
-              id="accountName" 
-              type="text"
-              v-model="accountName"
-            />
+            <template v-if="hasSavedBankAccount">
+              <label for="accountName">{{ t('Account Name') }}</label>
+              <b-input
+                id="accountName"
+                :value="invoiceData.company.paymentDetail.account_name"
+                type="text"
+                readonly
+                v-b-tooltip.hover
+                :title="t('To update bank account details, please visit My Business > Business page')"
+              />
+              <label for="bsb">BSB</label>
+              <b-input
+                id="bsb"
+                :value="formattedBsb"
+                type="text"
+                readonly
+                v-b-tooltip.hover
+                :title="t('To update bank account details, please visit My Business > Business page')"
+              />
+              <label for="account">{{ t('Account number') }}</label>
+              <b-input
+                id="account"
+                :value="invoiceData.company.paymentDetail.account_number"
+                type="text"
+                readonly
+                v-b-tooltip.hover
+                :title="t('To update bank account details, please visit My Business > Business page')"
+              />
+            </template>
+
+            <div v-else-if="invoiceData.company.id" class="payid-setup-section">
+              <span class="btn btn-sm" v-b-toggle.sidebar-payment-method>
+                <base-feather-icon icon="PlusCircleIcon" size="22" color="#4caf50" />
+                {{ t('Add bank account details') }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -218,7 +229,7 @@
 </template>
 
 <script>
-import { ref, getCurrentInstance, watch } from 'vue'
+import { ref, computed, getCurrentInstance, watch } from 'vue'
 import store from '@/store'
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { CheckCircleIcon, AlertCircleIcon } from 'vue-feather-icons';
@@ -259,6 +270,12 @@ export default {
         isValid = false
       }
 
+      // Validate due date
+      if (!this.invoiceData.dueDate) {
+        errors.dueDate = 'Due date is required'
+        isValid = false
+      }
+
       // Validate items
       let hasValidItem = false
       if (!this.invoiceData.items || !this.invoiceData.items.length) {
@@ -293,6 +310,8 @@ export default {
           if (firstErrorKey) {
             if (firstErrorKey === 'company') {
               document.querySelector('#companies-id')?.scrollIntoView({ behavior: 'smooth' })
+            } else if (firstErrorKey === 'dueDate') {
+              document.querySelector('.invoice-number-date')?.scrollIntoView({ behavior: 'smooth' })
             } else if (firstErrorKey.startsWith('quantity-') || firstErrorKey.startsWith('price-')) {
               const index = firstErrorKey.split('-')[1]
               document.querySelector(`.repeater-form .row:nth-child(${parseInt(index) + 1})`)?.scrollIntoView({ behavior: 'smooth' })
@@ -319,6 +338,7 @@ export default {
               due_date: this.invoiceData.dueDate,
               amount: this.invoiceData.amount,
               ref: this.invoiceData.number,
+              status: '0'
             },
             relationships:{
               company: {
@@ -497,16 +517,32 @@ export default {
     const paymentDetails = ref(true);
     const noteSwitch = ref(false);
     const { t } = useI18nUtils()
-    const bankName = ref('');
-    const bsb = ref('');
-    const account = ref('');
-    const accountName = ref('');
     const selectedPaymentMethod = ref('PAYID')
-    watch([bankName, bsb, account, accountName], ([newBankName, newBsb, newAccount, newAccountName]) => {
-        invoiceData.value.note = `Account Details:\n\n${newBankName}\nBSB: ${newBsb}\nAccount: ${newAccount}\n${newAccountName}`;
-        if(!newBankName && !newBsb && !newAccount && !newAccountName)
-          invoiceData.value.note = ''
-    });
+
+    // Bridge the legacy single-string selector to the new Pdf.vue contract,
+    // which expects an array of 'payid' / 'bank'. Empty when the master
+    // "Payment details" switch is off.
+    const effectivePaymentMethods = computed(() => {
+      if (!paymentDetails.value) return []
+      if (selectedPaymentMethod.value === 'PAYID') return ['payid']
+      if (selectedPaymentMethod.value === 'Bank Account') return ['bank']
+      return []
+    })
+
+    // Whether the selected company has full bank-account details saved.
+    const hasSavedBankAccount = computed(() => {
+      const pd = invoiceData.value.company && invoiceData.value.company.paymentDetail
+      return Boolean(pd && pd.account_name && pd.bsb && pd.account_number)
+    })
+
+    // Display BSB as 000-000 even when the backend gave us the raw 6 digits.
+    const formattedBsb = computed(() => {
+      const pd = invoiceData.value.company && invoiceData.value.company.paymentDetail
+      const raw = (pd && pd.bsb) || ''
+      const digits = String(raw).replace(/\D/g, '')
+      return digits.length === 6 ? `${digits.slice(0, 3)}-${digits.slice(3)}` : raw
+    })
+
     const newPayID = ref('');
 
     const handlePaymentAdded = (payment) =>{
@@ -540,18 +576,17 @@ export default {
       paymentMethods,
       companies,
       paymentDetails,
-      bankName,
-      bsb,
-      account,
-      accountName,
+      hasSavedBankAccount,
+      formattedBsb,
       t,
       addCustomerToInvoice,
       noteSwitch,
       newPayID,
       handlePaymentAdded,
       selectedPaymentMethod,
+      effectivePaymentMethods,
       isSubmitting,
-      isSuggesting, // Expose to template
+      isSuggesting,
       formErrors,
       isDirty,
       takeSnapshot,

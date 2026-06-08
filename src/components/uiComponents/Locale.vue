@@ -24,33 +24,44 @@
       v-model="showLanguageModal"
       centered
       hide-header-close
-      no-close-on-backdrop
       no-close-on-esc
       size="sm"
-      title="Select Language"
-      ok-only
-      ok-title="Close"
-      @ok="onModalClose"
+      hide-footer
+      modal-class="language-modal"
     >
-      <div class="language-modal-content py-3">
-        <b-button
+      <template #modal-header>
+        <div class="language-modal-header w-100 text-center">
+          <h4 class="mb-25">Select your language</h4>
+          <p class="text-muted mb-0 small">Choose the language you understand best</p>
+        </div>
+      </template>
+      <div class="language-modal-content py-2">
+        <button
           v-for="localeObj in locales"
           :key="localeObj.locale"
-          variant="outline-secondary"
-          block
-          class="mb-3 language-btn"
+          type="button"
+          class="language-btn"
           :class="{ 'active-language': $i18n.locale === localeObj.locale }"
           @click="changeLocale(localeObj.locale)"
         >
           <b-img
             :src="localeObj.img"
-            height="18px"
-            width="28px"
-            class="mr-3"
+            height="24px"
+            width="36px"
+            class="language-flag mr-1"
             :alt="localeObj.name"
           />
-          <span class="font-weight-bold">{{ localeObj.name }}</span>
-        </b-button>
+          <div class="language-label text-left flex-grow-1">
+            <div class="native-name">{{ localeObj.native }}</div>
+            <div class="text-muted english-name">{{ localeObj.name }}</div>
+          </div>
+          <base-feather-icon
+            v-if="$i18n.locale === localeObj.locale"
+            icon="CheckIcon"
+            size="20"
+            class="text-primary check-icon"
+          />
+        </button>
       </div>
     </b-modal>
   </div>
@@ -59,8 +70,12 @@
 <script>
 import driverObj from '@/utils/tour'
 import profileService from '@/store/services/profile-service'
+import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 
 export default {
+  components: {
+    BaseFeatherIcon,
+  },
   data() {
     return {
       showLanguageModal: false,
@@ -69,16 +84,19 @@ export default {
           locale: 'en',
           img: require('@/assets/img/flags/aus.png'),
           name: 'English',
+          native: 'English',
         },
         {
           locale: 'es',
           img: require('@/assets/img/flags/es.png'),
           name: 'Spanish',
+          native: 'Español',
         },
         {
           locale: 'pt-br',
           img: require('@/assets/img/flags/pt-br.png'),
           name: 'Portuguese',
+          native: 'Português',
         },
       ],
     };
@@ -116,11 +134,6 @@ export default {
         setTimeout(() => driverObj.moveNext(), 500)
       }
     },
-
-    onModalClose() {
-      // Just close modal – no action needed
-      this.showLanguageModal = false;
-    },
   },
 };
 </script>
@@ -138,35 +151,85 @@ export default {
   border-radius: 6px;
 }
 
+/* Modal header */
+.language-modal-header {
+  padding: 0.25rem 0;
+}
+
+.language-modal-header h4 {
+  color: rgb(3, 102, 214) !important;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
 /* Modal content styling */
 .language-modal-content {
-  max-width: 320px;
+  max-width: 340px;
   margin: 0 auto;
 }
 
 .language-btn {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  height: 52px;
-  font-size: 1.05rem;
-  border-radius: 8px;
-  transition: all 0.2s;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.5rem;
+  background-color: transparent;
+  border: 1px solid #ebe9f1;
+  border-radius: 0.358rem;
+  cursor: pointer;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  text-align: left;
+}
+
+.language-btn:last-child {
+  margin-bottom: 0;
 }
 
 .language-btn:hover {
-  background-color: rgba(115, 103, 240, 0.08) !important;
-  border-color: #7367f0 !important;
+  background-color: #eef5ff;
+  border-color: #eef5ff;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background 0s, border 0s;
+  
+}
+
+.language-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(3, 102, 214, 0.12);
 }
 
 .language-btn.active-language {
-  background-color: rgba(115, 103, 240, 0.12) !important;
-  border-color: #7367f0 !important;
-  font-weight: 600;
-  color: #7367f0;
+  background-color: #0366d6;
+  border-color: #0366d6;
 }
 
-.language-btn img {
+.language-btn.active-language .native-name {
+  color: #FFF;
+  font-weight: 600;
+}
+
+.language-btn.active-language .english-name {
+  color: #FFF !important;
+}
+
+.language-flag {
   border-radius: 3px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.language-label .native-name {
+  line-height: 1.2;
+}
+
+.language-label .english-name {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.check-icon {
+  flex-shrink: 0;
+  margin-left: 0.5rem;
 }
 </style>

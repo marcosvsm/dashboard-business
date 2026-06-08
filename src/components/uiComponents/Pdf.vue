@@ -1,11 +1,14 @@
 <template>
-  <b-button 
+  <b-button
     variant="outline-primary"
     class="mb-75"
     @click="generatePDF"
     block
+    :disabled="!invoiceData.id || hasUnsavedChanges"
+    v-b-tooltip.hover
+    :title="!invoiceData.id ? $t('Save the invoice first to download it') : (hasUnsavedChanges ? $t('Save changes before downloading') : '')"
   >
-    Download
+    {{ $t('Download') }}
   </b-button>
 </template>
 
@@ -20,8 +23,17 @@ export default {
     paymentDetails: {
       type: Boolean,
     },
-    selectedPaymentMethod: String,
+    // Array of payment method ids to render on this invoice. Valid entries
+    // are 'payid' and 'bank'; either, both, or neither may be present.
+    selectedPaymentMethods: {
+      type: Array,
+      default: () => [],
+    },
     validateForm: Function,
+    hasUnsavedChanges: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   methods: {
@@ -40,6 +52,10 @@ export default {
       }
 
       const data = this.invoiceData || {}
+      // Snapshot drives display — never recompute GST inside the PDF.
+      const isTaxInvoice = !!(data.gst_registered_snapshot || data.gst_applied)
+      const subtotalForDisplay = data.subtotal != null ? data.subtotal : data.amount
+      const gstForDisplay = data.gst_amount != null ? data.gst_amount : '0.00'
       const doc = new jspdf()
 
       const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth()
@@ -64,9 +80,48 @@ export default {
 
       const formatCurrency = value => `$${Number(value || 0).toFixed(2)}`
       const safeText = value => String(value || '')
-      const safeFilename = value => String(value || 'invoice').replace(/[^a-z0-9-_]/gi, '_')
+      const safeFilename = value =>
+        String(value || 'invoice')
+          .trim()
+          .replace(/[^a-z0-9-_ ]/gi, '')
+          .replace(/\s+/g, '-')
+
+      const getShortCompanyName = value => {
+        const words = safeText(value)
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+
+        if (words.length === 0) {
+          return 'Company'
+        }
+
+        if (words.length <= 2) {
+          return safeFilename(words.join(' '))
+        }
+
+        return safeFilename(`${words[0]} ${words[words.length - 1]}`)
+      }
 
       const splitText = (text, width) => doc.splitTextToSize(safeText(text), width)
+
+      // Australian-style address: street / region + state + postcode / country.
+      // Returns an array of lines (already trimmed) so empty fields are
+      // skipped without leaving blank rows in the PDF.
+      const formatAddressLines = entity => {
+        if (!entity) return []
+        const lines = []
+        const street = safeText(entity.address).trim()
+        if (street) lines.push(street)
+        const stateZip = [safeText(entity.state).trim(), safeText(entity.postcode).trim()]
+          .filter(Boolean)
+          .join(' ')
+        const cityLine = [safeText(entity.region).trim(), stateZip].filter(Boolean).join(', ')
+        if (cityLine) lines.push(cityLine)
+        const country = safeText(entity.country).trim()
+        if (country) lines.push(country)
+        return lines
+      }
 
       const ensurePageSpace = neededHeight => {
         if (currentY + neededHeight > pageHeight - layout.bottomMargin) {
@@ -116,7 +171,7 @@ export default {
         doc.setFontSize(24)
         doc.setTextColor(0, 126, 202)
         doc.setCharSpace(-0.405)
-        doc.text('TAX INVOICE', layout.left, 20)
+        doc.text(isTaxInvoice ? 'TAX INVOICE' : 'INVOICE', layout.left, 20)
         doc.setCharSpace(0)
 
         doc.setFont('helvetica', 'normal')
@@ -143,7 +198,15 @@ export default {
         if (data.company?.email) {
           const emailLines = splitText(data.company.email, layout.rightBlockWidth)
           doc.text(emailLines, layout.invoiceInfoRight, companyY, { align: 'right' })
+          companyY += emailLines.length * 4
         }
+
+        const companyAddressLines = formatAddressLines(data.company)
+        companyAddressLines.forEach(line => {
+          const wrapped = splitText(line, layout.rightBlockWidth)
+          doc.text(wrapped, layout.invoiceInfoRight, companyY, { align: 'right' })
+          companyY += wrapped.length * 4
+        })
 
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(10)
@@ -168,7 +231,15 @@ export default {
         if (data.customer?.email) {
           const customerEmailLines = splitText(data.customer.email, 90)
           doc.text(customerEmailLines, layout.billToLeft, customerY)
+          customerY += customerEmailLines.length * 4 + 1
         }
+
+        const customerAddressLines = formatAddressLines(data.customer)
+        customerAddressLines.forEach(line => {
+          const wrapped = splitText(line, 90)
+          doc.text(wrapped, layout.billToLeft, customerY)
+          customerY += wrapped.length * 4
+        })
 
         drawLabelValueRight('Invoice Number:', safeText(data.number), 70)
         drawLabelValueRight('Invoice Date:', formatDateForDisplay(data.date), 75)
@@ -249,118 +320,161 @@ export default {
       }
 
       const renderTotals = () => {
-        const subtotalY = currentY + 5
-        const gstY = subtotalY + 5
-        const totalY = gstY + 5
+        const lineGap = 5
+        let lineY = currentY + lineGap
 
         doc.setFont('helvetica', 'normal')
         doc.setFontSize(10)
 
-        doc.text('Subtotal:', layout.priceX, subtotalY, { align: 'left' })
-        doc.text('GST:', layout.priceX, gstY, { align: 'left' })
+        if (isTaxInvoice) {
+          // Subtotal
+          doc.text('Subtotal:', layout.priceX, lineY, { align: 'left' })
+          doc.text(formatCurrency(subtotalForDisplay), layout.amountX, lineY, { align: 'center' })
+          lineY += lineGap
+
+          // GST (10%)
+          doc.text('GST (10%):', layout.priceX, lineY, { align: 'left' })
+          doc.text(formatCurrency(gstForDisplay), layout.amountX, lineY, { align: 'center' })
+          lineY += lineGap
+        }
+
+        // Grand total — always shown
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(11)
-        doc.text('Total:', layout.priceX, totalY, { align: 'left' })
-        doc.setFont('helvetica', 'normal')
-        doc.setFontSize(10)
-        doc.text(formatCurrency(data.amount), layout.amountX, subtotalY, { align: 'center' })
-        doc.text('$0.00', layout.amountX, gstY, { align: 'center' })
-        doc.setFont('helvetica', 'bold')
-        doc.text(formatCurrency(data.amount), layout.amountX, totalY, { align: 'center' })
+        doc.text('Total:', layout.priceX, lineY, { align: 'left' })
+        doc.text(formatCurrency(data.amount), layout.amountX, lineY, { align: 'center' })
 
-        currentY = totalY + 8
+        currentY = lineY + 8
       }
 
-      const getPaymentAndNotesBlockHeight = () => {
-        const payIdEnabled =
-          data.company?.paymentDetail?.payid &&
-          this.paymentDetails &&
-          this.selectedPaymentMethod === 'PAYID'
+      // ----------------------------------------------------------------
+      // Payment + Notes block
+      //
+      // The block is composed of up to three sections: PayID, Bank Account,
+      // and Notes. Each is included only when the corresponding source data
+      // is present AND the user selected it for this invoice via
+      // `selectedPaymentMethods` (an array of 'payid' / 'bank').
+      //
+      // Source priority:
+      //   1. Invoice snapshot columns (payid_snapshot, bank_*_snapshot) —
+      //      authoritative for any invoice that has been saved with the
+      //      new snapshot system.
+      //   2. Live `data.company.paymentDetail` — fallback for legacy
+      //      invoices and unsaved drafts.
+      // ----------------------------------------------------------------
+      const lineHeight = 4
 
-        const noteText = safeText(data.note).trim()
-        const hasNote = !!noteText
+      const buildPaymentBlocks = () => {
+        const pd = data.company?.paymentDetail
+        const wantsPayment = !!this.paymentDetails
+        const methods = Array.isArray(this.selectedPaymentMethods) ? this.selectedPaymentMethods : []
 
-        const payIdText = payIdEnabled ? safeText(data.company?.paymentDetail?.payid).trim() : ''
-        const paymentNameText = payIdEnabled ? safeText(data.company?.paymentDetail?.name).trim() : ''
+        const showPayidFlag = pd?.show_payid !== false // backend default = true
+        const showBankFlag  = pd?.show_bank_details !== false
 
-        const payIdLines = payIdText ? splitText(payIdText, 92) : []
-        const paymentNameLines = paymentNameText ? splitText(paymentNameText, 100) : []
-        const noteLines = hasNote ? splitText(noteText, 104) : []
+        // Snapshot fields win over live company data when present. For an
+        // unsaved draft the snapshot fields are undefined so we drop back
+        // to the live PaymentDetail.
+        const payidValue        = data.payid_snapshot || pd?.payid || ''
+        const payidNameValue    = data.payid_name_snapshot || pd?.name || ''
+        const bankAccountName   = data.bank_account_name_snapshot   || pd?.account_name   || ''
+        const bankBsb           = data.bank_bsb_snapshot            || pd?.bsb            || ''
+        const bankAccountNumber = data.bank_account_number_snapshot || pd?.account_number || ''
+        const bankName          = data.bank_name_snapshot           || pd?.bank_name      || ''
 
-        const hasAnyContent =
-          payIdEnabled || payIdLines.length || paymentNameLines.length || noteLines.length
+        const hasPayidValue = !!payidValue
+        const hasBankValues = !!(bankAccountName && bankBsb && bankAccountNumber)
 
-        if (!hasAnyContent) return 0
+        const payIdEnabled = wantsPayment && methods.includes('payid') && hasPayidValue && showPayidFlag
+        const bankEnabled  = wantsPayment && methods.includes('bank')  && hasBankValues  && showBankFlag
 
-        const titleHeight = 6
-        const topPadding = 8
-        const bottomPadding = 7
-        const lineHeight = 4
-        const dividerGap = payIdEnabled && hasNote ? 4 : 0
-        const logoSpaceHeight = payIdEnabled ? 2 : 0
+        const formatBsb = (raw) => {
+          const digits = String(raw || '').replace(/\D/g, '')
+          return digits.length === 6 ? `${digits.slice(0, 3)}-${digits.slice(3)}` : (raw || '')
+        }
 
-        const paymentContentHeight =
-          (payIdLines.length * lineHeight) +
-          (paymentNameLines.length ? paymentNameLines.length * lineHeight + 1 : 0)
+        const payId = payIdEnabled
+          ? {
+            payIdLines:        splitText(safeText(payidValue).trim(), 92),
+            paymentNameLines:  payidNameValue ? splitText(safeText(payidNameValue).trim(), 100) : [],
+          }
+          : null
 
-        const noteContentHeight = noteLines.length ? noteLines.length * lineHeight : 0
+        const bank = bankEnabled
+          ? {
+            bankNameLines:       bankName ? splitText(safeText(bankName).trim(), 100) : [],
+            accountNameLines:    splitText(safeText(bankAccountName).trim(), 100),
+            bsbLine:             `BSB: ${formatBsb(bankBsb)}`,
+            accountNumberLine:   `Account: ${safeText(bankAccountNumber).trim()}`,
+          }
+          : null
+
+        const noteText  = safeText(data.note).trim()
+        const noteLines = noteText ? splitText(noteText, 104) : []
+
+        return { payId, bank, noteLines }
+      }
+
+      const measurePaymentBlock = ({ payId, bank, noteLines }) => {
+        const hasPayId = !!payId
+        const hasBank  = !!bank
+        const hasNote  = noteLines.length > 0
+
+        if (!hasPayId && !hasBank && !hasNote) return 0
+
+        const titleHeight    = 6
+        const topPadding     = 8
+        const bottomPadding  = 7
+        const dividerGap     = 6
+
+        const payIdLogoSpace = hasPayId ? 2 : 0
+        const payIdContent   = hasPayId
+          ? (payId.payIdLines.length * lineHeight)
+            + (payId.paymentNameLines.length ? payId.paymentNameLines.length * lineHeight + 1 : 0)
+          : 0
+
+        const bankContent = hasBank
+          ? (bank.bankNameLines.length * lineHeight)
+            + (bank.accountNameLines.length * lineHeight)
+            + (2 * lineHeight) + 2
+          : 0
+
+        const noteContent = hasNote ? noteLines.length * lineHeight : 0
+
+        const dividersBetween =
+          ((hasPayId && hasBank) ? dividerGap : 0) +
+          (((hasPayId || hasBank) && hasNote) ? dividerGap : 0)
 
         return (
-          topPadding +
-          titleHeight +
-          logoSpaceHeight +
-          paymentContentHeight +
-          dividerGap +
-          noteContentHeight +
-          bottomPadding
+          topPadding
+          + titleHeight
+          + payIdLogoSpace
+          + payIdContent
+          + bankContent
+          + dividersBetween
+          + noteContent
+          + bottomPadding
         )
       }
 
+      const drawDivider = (boxX, boxWidth, atY) => {
+        doc.setDrawColor(226, 232, 240)
+        doc.setLineWidth(0.2)
+        doc.line(layout.left, atY + 1, boxX + boxWidth - 6, atY + 1)
+      }
+
+      const getPaymentAndNotesBlockHeight = () => measurePaymentBlock(buildPaymentBlocks())
+
       const renderPaymentAndNotes = () => {
-        const payIdEnabled =
-          data.company?.paymentDetail?.payid &&
-          this.paymentDetails &&
-          this.selectedPaymentMethod === 'PAYID'
+        const blocks = buildPaymentBlocks()
+        const blockHeight = measurePaymentBlock(blocks)
+        if (!blockHeight) return
 
-        const noteText = safeText(data.note).trim()
-        const hasNote = !!noteText
-
-        const payIdText = payIdEnabled ? safeText(data.company?.paymentDetail?.payid).trim() : ''
-        const paymentNameText = payIdEnabled ? safeText(data.company?.paymentDetail?.name).trim() : ''
-
-        const payIdLines = payIdText ? splitText(payIdText, 92) : []
-        const paymentNameLines = paymentNameText ? splitText(paymentNameText, 100) : []
-        const noteLines = hasNote ? splitText(noteText, 104) : []
-
-        const hasAnyContent =
-          payIdEnabled || payIdLines.length || paymentNameLines.length || noteLines.length
-
-        if (!hasAnyContent) return
-
-        const sectionTitle = hasNote ? 'NOTES & PAYMENT DETAILS' : 'PAYMENT DETAILS'
-
-        const titleHeight = 6
-        const topPadding = 8
-        const bottomPadding = 7
-        const lineHeight = 4
-        const dividerGap = payIdEnabled && hasNote ? 4 : 0
-
-        const paymentContentHeight =
-          (payIdLines.length * lineHeight) +
-          (paymentNameLines.length ? paymentNameLines.length * lineHeight + 1 : 0)
-
-        const noteContentHeight = noteLines.length ? noteLines.length * lineHeight : 0
-
-        const logoSpaceHeight = payIdEnabled ? 2 : 0
-
-        const blockHeight =
-          topPadding +
-          titleHeight +
-          logoSpaceHeight +
-          paymentContentHeight +
-          dividerGap +
-          noteContentHeight +
-          bottomPadding
+        const { payId, bank, noteLines } = blocks
+        const hasNote = noteLines.length > 0
+        const sectionTitle = hasNote
+          ? (payId || bank ? 'NOTES & PAYMENT DETAILS' : 'NOTES')
+          : 'PAYMENT DETAILS'
 
         const boxX = layout.left - 2
         const boxY = currentY - 5
@@ -378,16 +492,13 @@ export default {
         doc.setFontSize(10.5)
         doc.setTextColor(31, 41, 55)
         doc.text(sectionTitle, layout.left, sectionY)
-
-        
-
         sectionY += 7
 
-        // Payment details
-        if (payIdEnabled) {
+        // PayID block
+        if (payId) {
           try {
             const img = require('@/assets/img/payid.png')
-            doc.addImage(img, 'PNG', layout.left-2, sectionY-10, 16, 16)
+            doc.addImage(img, 'PNG', layout.left - 2, sectionY - 10, 16, 16)
           } catch (e) {
             doc.setFont('helvetica', 'bold')
             doc.setFontSize(9)
@@ -401,24 +512,50 @@ export default {
           doc.setFontSize(10)
           doc.setTextColor(17, 24, 39)
 
-          if (payIdLines.length) {
-            doc.text(payIdLines, layout.left, sectionY)
-            sectionY += payIdLines.length * lineHeight
+          if (payId.payIdLines.length) {
+            doc.text(payId.payIdLines, layout.left, sectionY)
+            sectionY += payId.payIdLines.length * lineHeight
           }
-
-          if (paymentNameLines.length) {
-            doc.setFont('helvetica', 'normal')
+          if (payId.paymentNameLines.length) {
             doc.setTextColor(75, 85, 99)
-            doc.text(paymentNameLines, layout.left, sectionY)
-            sectionY += paymentNameLines.length * lineHeight + 1
+            doc.text(payId.paymentNameLines, layout.left, sectionY)
+            sectionY += payId.paymentNameLines.length * lineHeight + 1
           }
         }
 
-        // Divider between payment details and notes
-        if (payIdEnabled && hasNote) {
-          doc.setDrawColor(226, 232, 240)
-          doc.setLineWidth(0.2)
-          doc.line(layout.left, sectionY + 1, boxX + boxWidth - 6, sectionY + 1)
+        // Divider between PayID and Bank
+        if (payId && bank) {
+          drawDivider(boxX, boxWidth, sectionY)
+          sectionY += 6
+        }
+
+        // Bank Account block
+        if (bank) {
+          doc.setFont('helvetica', 'bold')
+          doc.setFontSize(9)
+          doc.setTextColor(31, 41, 55)
+          doc.text('Bank Account', layout.left, sectionY)
+          sectionY += 4
+
+          doc.setFont('helvetica', 'normal')
+          doc.setFontSize(10)
+          doc.setTextColor(17, 24, 39)
+
+          if (bank.bankNameLines.length) {
+            doc.text(bank.bankNameLines, layout.left, sectionY)
+            sectionY += bank.bankNameLines.length * lineHeight
+          }
+          doc.text(bank.accountNameLines, layout.left, sectionY)
+          sectionY += bank.accountNameLines.length * lineHeight
+          doc.text(bank.bsbLine, layout.left, sectionY)
+          sectionY += lineHeight
+          doc.text(bank.accountNumberLine, layout.left, sectionY)
+          sectionY += lineHeight + 2
+        }
+
+        // Divider before Notes
+        if ((payId || bank) && hasNote) {
+          drawDivider(boxX, boxWidth, sectionY)
           sectionY += 6
         }
 
@@ -428,7 +565,6 @@ export default {
           doc.setFontSize(9)
           doc.setTextColor(100, 116, 139)
           doc.text('Notes', layout.left, sectionY)
-
           sectionY += 4
 
           doc.setFont('helvetica', 'normal')
@@ -452,7 +588,9 @@ export default {
       renderPaymentAndNotes()
       addFooter()
 
-      doc.save(`Invoice_${safeFilename(data.number)}.pdf`)
+      const companyName = getShortCompanyName(data.company?.name)
+      const invoiceNumber = safeFilename(data.number || data.ref || 'Invoice')
+      doc.save(`Invoice-${invoiceNumber}-${companyName}.pdf`)
     },
   },
 }

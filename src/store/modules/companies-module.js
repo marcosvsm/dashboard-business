@@ -33,21 +33,35 @@ const actions = {
 
   get({commit, dispatch}, params) {
     return service.get(params)
-      .then((company) => { commit('SET_RESOURCE', company); });
+      .then((company) => {
+        commit('SET_RESOURCE', company);
+        return company;
+      });
   },
 
   add({commit, dispatch}, params) {
     return service.add(params)
-      .then((company) => { commit('SET_RESOURCE', company); });
+      .then((company) => {
+        commit('SET_RESOURCE', company);
+        return company;
+      });
   },
 
   update({commit, dispatch}, params) {
     return service.update(params)
-      .then((company) => { commit('SET_RESOURCE', company); });
+      .then((company) => {
+        commit('SET_RESOURCE', company);
+        return company;
+      });
   },
 
   destroy({commit, dispatch}, params) {
     return service.destroy(params);
+  },
+
+  // Stateless: does not commit anything. Returns normalized ABR payload to the caller.
+  lookupAbn(_ctx, abn) {
+    return service.lookupAbn(abn);
   },
 
 };

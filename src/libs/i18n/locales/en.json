@@ -219,5 +219,34 @@
       "dontShow": "Don't show again",
       "resumeLater": "Maybe later"
     }
+  },
+  "appUpdate": {
+    "eyebrow": "New update",
+    "title": "Simplify Business has been improved",
+    "description": "We've updated the app to make invoicing easier, clearer, and more reliable. Your existing invoices, customers, and business details are unchanged.",
+    "whatsNew": "What's new",
+    "gotIt": "Got it",
+    "benefits": {
+      "invoice": {
+        "title": "Improved invoice creation",
+        "desc": "A faster, cleaner flow with smarter suggestions for items, GST and tax invoices."
+      },
+      "dashboard": {
+        "title": "Better dashboard overview",
+        "desc": "See your business at a glance with clearer numbers and quicker actions."
+      },
+      "tax": {
+        "title": "Updated GST and tax settings",
+        "desc": "Cleaner setup for Australian GST and tax invoice rules across your invoices."
+      },
+      "customers": {
+        "title": "Smoother customer and business management",
+        "desc": "Easier to add, edit and find your customers and company details."
+      },
+      "mobile": {
+        "title": "Better mobile experience",
+        "desc": "Layout and performance improvements across phones and tablets."
+      }
+    }
   }
 }

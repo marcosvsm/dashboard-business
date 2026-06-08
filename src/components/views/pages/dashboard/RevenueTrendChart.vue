@@ -1,36 +1,36 @@
 <template>
   <chart-card
+    :key="chartRenderKey"
+    :chart-id="chartRenderKey"
     chart-type="Bar"
     :chart-data="revenueChartData"
     :chart-options="revenueChartOptions"
     :chart-height="350"
     :color="'#2dce89'"
-    :chart-title="t('Revenue')"
+    :chart-title="t('CashFlow')"
   >
     <template #header>
       <div class="chart-card-header">
-         <b-row>
-        <b-col cols="9" class="d-flex align-items-center">
-          <h5 class="card-title text-uppercase text-muted mb-0" style="color: #0366d6 !important">
-            {{ t(timePeriod+' Revenue') }}
-          </h5>
-        </b-col>
-        <b-col cols="3" class="d-flex justify-content-end">
-          <b-dropdown variant="link" no-caret>
-            <template #button-content>
-              <base-feather-icon icon="FilterIcon" size="16" />
-              {{t('Filter')}}
-            </template>
-            <b-dropdown-item @click="$emit('set-time-period', 'monthly')">{{ t('Monthly') }}</b-dropdown-item>
-            <b-dropdown-item @click="$emit('set-time-period', 'quarterly')">{{ t('Quarterly') }}</b-dropdown-item>
-            <b-dropdown-item @click="$emit('set-time-period', 'annual')">{{ t('Annual') }}</b-dropdown-item>
-          </b-dropdown>
-        </b-col>
-      </b-row>
+        <b-row>
+          <b-col cols="9" class="d-flex align-items-center">
+            <h5 class="card-title text-uppercase text-muted mb-0" style="color: #0366d6 !important">
+              {{ t(timePeriod+' CashFlow') }}
+            <span class="income-range-badge">{{ chartSubtitle }} </span>
+            </h5>
+          </b-col>
+          <b-col cols="3" class="d-flex justify-content-end">
+            <b-dropdown variant="link" no-caret>
+              <template #button-content>
+                <base-feather-icon icon="FilterIcon" size="16" />
+                {{t('Filter')}}
+              </template>
+              <b-dropdown-item @click="$emit('set-time-period', 'monthly')">{{ t('Monthly') }}</b-dropdown-item>
+              <b-dropdown-item @click="$emit('set-time-period', 'quarterly')">{{ t('Quarterly') }}</b-dropdown-item>
+              <b-dropdown-item @click="$emit('set-time-period', 'annual')">{{ t('Annual') }}</b-dropdown-item>
+            </b-dropdown>
+          </b-col>
+        </b-row>
       </div>
-    </template>
-    <template #subtitle>
-      <p class="text-sm text-muted">{{timePeriod === 'monthly' ? t('Paid invoices over the last 12 months') : timePeriod === 'quarterly' ? t('Invoices paid by quarter') : timePeriod === 'annual' ? t('Invoices paid in the last 3 financial years') : '' }}</p>
     </template>
     <template #footer-title>
       <div class="chart-card-footer">
@@ -38,7 +38,7 @@
           <base-feather-icon :icon="revenueGrowth > 0 ? 'ArrowUpIcon' : 'ArrowDownIcon'" size="16" />
           {{ Math.abs(revenueGrowth).toFixed(2) }}% {{ revenueGrowth > 0 ? t('increase') : t('decrease') }}
         </span>
-        <span style="margin-left:5px;"> 
+        <span style="margin-left:5px;">
           vs {{t('last '+period)}}
         </span>
       </div>
@@ -46,11 +46,11 @@
     <template #footer-right>
       <span>
         Q = {{t('Quarter')}}
-        </span>
-        |
-        <span>
+      </span>
+      |
+      <span>
         FY = {{t('Financial Year')}}
-        </span>
+      </span>
     </template>
   </chart-card>
 </template>
@@ -58,51 +58,68 @@
 <script>
 import ChartCard from '@/components/uiComponents/ChartCard.vue';
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue';
-import dayjs from 'dayjs';
-import quarterOfYear from 'dayjs/plugin/quarterOfYear'; // Import the quarterOfYear plugin
-
-// Extend dayjs with the quarterOfYear plugin
-dayjs.extend(quarterOfYear);
 
 export default {
   components: { ChartCard, BaseFeatherIcon },
   props: {
-    invoices: { type: Array, required: true },
+    revenue: { type: Object, required: true },
+    rangeLabel: { type: String, required: true },
+    isAllTime: { type: Boolean, required: true },
     t: { type: Function, required: true },
     timePeriod: { type: String, required: true },
     currencyFormatter: { required: true },
-  },
-  data(){
-      return {
-          period: '',
-      }
+    hideAmount: {type: Boolean, required: true },
   },
   computed: {
+    chartSubtitle() {
+      if (!this.isAllTime) {
+        return this.rangeLabel;
+      }
+
+      return this.timePeriod === 'monthly'
+        ? this.t('Paid invoices over the last 12 months')
+        : this.timePeriod === 'quarterly'
+          ? this.t('Invoices paid by quarter')
+          : this.timePeriod === 'annual'
+            ? this.t('Invoices paid in the last 3 financial years')
+            : '';
+    },
+    currentSeries() {
+      return this.revenue?.[this.timePeriod] || [];
+    },
+    period() {
+      return this.timePeriod === 'quarterly'
+        ? 'quarter'
+        : this.timePeriod === 'annual'
+          ? 'financial year'
+          : 'month';
+    },
     revenueChartData() {
-      const periods = this.getPeriods();
-      const data = periods.map(period => this.calculateRevenueForPeriod(period));
       return {
-        labels: periods.map(p => this.formatPeriodLabel(p)),
+        labels: this.currentSeries.map(period => period.label),
         datasets: [
           {
-            label: this.t('Revenue'),
-            backgroundColor: '#2dce89',
-            data: data,
+            label: this.t('CashFlow'),
+            backgroundColor: 'rgb(3, 102, 214)',
+            data: this.currentSeries.map(period => period.amount),
           }
         ]
       };
     },
     revenueChartOptions() {
+      const hideAmount = this.hideAmount;
+      const currencyFormatter = this.currencyFormatter;
+
       return {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           yAxes: [
-            { 
-              ticks: { 
+            {
+              ticks: {
                 beginAtZero: true,
-                callback: (value) => this.currencyFormatter.format(value), // Use currencyFormatter 
-              }, 
+                callback: (value) => hideAmount ? '••••••' : currencyFormatter.format(value),
+              },
             },
           ],
         },
@@ -111,11 +128,14 @@ export default {
             label: (tooltipItem, data) => {
               const dataset = data.datasets[tooltipItem.datasetIndex];
               const value = dataset.data[tooltipItem.index];
-              return `${dataset.label}: ${this.currencyFormatter.format(value)}`; // Use currencyFormatter
+              return `${dataset.label}: ${currencyFormatter.format(value)}`;
             },
           },
         },
       };
+    },
+    chartRenderKey() {
+      return `revenue-trend-${this.timePeriod}-${this.rangeLabel}-${this.hideAmount ? 'hidden' : 'visible'}`;
     },
     revenueGrowth() {
       const data = this.revenueChartData.datasets[0].data;
@@ -125,82 +145,10 @@ export default {
       return previous ? ((current - previous) / previous * 100) : 0;
     },
   },
-  methods: {
-    getPeriods() {
-      let periods = [];
-      let current = dayjs();
-      switch (this.timePeriod) {
-        case 'quarterly':
-          for (let i = 0; i < 4; i++) {
-            periods.unshift(current.startOf('quarter'));
-            current = current.subtract(1, 'quarter');
-          }
-          this.period = 'quarter'
-          break;
-        case 'annual':
-          // Australian financial year: July 1 to June 30
-          // If current date is before July, use previous year as start of current FY
-          if (current.month() < 6) { // Months are 0-based, 6 = July
-            current = current.subtract(1, 'year');
-          }
-          for (let i = 0; i < 3; i++) {
-            periods.unshift(current.set('month', 6).startOf('month'));
-            current = current.subtract(1, 'year');
-          }
-          this.period = 'financial year'
-          break;
-        default: // monthly
-          for (let i = 0; i < 12; i++) {
-            periods.unshift(current.startOf('month'));
-            current = current.subtract(1, 'month');
-          }
-          this.period = 'month'
-      }
-      return periods;
-    },
-    formatPeriodLabel(period) {
-      switch (this.timePeriod) {
-        case 'quarterly':
-          return `Q${period.quarter()} ${period.year()}`;
-        case 'annual':
-          // Format as FY YYYY-YY (e.g., FY 2024-25)
-          const startYear = period.year();
-          const endYear = (startYear + 1) % 100; // Last two digits of next year
-          return `FY ${startYear}-${endYear.toString().padStart(2, '0')}`;
-        default:
-          return period.format('MMM YYYY');
-      }
-    },
-    calculateRevenueForPeriod(period) {
-      const start = period;
-      let end;
-      let unit;
-      if (this.timePeriod === 'quarterly') {
-        end = period.endOf('quarter');
-        unit = 'quarter';
-      } else if (this.timePeriod === 'annual') {
-        //Financial year ends on June 30
-        end = period.set('month', 5).endOf('month'); //June30
-        unit = 'year';
-      } else {
-        end = period.endOf('month');
-        unit = 'month';
-      }
-      const nextStart = this.timePeriod === 'annual' ? period.add(1, unit).set('month', 6).startOf('month') : period.add(1, unit).startOf(unit);
-      return this.invoices.reduce((sum, inv) => {
-        const invDate = dayjs(inv.invoice_date);
-        if (inv.status === 1 && (invDate.isAfter(start) || invDate.isSame(start)) && invDate.isBefore(nextStart)) {
-          return sum + parseFloat(inv.amount);
-        }
-        return sum;
-      }, 0);
-    },
-  },
 }
 </script>
 
 <style scoped>
-/* Styles specific to this chart */
 .card{
   height:100%;
 }
@@ -219,32 +167,40 @@ export default {
   border-top: none !important;
   padding-top: 0px !important;
 }
-/* Header styling */
 .chart-card-header {
   width:100%
 }
 
-/* Ensure H5 can wrap text if needed */
 .chart-card-header .card-title {
-  flex: 1; /* Allow H5 to take available space */
-  margin-right: 1rem; /* Space between title and filter */
-  max-width: 100%; /* Prevent H5 from taking too much space */
-  word-wrap: break-word; /* Allow text to wrap */
+  flex: 1;
+  margin-right: 1rem;
+  max-width: 100%;
+  word-wrap: break-word;
 }
 
-/* Filter dropdown styling */
 .chart-card-header .chart-card-filter {
-  flex-shrink: 0; /* Prevent filter from shrinking */
+  flex-shrink: 0;
 }
 
-/* Footer styling */
 .chart-card-footer {
   display: flex;
   width:100%;
-  justify-content: center; /* Align content to the right */
-  align-items: center; /* Align content to the bottom */
+  justify-content: center;
+  align-items: center;
   padding: 1rem;
-  flex-grow: 1; /* Push footer to the bottom if card has extra space */
+  flex-grow: 1;
   border-top: none !important;
+}
+
+.income-range-badge {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #8898aa;
+  background: #f4f5f7;
+  border: 1px solid #e9ecef;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  line-height: 1.6;
 }
 </style>

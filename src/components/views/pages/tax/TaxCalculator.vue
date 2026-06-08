@@ -61,8 +61,11 @@ export default {
   min-height: 100vh;
 }
 .header {
-  background: linear-gradient(to right, #2563eb, #4f46e5);
-  color: white;
+  background:
+    radial-gradient(circle at top right, rgba(45, 206, 204, 0.18), transparent 28%),
+    linear-gradient(135deg, #0f4c81 0%, #0366d6 55%, #2d8cff 100%);
+  border: none;
+  color: #fff;
   padding: 2rem 1rem;
   text-align: center;
   border-radius: 5px;

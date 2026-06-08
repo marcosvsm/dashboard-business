@@ -1,19 +1,25 @@
 <template>
-  <layout-vertical :nav-menu-items="navMenuItems">
+  <div class="h-100">
+    <layout-vertical :nav-menu-items="navMenuItems">
 
-    <router-view/>
+      <router-view/>
 
-  </layout-vertical>
+    </layout-vertical>
+
+    <app-update-modal />
+  </div>
 </template>
 
 <script>
 //import $themeConfig from '@/themeConfig'
 //import navMenuItems from '@/navigation/vertical'
 import LayoutVertical from '@/components/uiComponents/LayoutVertical.vue'
+import AppUpdateModal from '@/components/uiComponents/AppUpdateModal.vue'
 
 export default {
   components: {
     LayoutVertical,
+    AppUpdateModal,
   },
   data() {
     return {

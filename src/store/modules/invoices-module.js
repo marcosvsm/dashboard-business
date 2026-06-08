@@ -43,7 +43,10 @@ const actions = {
 
   update({ commit }, params) {
     return service.update(params)
-      .then((invoice) => { commit('SET_RESOURCE', invoice); });
+      .then((invoice) => {
+        commit('SET_RESOURCE', invoice);
+        return invoice;
+      });
   },
 
   destroy(_ctx, params) {
@@ -53,6 +56,10 @@ const actions = {
   suggest({ commit }, params = []) {
     return service.suggest(params)
       .then((invoice) => { commit('SET_RESOURCE', invoice); });
+  },
+
+  getSignedLink({commit}, uuid) {
+    return service.getSignedLink(uuid);
   },
 };
 

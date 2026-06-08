@@ -256,31 +256,35 @@
                     cols="12"
                     lg="5"
                 >
-                    <label class="d-inline d-lg">{{t("Description")}}</label>
+                    <div class="d-flex align-items-center justify-content-between mb-50">
+                      <label class="d-inline d-lg mb-0">{{t("Description")}}</label>
+                      <b-button
+                        variant="outline-primary"
+                        size="sm"
+                        :id="`calendarIcon-${index}`"
+                        class="add-date-btn d-inline-flex align-items-center"
+                        @click="openPopover(index)"
+                        v-b-tooltip.hover
+                        :title="t('Insert a date into the description')"
+                      >
+                        <base-feather-icon
+                          size="14"
+                          icon="CalendarIcon"
+                          class="mr-25"
+                        />
+                        {{ t('Add date') }}
+                      </b-button>
+                    </div>
                     <flat-pickr
                         v-model="selectedDates[index]"
                         :config="datePickerConfig"
                         :data-index="index"
                         class="invisible"
                       />
-                      <b-button
-                        variant="flat-secondary"
-                        class="btn-icon ml-50 p-50"
-                        :id="`calendarIcon-${index}`"
-                        @click="openPopover(index)"
-                        v-b-tooltip.hover
-                        :title="t('Add date')"
-                      >
-                        <base-feather-icon
-                          size="18"
-                          icon="CalendarIcon"
-                          class="text-muted"
-                        />
-                      </b-button>
                     <b-form-textarea
                     v-model="item.description"
                     class="mb-2 mb-lg-0"
-                    maxlength="90"
+                    maxlength="500"
                     />
                 </b-col>
                 </b-row>
@@ -322,13 +326,17 @@
             order-md="2"
         >
           <div class="invoice-total-wrapper">
+            <div v-if="invoiceData.gst_applied" class="invoice-total-item">
+              <p class="invoice-total-title">{{ t('Subtotal') }}:</p>
+              <p class="invoice-total-amount">${{ invoiceData.subtotal || '0.00' }}</p>
+            </div>
+            <div v-if="invoiceData.gst_applied" class="invoice-total-item">
+              <p class="invoice-total-title">{{ t('GST') }} (10%):</p>
+              <p class="invoice-total-amount">${{ invoiceData.gst_amount || '0.00' }}</p>
+            </div>
             <div class="invoice-total-item">
-              <p class="invoice-total-amount">
-                Total:
-              </p>
-              <p class="invoice-total-amount">
-                ${{invoiceData.amount}}
-              </p>
+              <p class="invoice-total-amount">{{ t('Total') }}:</p>
+              <p class="invoice-total-amount">${{ invoiceData.amount }}</p>
             </div>
           </div>
         </b-col>
@@ -353,6 +361,7 @@ import ProductItemSelector from '@/components/uiComponents/ProductItemSelector.v
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import FlatPickr from 'vue-flatpickr-component'
 import {formatDateForDisplay} from '@/libs/dateUtils'
+import { calculateInvoicePreview, PRICE_MODE_EXCLUSIVE } from '@/utils/gstCalculator'
 
 export default {
   components:{
@@ -416,14 +425,21 @@ export default {
       })
     },
     setAmount(){
-        var amount = 0.00
-        var amountCal = 0
+        // Preview-only math. The backend recalculates and overwrites these
+        // values on save — see App\Services\Invoices\InvoiceGstCalculatorService.
+        const gstApplied = !!this.invoiceData.gst_applied
+        const priceMode  = this.invoiceData.gst_price_mode || PRICE_MODE_EXCLUSIVE
+        const preview    = calculateInvoicePreview(this.invoiceData.items, gstApplied, priceMode)
+
+        // Each line's `amount` is the line total (GST-included when applicable),
+        // matching how the column is rendered + how the backend writes it back.
         this.invoiceData.items.forEach((item, index) => {
-          amountCal = item.quantity * item.price
-          this.invoiceData.items[index].amount = this.formatPrice(amountCal)
-          amount += parseFloat(this.invoiceData.items[index].amount)
-        });
-        this.invoiceData.amount = this.formatPrice(amount)
+          this.invoiceData.items[index].amount = preview.items[index]?.amount ?? '0.00'
+        })
+
+        this.invoiceData.subtotal   = preview.subtotal
+        this.invoiceData.gst_amount = preview.gst_amount
+        this.invoiceData.amount     = preview.amount
     },
     formatPrice(value) {
       return Number(value).toFixed(2);
@@ -657,6 +673,12 @@ export default {
   font-weight: bold;
   padding: 10px;
   text-align: center;
+}
+.add-date-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 .invisible {
   position: absolute;

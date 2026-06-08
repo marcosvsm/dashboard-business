@@ -137,7 +137,31 @@ export default {
     },
   },
   methods: {
+    t(key) {
+      return this.$t ? this.$t(key) : key
+    },
+    async confirmLogout() {
+      try {
+        return await this.$bvModal.msgBoxConfirm(
+          this.t('Are you sure you want to log out?'),
+          {
+            title: this.t('Confirm logout'),
+            okTitle: this.t('Logout'),
+            cancelTitle: this.t('Cancel'),
+            okVariant: 'danger',
+            cancelVariant: 'outline-secondary',
+            centered: true,
+            noCloseOnBackdrop: true,
+          }
+        )
+      } catch (error) {
+        return false
+      }
+    },
     async logout() {
+      const confirmed = await this.confirmLogout()
+      if (!confirmed) return
+
       await this.$store.dispatch("auth/logout");
       this.$router.push({ path: "/login" });
     },

@@ -1,110 +1,97 @@
 <template>
-  <b-card class="card-stats mb-4 mb-xl-0">
+  <b-card class="stat-card mb-4 mb-xl-0">
     <b-card-body class="d-flex flex-column">
       <b-row class="flex-nowrap">
         <b-col class="pr-0">
-          <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
-            {{ t('Amount Received') }} 
-            <span class="cursor-pointer" @click="$emit('toggle-hide-amount')">
-              <base-feather-icon :icon="hideAmount ? 'EyeOffIcon' : 'EyeIcon'" size="22" />
-            </span>
-          </h5>
-          <span class="h2 font-weight-bold mb-0">{{ hideAmount ? '******' : getTotalAmount }}</span>
+          <div class="d-flex align-items-center flex-wrap" style="gap: 0.4rem;">
+            <h5 class="card-title text-uppercase text-muted mb-0" style="color:#0366d6 !important">
+              {{ t('Amount Received') }}
+            </h5>
+          </div>
+          <span v-if="hideAmount" class="h2 font-weight-bold mb-0 tpc-hero-value--masked">••••••</span>
+          <span v-else class="h2 font-weight-bold mb-0">{{ currencyFormatter.format(totalAmountReceived) }}</span>
         </b-col>
         <b-col cols="auto">
           <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
             <base-feather-icon icon="TrendingUpIcon" size="30" />
-          </div>  
+          </div>
         </b-col>
       </b-row>
-      <div class="mt-2 text-sm">
-        <span class="text-muted"> {{ t('This Month') }}: </span>
-        <span class="font-weight-bold"> {{ hideAmount ? '******' : getIncomeForThisMonth }} </span>
+
+      <div class="income-month-comparison mt-2">
+        <div class="income-month-item">
+          <span class="income-month-label">{{ t('This Month') }}</span>
+          <span v-if="thisMonthAmount === null" class="income-month-item-amount income-month-item-amount--muted">N/A</span>
+          <span v-else-if="hideAmount" class="font-weight-bold tpc-hero-value--masked">••••</span>
+          <span v-else class="income-month-item-amount">{{ currencyFormatter.format(thisMonthAmount) }}</span>
+        </div>
+        <div class="income-month-divider"></div>
+        <div class="income-month-item">
+          <span class="income-month-label">{{ t('Last Month') }}</span>
+          <span v-if="lastMonthAmount === null" class="income-month-item-amount income-month-item-amount--muted">N/A</span>
+          <span v-else-if="hideAmount" class="font-weight-bold tpc-hero-value--masked">••••</span>
+          <span v-else class="income-month-item-amount">{{ currencyFormatter.format(lastMonthAmount) }}</span>
+        </div>
       </div>
-      <div class="text-sm">
-        <span class="text-muted"> {{ t('Last Month') }}: </span>
-        <span class="font-weight-bold"> {{ hideAmount ? '******' : getIncomeForLastMonth }} </span>
+
+      <div class="stat-footer mt-auto">
+        <span class="text-muted">{{ t('Avg. Invoice') }}:</span>
+        <span v-if="hideAmount" class="stat-footer-value tpc-hero-value--masked">••••••</span>
+        <span v-else class="stat-footer-value">{{ currencyFormatter.format(averagePaidInvoiceValue) }}</span>
+        <span class="income-range-badge ml-auto">{{ rangeLabel }}</span>
       </div>
-      
-      <p class="mt-1 mb-0 text-sm">
-        <span class="text-nowrap">
-         <span class="text-muted"> {{t('Avg. Invoice')}}:</span> {{ hideAmount ? '******' : currencyFormatter.format(getAverageInvoiceValue) }}
-        </span>
-      </p>
     </b-card-body>
   </b-card>
 </template>
 
 <script>
 import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue';
-import dayjs from 'dayjs';
 
 export default {
   components: { BaseFeatherIcon },
   props: {
-    invoices: { type: Array, required: true },
+    summary: { type: Object, required: true },
+    rangeLabel: { type: String, required: true },
     t: { type: Function, required: true },
     hideAmount: { type: Boolean, required: true },
     currencyFormatter: {required: true },
   },
   computed: {
-    getTotalAmount() {
-      const total = this.invoices.reduce((sum, inv) => inv.status === 1 ? sum + parseFloat(inv.amount) : sum, 0);
-      return this.currencyFormatter.format(total);
+    totalAmountReceived() {
+      return this.summary?.amountReceived || 0;
     },
-    getIncomeForThisMonth() {
-      const thisMonth = dayjs().format('YYYY-MM');
-      const income = this.invoices.reduce((sum, inv) => {
-        if (inv.status === 1 && dayjs(inv.invoice_date).format('YYYY-MM') === thisMonth) {
-          return sum + parseFloat(inv.amount);
-        }
-        return sum;
-      }, 0);
-      return this.currencyFormatter.format(income);
+    thisMonthAmount() {
+      return this.summary?.thisMonthAmount ?? null;
     },
-    getIncomeForLastMonth() {
-      const lastMonth = dayjs().subtract(1, 'month').format('YYYY-MM');
-      const income = this.invoices.reduce((sum, inv) => {
-        if (inv.status === 1 && dayjs(inv.invoice_date).format('YYYY-MM') === lastMonth) {
-          return sum + parseFloat(inv.amount);
-        }
-        return sum;
-      }, 0);
-      return this.currencyFormatter.format(income);
+    lastMonthAmount() {
+      return this.summary?.lastMonthAmount ?? null;
     },
-    getYTDRevenue() {
-      const currentYear = dayjs().year();
-      const income = this.invoices.reduce((sum, inv) => {
-        if (inv.status === 1 && dayjs(inv.invoice_date).year() === currentYear) {
-          return sum + parseFloat(inv.amount);
-        }
-        return sum;
-      }, 0);
-      return this.currencyFormatter.format(income);
-    },
-    getAverageInvoiceValue() {
-      const total = this.invoices.reduce((sum, inv) => inv.status === 1 ? sum + parseFloat(inv.amount) : sum, 0);
-      return this.invoices.length ? total / this.invoices.length : 0;
+    averagePaidInvoiceValue() {
+      return this.summary?.averageInvoiceValue || 0;
     },
   },
 }
 </script>
 
 <style scoped>
-/* Styles specific to this card */
-/* Add global dashboard styles here if needed */
-.card{
-  height:100%;
+.stat-card {
+  height: 100%;
+  border-top: 3px solid transparent;
+  transition: box-shadow 0.2s ease;
 }
-.card-stats{
+.stat-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09) !important;
+}
+.stat-card--green {
+  border-top-color: #2dce89;
+}
+.card-stats {
   height: 100%;
 }
-.card-stats .card-body{
+.card-stats .card-body,
+.card-body {
   height: 100%;
-  padding:0.75rem !important;
-}
-.card-body{
-  padding:0.75rem !important;
+  padding: 0.75rem !important;
 }
 .icon-shape {
   display: flex;
@@ -112,27 +99,72 @@ export default {
   justify-content: center;
   width: 50px;
   height: 50px;
-  transition: width 0.2s ease, height 0.2s ease; /* Smooth resizing */
+  transition: width 0.2s ease, height 0.2s ease;
 }
-/* Reduce icon size and adjust layout on smaller screens */
 @media (max-width: 820px) {
   .icon-shape {
     width: 40px;
     height: 40px;
   }
   .icon-shape .feather {
-    width: 24px; /* Reduce icon size */
+    width: 24px;
     height: 24px;
   }
 }
-
 .bg-gradient-green {
   background: linear-gradient(87deg, #2dce89 0, #2dcecc 100%);
 }
-.bg-gradient-blue {
-  background: linear-gradient(87deg, #0366d6 0, #1a91ff 100%);
+.tpc-hero-value--masked {
+  color: #94a3b8;
+  letter-spacing: 0.08em;
 }
-.bg-gradient-orange {
-  background: linear-gradient(87deg, #fb6340 0, #fbb140 100%);
+.income-range-badge {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #8898aa;
+  background: #f4f5f7;
+  border: 1px solid #e9ecef;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+.income-month-comparison {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+.income-month-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0.65rem;
+}
+.income-month-divider {
+  width: 1px;
+  background: #edf0f5;
+  flex-shrink: 0;
+}
+.income-month-label {
+  font-size: 1rem;
+  margin-bottom: 0.1rem;
+}
+.stat-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 1rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+.h2{
+  color:rgba(38, 43, 67, 0.9)!important;
+}
+.income-month-item-amount, .stat-footer-value {
+  color:rgba(38, 43, 67, 0.9);
+  font-weight:500;
+}
+.income-month-item-amount--muted {
+  color: #94a3b8;
 }
 </style>
