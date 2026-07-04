@@ -223,7 +223,11 @@
 
       </b-col>
     </b-row>
-    <payment-method-sidebar :company="invoiceData.company" @payment-added="handlePaymentAdded" />
+    <payment-method-sidebar
+      :company="invoiceData.company"
+      @payment-added="handlePaymentAdded"
+      @payment-updated="handlePaymentAdded"
+    />
     <notifications></notifications>
   </section>
 </template>

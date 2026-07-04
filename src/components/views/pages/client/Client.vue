@@ -9,7 +9,90 @@
       </ol>
     </nav>
 
-    <b-row class="mt-2">
+    <b-row v-if="loading" class="mt-2" aria-busy="true">
+      <b-col lg="8">
+        <b-card no-body class="client-hero-card mb-2">
+          <b-card-body class="client-hero-body">
+            <div class="client-hero-header">
+              <div class="client-identity">
+                <skeleton-block light width="4.25rem" height="4.25rem" radius="1.25rem" />
+                <div>
+                  <skeleton-block light width="6rem" height="0.75rem" class="mb-1" />
+                  <skeleton-block light width="14rem" height="1.8rem" class="mb-1" />
+                  <skeleton-block light width="11rem" height="0.9rem" />
+                </div>
+              </div>
+              <skeleton-block light width="9.5rem" height="2.5rem" radius="999px" />
+            </div>
+
+            <div class="client-contact-grid">
+              <div v-for="i in 3" :key="i" class="client-contact-item">
+                <skeleton-block light width="3.5rem" height="0.7rem" class="mb-1" />
+                <skeleton-block light width="80%" height="1rem" />
+              </div>
+            </div>
+          </b-card-body>
+        </b-card>
+
+        <b-row>
+          <b-col v-for="i in 2" :key="`stat-${i}`" md="6" class="mb-2">
+            <skeleton-card card-class="client-stat-card h-100">
+              <div class="client-stat-top">
+                <div>
+                  <skeleton-block width="7rem" height="0.75rem" class="mb-1" />
+                  <skeleton-block width="9rem" height="1.7rem" />
+                </div>
+                <skeleton-block width="3rem" height="3rem" radius="0.95rem" />
+              </div>
+              <skeleton-block width="9rem" height="0.9rem" />
+            </skeleton-card>
+          </b-col>
+        </b-row>
+
+        <skeleton-card card-class="invoice-panel">
+          <div class="invoice-panel-header mb-2">
+            <div>
+              <skeleton-block width="7rem" height="0.75rem" class="mb-1" />
+              <skeleton-block width="9rem" height="1.3rem" />
+            </div>
+            <skeleton-block width="5rem" height="2rem" radius="999px" />
+          </div>
+          <div class="invoice-list">
+            <div v-for="i in 4" :key="`inv-${i}`" class="invoice-item">
+              <div class="invoice-item-main">
+                <div>
+                  <skeleton-block width="6rem" height="0.85rem" class="mb-1" />
+                  <skeleton-block width="11rem" height="1rem" />
+                </div>
+                <skeleton-block width="5.5rem" height="1rem" />
+              </div>
+            </div>
+          </div>
+        </skeleton-card>
+      </b-col>
+
+      <b-col lg="4">
+        <skeleton-card card-class="client-side-card mb-2">
+          <skeleton-block width="6rem" height="0.75rem" class="mb-1" />
+          <skeleton-block width="10rem" height="1.3rem" class="mb-2" />
+          <div v-for="i in 4" :key="`snap-${i}`" class="snapshot-row">
+            <skeleton-block width="7rem" height="0.95rem" />
+            <skeleton-block width="5rem" height="0.95rem" />
+          </div>
+        </skeleton-card>
+
+        <skeleton-card card-class="client-side-card client-side-card-accent">
+          <skeleton-block width="5rem" height="0.75rem" class="mb-1" />
+          <skeleton-block width="14rem" height="1.3rem" class="mb-1" />
+          <skeleton-block width="100%" height="0.9rem" class="mb-1" />
+          <skeleton-block width="80%" height="0.9rem" class="mb-2" />
+          <skeleton-block width="100%" height="2.5rem" radius="0.85rem" class="mb-1" />
+          <skeleton-block width="100%" height="2.5rem" radius="0.85rem" />
+        </skeleton-card>
+      </b-col>
+    </b-row>
+
+    <b-row v-else class="mt-2">
       <b-col lg="8">
         <b-card no-body class="client-hero-card mb-2">
           <b-card-body class="client-hero-body">
@@ -21,7 +104,7 @@
 
                 <div>
                   <p class="client-eyebrow mb-1">{{ t('Client Profile') }}</p>
-                  <h2 class="client-name mb-1">{{ client.name || t('Unnamed Client') }}</h2>
+                  <h2 class="client-name mb-1">{{ client.name}}</h2>
                   <p class="client-subtitle mb-0">
                     {{ invoiceCount }} {{ invoiceCount === 1 ? t('invoice') : t('invoices') }}
                     <span class="client-subtitle-separator">•</span>
@@ -230,6 +313,8 @@ import BaseFeatherIcon from '@/components/uiComponents/BaseFeatherIcon.vue'
 import { dateNow, formatDateForDisplay } from '@/libs/dateUtils.js'
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import InvoiceSidebarAddNewCustomer from '@/components/uiComponents/InvoiceSidebarAddNewCustomer.vue'
+import SkeletonBlock from '@/components/uiComponents/SkeletonBlock.vue'
+import SkeletonCard from '@/components/uiComponents/SkeletonCard.vue'
 
 const emptyClient = () => ({
   id: null,
@@ -244,11 +329,14 @@ export default {
   components: {
     BaseFeatherIcon,
     InvoiceSidebarAddNewCustomer,
+    SkeletonBlock,
+    SkeletonCard,
   },
   data() {
     return {
       client: emptyClient(),
       isDeleting: false,
+      loading: false,
       t: null,
       currencyFormatter: new Intl.NumberFormat('en-AU', {
         style: 'currency',
@@ -261,6 +349,15 @@ export default {
   created() {
     const { t } = useI18nUtils()
     this.t = t
+
+    const cached = this.$store.getters['customers/customer']
+    const routeId = this.$route.params.id
+    if (cached && String(cached.id) === String(routeId)) {
+      this.applyCustomer(cached)
+    } else {
+      this.loading = true
+    }
+
     this.fetchClient()
   },
   computed: {
@@ -341,8 +438,15 @@ export default {
     },
     async fetchClient() {
       const id = this.$route.params.id
-      await this.$store.dispatch('customers/get', { id, include: ['invoice'] })
-      const customer = this.$store.getters['customers/customer']
+      try {
+        await this.$store.dispatch('customers/get', { id, include: ['invoice'] })
+        const customer = this.$store.getters['customers/customer']
+        this.applyCustomer(customer)
+      } finally {
+        this.loading = false
+      }
+    },
+    applyCustomer(customer) {
       this.client = {
         ...emptyClient(),
         ...(customer || {}),

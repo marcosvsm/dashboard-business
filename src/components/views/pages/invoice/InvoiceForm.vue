@@ -298,6 +298,7 @@
       v-if="invoiceData.company"
       :company="invoiceData.company"
       @payment-added="handlePaymentAdded"
+      @payment-updated="handlePaymentAdded"
     />
     <send-invoice-modal
       v-if="invoiceData.id"

@@ -143,6 +143,7 @@
                 <b-form-input
                   id="customer-state"
                   v-model="customer.state"
+                  maxlength="3"
                   trim
                   :placeholder="t('State')"
                 />
