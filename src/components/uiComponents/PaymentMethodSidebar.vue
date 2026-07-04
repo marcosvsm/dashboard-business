@@ -7,6 +7,7 @@
     backdrop
     no-header
     right
+    @hidden="onSidebarHidden"
   >
     <template #default="{ hide }">
       <!-- Header -->
@@ -23,10 +24,7 @@
       </div>
 
       <!-- Body -->
-      <b-form class="p-2" @submit.prevent="submitForm">
-        <p class="small mb-2">
-          {{ t('Add either a PayID, a bank account, or both. Toggle the “Show on invoice” switches to control which one appears on the invoices you send.') }}
-        </p>
+      <b-form class="p-2" @submit.prevent="submitForm(hide)">
 
         <!-- ============================================================ -->
         <!-- PayID section                                                 -->
@@ -43,6 +41,7 @@
               <b-form-checkbox
                 v-model="formData.show_payid"
                 switch
+                :disabled="submitting"
               />
             </div>
           </div>
@@ -54,6 +53,7 @@
               type="text"
               trim
               :placeholder="t('e.g. you@business.com')"
+              :disabled="submitting"
             />
           </b-form-group>
 
@@ -64,6 +64,7 @@
               type="text"
               trim
               :placeholder="t('Used for your reference')"
+              :disabled="submitting"
             />
           </b-form-group>
         </div>
@@ -83,6 +84,7 @@
               <b-form-checkbox
                 v-model="formData.show_bank_details"
                 switch
+                :disabled="submitting"
               />
             </div>
           </div>
@@ -94,6 +96,7 @@
               type="text"
               trim
               :placeholder="t('e.g. Commonwealth Bank')"
+              :disabled="submitting"
             />
           </b-form-group>
 
@@ -104,6 +107,7 @@
               type="text"
               trim
               :placeholder="t('Name on the bank account')"
+              :disabled="submitting"
             />
           </b-form-group>
 
@@ -115,6 +119,7 @@
               trim
               placeholder="000-000"
               maxlength="7"
+              :disabled="submitting"
               @input="onBsbInput"
             />
             <small v-if="bsbInvalid" class="text-danger">
@@ -130,6 +135,7 @@
               maxlength="20"
               trim
               :placeholder="t('Up to 20 digits')"
+              :disabled="submitting"
             />
           </b-form-group>
         </div>
@@ -155,6 +161,7 @@
           <b-button
             v-ripple.400="'rgba(186, 191, 199, 0.15)'"
             variant="outline-secondary"
+            :disabled="submitting"
             @click="hide"
           >
             {{ t('Cancel') }}
@@ -228,13 +235,14 @@ export default {
     const submitting = ref(false)
     const formErrors = ref([])
 
-    // Hydrate from the company's saved paymentDetail whenever the prop changes.
-    // Empty state defaults to both toggles ON — but they auto-disable below
-    // until the section has values, so the user can never save an "on but empty"
-    // record that the backend would reject.
-    watch(() => props.company, (newCompany) => {
+    // Hydrate from the company's saved paymentDetail. Keyed on the
+    // paymentDetail id so unrelated parent re-renders (or attribute mutations
+    // mid-edit) don't wipe the user's in-progress typing. Reopening the
+    // sidebar also forces a re-hydrate via onSidebarHidden so the form
+    // reflects the latest persisted state next time it's shown.
+    const hydrateFromCompany = () => {
       formErrors.value = []
-      const pd = newCompany && newCompany.paymentDetail
+      const pd = props.company && props.company.paymentDetail
       if (pd && pd.id) {
         formData.value = {
           name:              pd.name || '',
@@ -249,7 +257,18 @@ export default {
       } else {
         formData.value = emptyForm()
       }
-    }, { immediate: true, deep: true })
+    }
+
+    watch(
+      () => (props.company && props.company.paymentDetail && props.company.paymentDetail.id) || null,
+      () => hydrateFromCompany(),
+      { immediate: true }
+    )
+
+    const onSidebarHidden = () => {
+      submitting.value = false
+      hydrateFromCompany()
+    }
 
     const payidConfigured = computed(() => filled(formData.value.payid))
     const bankConfigured = computed(() =>
@@ -284,7 +303,7 @@ export default {
         : digits
     }
 
-    function buildPayload(existingId) {
+    function buildPayload() {
       const attrs = {
         name:              formData.value.name || null,
         payid:             formData.value.payid || null,
@@ -299,7 +318,7 @@ export default {
         show_payid:        Boolean(formData.value.show_payid),
         show_bank_details: Boolean(formData.value.show_bank_details),
       }
-      const payload = {
+      return {
         data: {
           type: 'paymentDetails',
           attributes: attrs,
@@ -308,8 +327,6 @@ export default {
           },
         },
       }
-      if (existingId) payload.data.id = existingId
-      return payload
     }
 
     function validate() {
@@ -331,30 +348,45 @@ export default {
       return errors.length === 0
     }
 
-    async function submitForm() {
+    async function submitForm(hide) {
       if (!validate()) return
       submitting.value = true
 
       try {
+        // existingId drives the verb regardless of the `mode` prop. A parent
+        // that opens the sidebar in "create" mode but already has a
+        // paymentDetail (e.g. user adding bank details after PayID) still
+        // needs a PATCH — POSTing again would either trip the JSON:API
+        // client-generated-id guard or duplicate the row.
         const existingId = (props.company && props.company.paymentDetail && props.company.paymentDetail.id) || null
-        const payload = buildPayload(existingId)
+        const payload = buildPayload()
 
-        if (props.mode === 'create' || !existingId) {
-          await proxy.$store.dispatch('paymentMethods/add', payload)
-        } else {
+        if (existingId) {
+          payload.data.id = existingId
           await proxy.$store.dispatch('paymentMethods/update', payload)
+        } else {
+          await proxy.$store.dispatch('paymentMethods/add', payload)
         }
 
         const response = proxy.$store.getters['paymentMethods/paymentMethod']
 
         proxy.$toast.success(
-          props.mode === 'create' ? t('Payment details saved.') : t('Payment details updated.'),
+          existingId ? t('Payment details updated.') : t('Payment details saved.'),
           { position: 'top-right', icon: CheckCircleIcon, closeButton: false, hideProgressBar: true, timeout: 2000 }
         )
 
         emit(existingId ? 'payment-updated' : 'payment-added', response)
-        proxy.$root.$emit('bv::toggle::collapse', 'sidebar-payment-method')
+        if (typeof hide === 'function') hide()
       } catch (e) {
+        // Surface backend validation messages (JSON:API errors[]) so the user
+        // can correct them. Falls back to a generic toast if the server didn't
+        // return structured details.
+        const serverErrors = e && e.response && e.response.data && e.response.data.errors
+        if (Array.isArray(serverErrors) && serverErrors.length) {
+          formErrors.value = serverErrors
+            .map(err => err.detail || err.title)
+            .filter(Boolean)
+        }
         proxy.$toast.error(t('Something went wrong. Please try again.'), {
           position: 'top-right', icon: AlertCircleIcon, closeButton: false, hideProgressBar: true, timeout: 3000,
         })
@@ -400,6 +432,7 @@ export default {
       bsbInvalid,
       onBsbInput,
       submitForm,
+      onSidebarHidden,
       hasExistingPayment,
       confirmDelete,
     }

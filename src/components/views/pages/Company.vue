@@ -192,30 +192,117 @@
               </b-form>
 
               <b-form v-else @submit.prevent="collectPaymentDetails">
-                <b-row>
-                  <b-col cols="12">
-                    <b-form-group :label="t('PAYID')" label-for="payid">
-                      <b-form-input
-                        id="payid"
-                        v-model="payment_details.payid"
-                        type="text"
-                        trim
-                        :placeholder="t('Add a PayID for invoice payments')"
-                      />
-                    </b-form-group>
-                  </b-col>
-                  <b-col cols="12">
-                    <b-form-group :label="t('PAYID Name')" label-for="payid-name">
-                      <b-form-input
-                        id="payid-name"
-                        v-model="payment_details.name"
-                        type="text"
-                        trim
-                        :placeholder="t('Name customers will see for payment')"
-                      />
-                    </b-form-group>
-                  </b-col>
-                </b-row>
+                <p class="company-form-subtitle mb-2">
+                  {{ t('Add the ways customers can pay your invoices. Use a PayID, bank transfer details, or both — or skip and add them later from your business page.') }}
+                </p>
+
+                <div class="company-payment-method mb-2">
+                  <div class="company-payment-method-head">
+                    <base-feather-icon icon="ZapIcon" size="18" class="company-payment-method-icon" />
+                    <div>
+                      <h6 class="company-optional-title mb-25">{{ t('PayID') }}</h6>
+                      <p class="company-optional-copy mb-0">
+                        {{ t('The fastest way to get paid. Customers pay instantly using your PayID.') }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <b-row class="mt-1">
+                    <b-col cols="12">
+                      <b-form-group :label="t('PAYID')" label-for="payid">
+                        <b-form-input
+                          id="payid"
+                          v-model="payment_details.payid"
+                          type="text"
+                          trim
+                          :placeholder="t('Add a PayID for invoice payments')"
+                        />
+                      </b-form-group>
+                    </b-col>
+                    <b-col cols="12">
+                      <b-form-group :label="t('PAYID Name')" label-for="payid-name">
+                        <b-form-input
+                          id="payid-name"
+                          v-model="payment_details.name"
+                          type="text"
+                          trim
+                          :placeholder="t('Name customers will see for payment')"
+                        />
+                      </b-form-group>
+                    </b-col>
+                  </b-row>
+                </div>
+
+                <div class="company-optional-panel">
+                  <div class="company-optional-header">
+                    <div>
+                      <p class="company-section-eyebrow mb-50">{{ t('Optional') }}</p>
+                      <h6 class="company-optional-title mb-50">{{ t('Bank transfer details') }}</h6>
+                      <p class="company-optional-copy mb-0">
+                        {{ t('Let customers pay by direct bank transfer. Your details are encrypted and only shown on your invoices.') }}
+                      </p>
+                    </div>
+
+                    <b-button
+                      variant="outline-primary"
+                      class="company-optional-toggle"
+                      @click="showBankDetails = !showBankDetails"
+                    >
+                      {{ showBankDetails ? t('Hide details') : t('Add bank details') }}
+                    </b-button>
+                  </div>
+
+                  <b-collapse v-model="showBankDetails" class="mt-1">
+                    <b-row>
+                      <b-col cols="12">
+                        <b-form-group :label="t('Account Name')" label-for="account-name">
+                          <b-form-input
+                            id="account-name"
+                            v-model="payment_details.account_name"
+                            type="text"
+                            trim
+                            :placeholder="t('Name on the bank account')"
+                          />
+                        </b-form-group>
+                      </b-col>
+                      <b-col md="6">
+                        <b-form-group :label="t('BSB')" label-for="bsb">
+                          <b-form-input
+                            id="bsb"
+                            v-model="payment_details.bsb"
+                            type="text"
+                            trim
+                            maxlength="7"
+                            :placeholder="t('e.g. 123-456')"
+                          />
+                        </b-form-group>
+                      </b-col>
+                      <b-col md="6">
+                        <b-form-group :label="t('Account Number')" label-for="account-number">
+                          <b-form-input
+                            id="account-number"
+                            v-model="payment_details.account_number"
+                            type="text"
+                            trim
+                            maxlength="20"
+                            :placeholder="t('Bank account number')"
+                          />
+                        </b-form-group>
+                      </b-col>
+                      <b-col cols="12">
+                        <b-form-group :label="t('Bank Name')" label-for="bank-name">
+                          <b-form-input
+                            id="bank-name"
+                            v-model="payment_details.bank_name"
+                            type="text"
+                            trim
+                            :placeholder="t('Optional, e.g. Commonwealth Bank')"
+                          />
+                        </b-form-group>
+                      </b-col>
+                    </b-row>
+                  </b-collapse>
+                </div>
 
                 <div class="company-form-actions">
                   <b-button type="submit" variant="primary" :disabled="submit">
@@ -257,7 +344,7 @@
               </div>
               <div class="company-summary-row mb-0">
                 <span>{{ t('Payment collection') }}</span>
-                <strong>{{ payment_details.payid || t('Optional PayID') }}</strong>
+                <strong>{{ paymentSummary }}</strong>
               </div>
             </b-card-body>
           </b-card>
@@ -308,9 +395,14 @@ export default {
       abn_legal_name: null,
       abr_last_checked_at: null,
       showBusinessDetails: false,
+      showBankDetails: false,
       payment_details: {
         payid: '',
         name: '',
+        account_name: '',
+        bsb: '',
+        account_number: '',
+        bank_name: '',
       },
       companyCreated: false,
       companyData: null,
@@ -394,6 +486,16 @@ export default {
 
       return this.t('Optional for later')
     },
+    hasBankDetails() {
+      const pd = this.payment_details
+      return !!(pd.account_name && pd.bsb && pd.account_number)
+    },
+    paymentSummary() {
+      const methods = []
+      if (this.payment_details.payid) methods.push(this.t('PayID'))
+      if (this.hasBankDetails) methods.push(this.t('Bank transfer'))
+      return methods.length ? methods.join(' + ') : this.t('Optional PayID or bank')
+    },
   },
   methods: {
     async fetchCompanies() {
@@ -445,22 +547,39 @@ export default {
     },
     collectPaymentDetails() {
       this.submit = true
-      this.payment_details = {
-        payid: this.payment_details.payid,
-        name: this.payment_details.name,
-      }
       this.saveAllData()
+    },
+    // Build a clean payment_details payload, or null when the user provided
+    // nothing. Display flags default on for whichever method was supplied so
+    // the details actually render on invoices.
+    buildPaymentDetails() {
+      const pd = this.payment_details
+      const hasPayid = !!(pd.payid && pd.payid.trim())
+      if (!hasPayid && !this.hasBankDetails) return null
+
+      return {
+        name: pd.name || null,
+        payid: pd.payid || null,
+        account_name: pd.account_name || null,
+        bsb: pd.bsb || null,
+        account_number: pd.account_number || null,
+        bank_name: pd.bank_name || null,
+        show_payid: hasPayid,
+        show_bank_details: this.hasBankDetails,
+      }
     },
     async saveAllData() {
       try {
         const userId = await this.getId()
+        const attributes = { ...this.companyData }
+        const paymentDetails = this.buildPaymentDetails()
+        if (paymentDetails) {
+          attributes.payment_details = paymentDetails
+        }
         const data = {
           data: {
             type: 'companies',
-            attributes: {
-              ...this.companyData,
-              payment_details: this.payment_details,
-            },
+            attributes,
             relationships: {
               user: {
                 data: {
@@ -635,6 +754,29 @@ export default {
   border-radius: 0.95rem;
   background: #fff;
   border: 1px solid #edf2f8;
+}
+
+.company-payment-method {
+  padding: 1rem;
+  border-radius: 0.95rem;
+  background: #f8fbff;
+  border: 1px solid #e6edf7;
+}
+
+.company-payment-method-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.company-payment-method-icon {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: #0366d6;
+}
+
+.mb-25 {
+  margin-bottom: 0.25rem;
 }
 
 .company-optional-header {

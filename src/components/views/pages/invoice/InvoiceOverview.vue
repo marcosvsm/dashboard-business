@@ -306,7 +306,12 @@
       </b-form-checkbox>
     </b-modal>
 
-    <payment-method-sidebar v-if="invoiceData.company" :company="invoiceData.company" @payment-added="handlePaymentAdded" />
+    <payment-method-sidebar
+      v-if="invoiceData.company"
+      :company="invoiceData.company"
+      @payment-added="handlePaymentAdded"
+      @payment-updated="handlePaymentAdded"
+    />
     <send-invoice-modal
       v-if="invoiceData.id"
       :invoice="invoiceData"

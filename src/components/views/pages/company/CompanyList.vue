@@ -1,13 +1,119 @@
 <template>
   <section class="company-list-page">
     <template v-if="loading">
-      <b-card class="company-state-card">
-        <b-card-body class="company-state-body">
-          <b-spinner variant="primary" class="mb-1" />
-          <h6 class="mb-1">{{ t('Loading') }}...</h6>
-          <p class="mb-0 text-muted">{{ t('We are preparing your business workspace.') }}</p>
-        </b-card-body>
-      </b-card>
+      <b-row aria-busy="true">
+        <b-col lg="8">
+          <b-card no-body class="company-profile-card mb-2">
+            <b-card-body class="company-profile-body">
+              <div class="company-profile-top">
+                <div class="company-profile-identity">
+                  <skeleton-block light width="4.5rem" height="4.5rem" radius="1.25rem" />
+                  <div>
+                    <skeleton-block light width="8rem" height="0.75rem" class="mb-1" />
+                    <skeleton-block light width="14rem" height="1.8rem" />
+                  </div>
+                </div>
+                <skeleton-block light width="9rem" height="2.5rem" radius="999px" />
+              </div>
+
+              <div class="company-profile-grid">
+                <div v-for="i in 4" :key="`info-${i}`" class="company-profile-item">
+                  <skeleton-block light width="4rem" height="0.7rem" class="mb-1" />
+                  <skeleton-block light width="80%" height="1rem" />
+                </div>
+              </div>
+            </b-card-body>
+          </b-card>
+
+          <skeleton-card card-class="company-info-card mb-2">
+            <div class="company-card-header">
+              <div>
+                <skeleton-block width="5rem" height="0.75rem" class="mb-1" />
+                <skeleton-block width="11rem" height="1.3rem" class="mb-1" />
+                <skeleton-block width="18rem" height="0.9rem" />
+              </div>
+              <skeleton-block width="8rem" height="2rem" radius="999px" />
+            </div>
+
+            <div class="company-detail-panel">
+              <div
+                v-for="i in 4"
+                :key="`tax-${i}`"
+                class="company-detail-row"
+                :class="{ 'mb-0': i === 4 }"
+              >
+                <skeleton-block width="9rem" height="0.95rem" />
+                <skeleton-block width="6rem" height="0.95rem" />
+              </div>
+            </div>
+          </skeleton-card>
+
+          <skeleton-card card-class="company-info-card mb-2">
+            <div class="company-card-header company-card-header-start">
+              <div>
+                <skeleton-block width="9rem" height="0.75rem" class="mb-1" />
+                <skeleton-block width="11rem" height="1.3rem" class="mb-1" />
+                <skeleton-block width="20rem" height="0.9rem" />
+              </div>
+              <skeleton-block width="9rem" height="2rem" radius="999px" />
+            </div>
+
+            <div class="company-secondary-summary">
+              <skeleton-block width="6rem" height="1.5rem" radius="999px" />
+              <skeleton-block width="60%" height="0.9rem" />
+            </div>
+          </skeleton-card>
+        </b-col>
+
+        <b-col lg="4">
+          <skeleton-card card-class="company-info-card mb-2">
+            <div class="company-card-header">
+              <div>
+                <skeleton-block width="8rem" height="0.75rem" class="mb-1" />
+                <skeleton-block width="10rem" height="1.3rem" class="mb-1" />
+                <skeleton-block width="14rem" height="0.9rem" />
+              </div>
+              <skeleton-block width="5rem" height="2rem" radius="999px" />
+            </div>
+
+            <div class="payment-method-grid">
+              <div v-for="i in 2" :key="`pay-${i}`" class="payment-mini-card">
+                <div class="payment-mini-header">
+                  <skeleton-block width="34px" height="22px" radius="0.4rem" />
+                  <skeleton-block width="6rem" height="0.95rem" />
+                </div>
+                <skeleton-block width="80%" height="1rem" class="mb-1" />
+                <skeleton-block width="60%" height="0.85rem" />
+              </div>
+            </div>
+          </skeleton-card>
+
+          <skeleton-card card-class="company-side-card mb-2">
+            <skeleton-block width="7rem" height="0.75rem" class="mb-1" />
+            <skeleton-block width="11rem" height="1.3rem" class="mb-2" />
+
+            <div class="company-preview-card">
+              <div class="company-preview-header">
+                <skeleton-block width="3.1rem" height="3.1rem" radius="1rem" />
+                <div>
+                  <skeleton-block width="9rem" height="1rem" class="mb-1" />
+                  <skeleton-block width="6rem" height="0.85rem" />
+                </div>
+              </div>
+
+              <div
+                v-for="i in 5"
+                :key="`prev-${i}`"
+                class="company-preview-line"
+                :class="{ 'mb-0': i === 5 }"
+              >
+                <skeleton-block width="7rem" height="0.9rem" />
+                <skeleton-block width="5rem" height="0.9rem" />
+              </div>
+            </div>
+          </skeleton-card>
+        </b-col>
+      </b-row>
     </template>
 
     <template v-else-if="hasCompany">
@@ -361,6 +467,8 @@ import CompanyEditSidebar from '@/components/uiComponents/CompanyEditSidebar.vue
 import { useUtils as useI18nUtils } from '@/libs/i18n/i18n'
 import PaymentMethodSidebar from '@/components/uiComponents/PaymentMethodSidebar.vue'
 import CompanyBrandingCard from '@/components/views/pages/company/CompanyBrandingCard.vue'
+import SkeletonBlock from '@/components/uiComponents/SkeletonBlock.vue'
+import SkeletonCard from '@/components/uiComponents/SkeletonCard.vue'
 import payIdLogo from '@/assets/img/PayID_logo.svg'
 import { companyGstAppliesByDefault, PRICE_MODE_INCLUSIVE } from '@/utils/gstCalculator'
 
@@ -395,6 +503,8 @@ export default {
     CompanyEditSidebar,
     PaymentMethodSidebar,
     CompanyBrandingCard,
+    SkeletonBlock,
+    SkeletonCard,
   },
   data() {
     return {
@@ -581,9 +691,18 @@ export default {
     },
   },
   async created() {
-    this.loading = true
     const { t } = useI18nUtils()
     this.t = t
+
+    const cached = this.$store.getters['companies/list']
+    const cachedList = Array.isArray(cached) ? cached : []
+    if (cachedList.length) {
+      this.companies = cachedList
+      this.company = { ...createEmptyCompany(), ...cachedList[0] }
+    } else {
+      this.loading = true
+    }
+
     await this.fetchCompanies()
   },
   methods: {
